@@ -21,12 +21,14 @@ int32_t MAX_CONNECTIONS = 100;
 
 void* handle_client(void* arg) {
 	char buffer[256];
-	int32_t fd = *(int32_t *)arg;
+	char tmp[128];
+	struct LeClientInfo *client_info = (struct LeClientInfo *)arg;
 
-	sendf(fd, "Hi! fd=%d\n", fd);
-	printf("Hi! fd=%d\n", fd);
+	inet_ntop(AF_INET, &(((struct sockaddr_in *)client_info->addr)->sin_addr), tmp, 128);
+	sendf(client_info->fd, "Hi! fd=%d, addr=%s\n", client_info->fd, tmp);
+	printf("Hi! fd=%d addr=%s\n", client_info->fd, tmp);
 
-	close(fd);
+	close(client_info->fd);
 }
 
 
@@ -36,6 +38,8 @@ int32_t main(int32_t argc, char* argv[]) {
 	struct sockaddr client_addr;
 	socklen_t client_addr_len;
 	pthread_t client_thread;
+
+	struct LeClientInfo *client_info;
 
 	puts("LeForum Server");
 
@@ -67,9 +71,14 @@ int32_t main(int32_t argc, char* argv[]) {
 			perror("accept() failed");
 			return ERRCLIB;
 		}
+
+		client_info = malloc(sizeof(struct LeClientInfo));
+		client_info->fd = client_fd;
+		client_info->addr = malloc(sizeof(struct LeClientInfo));
+		memcpy(client_info->addr, (void *)&client_addr, client_addr_len);
+		client_info->addr_len = client_addr_len;
 		
-		// TODO: pass client_fd, client_addr, client_addr_len as arguments.
-		if (pthread_create(&client_thread, NULL, handle_client, (void*)&client_fd) != 0) {
+		if (pthread_create(&client_thread, NULL, handle_client, (void*)client_info) != 0) {
 			perror("failed to create client handle");
 			return ERRCLIB;
 		}
