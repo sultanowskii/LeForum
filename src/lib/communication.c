@@ -6,16 +6,16 @@
 #include "lib/communication.h"
 
 ssize_t sendf(int32_t fd, char* str, ...) {
-    va_list args;
+	va_list args;
 	char buffer[4096];
-    int32_t result = 0;
+	int32_t result = 0;
 
-    va_start(args, str);
+	va_start(args, str);
 
 	vsnprintf(buffer, (u_int64_t)4095, str, args);
 	result = send(fd, buffer, strlen(buffer), 0);
 
-    va_end(args);
-    
-    return result;
+	va_end(args);
+	
+	return result;
 }
