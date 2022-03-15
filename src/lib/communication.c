@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include <sys/socket.h>
 
 #include "lib/communication.h"
@@ -10,7 +12,7 @@ ssize_t sendf(int32_t fd, char* str, ...) {
 
     va_start(args, str);
 
-	vsnprintf(buffer, 4095, str, args);
+	vsnprintf(buffer, (u_int64_t)4095, str, args);
 	result = send(fd, buffer, strlen(buffer), 0);
 
     va_end(args);

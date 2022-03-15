@@ -1,10 +1,10 @@
-CFLAGS = "-I."
-
+CFLAGS      = "-I."
 LIBS_SERVER = "-pthread"
 LIBS_CLIENT = "-pthread"
+LIB_FILES   = $(wildcard lib/*.c)
 
-server: server/main.c
-	$(CC) $(CFLAGS) $(LIBS_SERVER) server/main.c -o server/LeForumServer
+server: server/main.c $(LIB_FILES)
+	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -o server/LeForumServer
 
-client: client/main.c
-	$(CC) $(CFLAGS) $(LIBS_SERVER) client/main.c -o server/LeForumClient
+client: client/main.c $(LIB_FILES)
+	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -o server/LeForumClient

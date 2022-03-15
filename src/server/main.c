@@ -11,6 +11,7 @@
 
 #include "lib/types.h"
 #include "lib/error.h"
+#include "lib/communication.h"
 
 
 int32_t SERVER_PORT = 7431;
@@ -21,10 +22,10 @@ int32_t MAX_CONNECTIONS = 100;
 void* handle_client(void* arg) {
 	char buffer[256];
 	int32_t fd = *(int32_t *)arg;
-	
-	sprintf(buffer, "Hi! fd=%d\n", fd);
-	printf("%s", buffer);
-	send(fd, buffer, strlen(buffer), 0);
+
+	sendf(fd, "Hi! fd=%d\n", fd);
+	printf("Hi! fd=%d\n", fd);
+
 	close(fd);
 }
 
@@ -49,7 +50,7 @@ int32_t main(int32_t argc, char* argv[]) {
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(SERVER_PORT);
 
-	if (bind(server_fd, &server_addr, sizeof(server_addr)) != 0) {
+	if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
 		perror("bind() failed");
 		return ERRCLIB;
 	}
