@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "lib/types.h"
 #include "lib/security.h"
 
 struct LeMessage {

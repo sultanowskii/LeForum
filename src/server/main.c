@@ -19,6 +19,13 @@ char SERVER_ADDR[] = "0.0.0.0";
 int32_t MAX_CONNECTIONS = 100;
 
 
+struct LeClientInfo {
+	int32_t fd;
+	socklen_t addr_len;
+	struct sockaddr *addr;
+};
+
+
 void * handle_client(void *arg) {
 	char buffer[256];
 	char tmp[128];
