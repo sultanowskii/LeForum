@@ -9,7 +9,7 @@
 #include <sys/socket.h> // sockets
 #include <arpa/inet.h> // inet_addr
 
-#include "lib/types.h"
+#include "lib/constants.h"
 #include "lib/error.h"
 #include "lib/communication.h"
 

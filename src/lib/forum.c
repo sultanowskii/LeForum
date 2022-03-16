@@ -9,7 +9,8 @@ FILE * get_thread_file(u_int64_t id, char *mode) {
 	memset(id_str, 0, sizeof(id_str));
 	memset(filename, 0, sizeof(filename));
 
-	strcat(filename, ".data/");
+	strcat(filename, DATA_DIR);
+	strcat(filename, "/");
 	sprintf(id_str, "%llu", id);
 	strcat(filename, id_str);
 	
@@ -17,8 +18,10 @@ FILE * get_thread_file(u_int64_t id, char *mode) {
 		mkdir(filename, 0700);
 	}
 
-	strcat(filename, "/thread");
+	strcat(filename, "/");
+	strcat(filename, THREAD_FILENAME);
 	FILE *thread_info_file = fopen(filename, mode);
+
 	return thread_info_file;
 }
 
@@ -55,16 +58,25 @@ struct LeThread * lethread_create(char *topic, u_int64_t id) {
 
 int32_t lethread_delete(struct LeThread *thread) {
 	struct LeMessage *message = thread->first_message;
-	struct LeMessage *next;
+	struct LeMessage *next_message;
+	struct LeAuthor *participant = thread->first_participant;
+	struct LeAuthor *next_participant;
 
 	while (message != NULL) {
-		next = message->next;
+		next_message = message->next;
 		lemessage_delete(message);
-		message = next;
+		message = next_message;
+	}
+
+	while (participant != NULL) {
+		next_participant = participant->next;
+		leauthor_delete(participant);
+		participant = next_participant;
 	}
 
 	free(thread->topic);
 	free(thread);
+
 	return 0;
 }
 
@@ -105,6 +117,15 @@ struct LeAuthor * leauthor_create(struct LeThread *lethread) {
 	new_leauthor->id = ++lethread->last_participant_id;
 	rand_string(new_leauthor->token, sizeof(new_leauthor->token) - 1);
 	
+	if (lethread->first_participant == NULL) {
+		lethread->first_participant = new_leauthor;
+		lethread->last_participant = new_leauthor;
+	}
+	else {
+		lethread->last_participant->next = new_leauthor;
+		lethread->last_participant = new_leauthor;
+	}
+
 	return new_leauthor;
 }
 
