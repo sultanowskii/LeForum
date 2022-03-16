@@ -1,7 +1,3 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
 #include "lib/forum.h"
 
 int main() {
@@ -12,7 +8,7 @@ int main() {
 		mkdir(".data/", 0770);
 	}
 
-	struct LeThread *thread = lethread_create("Test Topic", rand_u_int64_t());
+	struct LeThread *thread = lethread_create("Test Topic", rand_u_int64_t() % 0xffffffff);
 	struct LeMessage *message;
 	u_int64_t author_id = 0;
 	char *text = malloc(1024);

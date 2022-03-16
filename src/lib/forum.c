@@ -39,7 +39,7 @@ struct LeThread * lethread_create(char *topic, u_int64_t id) {
 	strncpy(new_lethread->topic, topic, topic_length);
 
 	// save the thread information to the file
-	FILE *thread_info_file = get_thread_filename(id, "ab");
+	FILE *thread_info_file = get_thread_file(id, "ab");
 	fwrite(&new_lethread->id, sizeof(new_lethread->id), 1, thread_info_file);
 	fwrite(&new_lethread->author_id, sizeof(new_lethread->author_id), 1, thread_info_file);
 	fwrite(&new_lethread->first_message_id, sizeof(new_lethread->first_message_id), 1, thread_info_file);
