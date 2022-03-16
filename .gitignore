@@ -2,3 +2,6 @@
 .obsidian/
 LeForumServer
 LeForumCoreTest
+.data/
+.gdb*
+core

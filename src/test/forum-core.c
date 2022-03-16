@@ -1,6 +1,17 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "lib/forum.h"
 
 int main() {
+	struct stat st = {0};
+
+	// create dir if it doesn't exist
+	if (stat(".data/", &st) == -1) {
+		mkdir(".data/", 0770);
+	}
+
 	struct LeThread *thread = lethread_create("Test Topic", rand_u_int64_t());
 	struct LeMessage *message;
 	u_int64_t author_id = 0;

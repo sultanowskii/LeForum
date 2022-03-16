@@ -2,6 +2,9 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "lib/security.h"
 
@@ -22,8 +25,8 @@ struct LeThread {
 	u_int64_t author_id;
 	u_int64_t first_message_id;
 	u_int64_t last_message_id;
-	u_int64_t first_author_id;
-	u_int64_t last_author_id;
+	u_int64_t first_participant_id;
+	u_int64_t last_participant_id;
 	char *topic;
 	struct LeMessage *first_message;
 	struct LeMessage *last_message;
