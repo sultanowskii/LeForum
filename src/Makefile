@@ -7,7 +7,7 @@ server: server/main.c $(LIB_FILES)
 	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -o server/LeForumServer
 
 client: client/main.c $(LIB_FILES)
-	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -o server/LeForumClient
+	$(CC) $(CFLAGS) $(LIBS_CLIENT) $^ -o server/LeForumClient
 
 forum-core-test: test/forum-core.c $(LIB_FILES)
 	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -o test/LeForumCoreTest
