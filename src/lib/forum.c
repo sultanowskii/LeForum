@@ -1,6 +1,6 @@
 #include "lib/forum.h"
 
-struct LeThread * lethread_create(char* topic, u_int64_t id) {
+struct LeThread * lethread_create(char *topic, u_int64_t id) {
 	struct LeThread *new_lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
 
 	new_lethread->id = id;
@@ -19,8 +19,8 @@ struct LeThread * lethread_create(char* topic, u_int64_t id) {
 }
 
 int32_t lethread_delete(struct LeThread *thread) {
-	struct LeMessage* message = thread->first_message;
-	struct LeMessage* next;
+	struct LeMessage *message = thread->first_message;
+	struct LeMessage *next;
 
 	while (message != NULL) {
 		next = message->next;
@@ -33,8 +33,8 @@ int32_t lethread_delete(struct LeThread *thread) {
 	return 0;
 }
 
-struct LeMessage * lemessage_create(struct LeThread* lethread, u_int64_t author_id, char* text) {
-	struct LeMessage* new_lemessage = (struct LeMessage *)malloc(sizeof(struct LeMessage));
+struct LeMessage * lemessage_create(struct LeThread *lethread, u_int64_t author_id, char *text) {
+	struct LeMessage *new_lemessage = (struct LeMessage *)malloc(sizeof(struct LeMessage));
 
 	new_lemessage->author_id = author_id;
 	new_lemessage->id = ++lethread->last_message_id;
@@ -58,14 +58,14 @@ struct LeMessage * lemessage_create(struct LeThread* lethread, u_int64_t author_
 	return new_lemessage;
 }
 
-int32_t lemessage_delete(struct LeMessage * message) {
+int32_t lemessage_delete(struct LeMessage *message) {
 	free(message->text);
 	free(message);
 	return 0;
 }
 
-struct LeAuthor * leauthor_create(struct LeThread* lethread) {
-	struct LeAuthor* new_leauthor = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
+struct LeAuthor * leauthor_create(struct LeThread *lethread) {
+	struct LeAuthor *new_leauthor = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
 
 	new_leauthor->id = ++lethread->last_author_id;
 	rand_string(new_leauthor->token, sizeof(new_leauthor->token) - 1);
@@ -73,7 +73,7 @@ struct LeAuthor * leauthor_create(struct LeThread* lethread) {
 	return new_leauthor;
 }
 
-int32_t leauthor_delete(struct LeAuthor * author) {
+int32_t leauthor_delete(struct LeAuthor *author) {
 	free(author);
 	return 0;
 }

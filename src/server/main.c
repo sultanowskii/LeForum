@@ -19,7 +19,7 @@ char SERVER_ADDR[] = "0.0.0.0";
 int32_t MAX_CONNECTIONS = 100;
 
 
-void* handle_client(void* arg) {
+void * handle_client(void *arg) {
 	char buffer[256];
 	char tmp[128];
 	struct LeClientInfo *client_info = (struct LeClientInfo *)arg;
@@ -32,7 +32,7 @@ void* handle_client(void* arg) {
 }
 
 
-int32_t main(int32_t argc, char* argv[]) {
+int32_t main(int32_t argc, char *argv[]) {
 	int32_t client_fd, server_fd;
 	struct sockaddr_in server_addr;
 	struct sockaddr client_addr;

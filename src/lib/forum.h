@@ -30,8 +30,8 @@ struct LeThread {
 	struct LeMessage *last_message;
 };
 
-struct LeThread * lethread_create(char* topic, u_int64_t id);
+struct LeThread * lethread_create(char *topic, u_int64_t id);
 int32_t lethread_delete(struct LeThread *thread);
-struct LeMessage * lemessage_create(struct LeThread* lethread, u_int64_t author_id, char* text);
-int32_t lemessage_delete(struct LeMessage * message);
-struct LeAuthor * leauthor_create(struct LeThread* lethread);
+struct LeMessage * lemessage_create(struct LeThread *lethread, u_int64_t author_id, char *text);
+int32_t lemessage_delete(struct LeMessage *message);
+struct LeAuthor * leauthor_create(struct LeThread *lethread);
