@@ -9,7 +9,7 @@ server: server/main.c $(LIB_FILES)
 client: client/main.c $(LIB_FILES)
 	$(CC) $(CFLAGS) $(LIBS_CLIENT) $^ -o server/LeForumClient
 
-forum-core-test: test/forum-core.c $(LIB_FILES)
+test-forum-core: test/test-forum-core.c $(LIB_FILES)
 	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -g -o test/LeForumCoreTest
 
 test-queue: test/test-queue.c $(LIB_FILES)
