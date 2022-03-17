@@ -2,6 +2,7 @@
 .obsidian/
 LeForumServer
 LeForumCoreTest
+QueueTest
 .data/
 .gdb*
 core
