@@ -2,6 +2,8 @@
 
 struct Queue * queue_create() {
 	struct Queue *new_queue = (struct Queue *)malloc(sizeof(struct Queue));
+
+	new_queue->size = 0;
 	new_queue->first = 0;
 	new_queue->last = 0;
 
@@ -24,13 +26,14 @@ int8_t queue_delete(struct Queue *queue) {
 	return 0;
 };
 
-int32_t queue_push(struct Queue *queue, char *data) {
+int32_t queue_push(struct Queue *queue, void *data, size_t length) {
 	struct QueueNode *new_node = (struct QueueNode *)malloc(sizeof(struct QueueNode));
 
-	size_t length = strlen(data);
 	new_node->data = malloc(length);
-	new_node->data[length - 1] = '\0';
-	strncpy(new_node->data, data, length);
+	memset(new_node->data, 0, length);
+	memcpy(new_node->data, data, length);
+
+	new_node->next = NULL;
 
 	if (queue->first == NULL) {
 		queue->first = new_node;
@@ -41,12 +44,14 @@ int32_t queue_push(struct Queue *queue, char *data) {
 		queue->last = new_node;
 	}
 
+	queue->size++;
+
 	return 0;
 }
 
-char * queue_pop(struct Queue *queue) {
+void * queue_pop(struct Queue *queue) {
 	struct QueueNode *first = queue->first;
-	char* data;
+	void* data;
 
 	// checking if the queue is empty
 	if (queue_is_empty(queue) == TRUE) {
@@ -58,7 +63,7 @@ char * queue_pop(struct Queue *queue) {
 	// pop()ing the first element
 	queue->first = first->next;
 
-	// we are freeing only node itself, because the data (which is a char *) has to be returned.
+	// we are freeing only node itself, because the data (which is a void *) has to be returned.
 	free(first);
 
 	// if queue is empty, the last element has to point to NULL
@@ -66,9 +71,11 @@ char * queue_pop(struct Queue *queue) {
 		queue->last = NULL;
 	}
 
+	queue->size--;
+
 	return data;
 }
 
 int8_t queue_is_empty(struct Queue *queue) {
-	return queue->first == NULL;
+	return queue->size == 0;
 }

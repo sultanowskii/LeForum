@@ -35,8 +35,8 @@ struct LeThread * lethread_create(char *topic, u_int64_t id) {
 	new_lethread->last_message_id = new_lethread->first_message_id;
 	new_lethread->first_participant_id = new_lethread->author_id;
 	new_lethread->last_participant_id = new_lethread->first_participant_id;
-	new_lethread->first_message = NULL;
-	new_lethread->last_message = NULL;
+	new_lethread->messages = queue_create();
+	new_lethread->participants = queue_create();
 	
 	new_lethread->topic = malloc(topic_length);
 	strncpy(new_lethread->topic, topic, topic_length);
@@ -56,51 +56,27 @@ struct LeThread * lethread_create(char *topic, u_int64_t id) {
 	return new_lethread;
 }
 
-int32_t lethread_delete(struct LeThread *thread) {
-	struct LeMessage *message = thread->first_message;
-	struct LeMessage *next_message;
-	struct LeAuthor *participant = thread->first_participant;
-	struct LeAuthor *next_participant;
-
-	while (message != NULL) {
-		next_message = message->next;
-		lemessage_delete(message);
-		message = next_message;
-	}
-
-	while (participant != NULL) {
-		next_participant = participant->next;
-		leauthor_delete(participant);
-		participant = next_participant;
-	}
-
-	free(thread->topic);
-	free(thread);
+int32_t lethread_delete(struct LeThread *lethread) {
+	queue_delete(lethread->messages);
+	queue_delete(lethread->participants);
+	free(lethread->topic);
+	free(lethread);
 
 	return 0;
 }
 
 struct LeMessage * lemessage_create(struct LeThread *lethread, u_int64_t author_id, char *text) {
 	struct LeMessage *new_lemessage = (struct LeMessage *)malloc(sizeof(struct LeMessage));
+	size_t length = strlen(text) + 1;
 
 	new_lemessage->author_id = author_id;
 	new_lemessage->id = ++lethread->last_message_id;
-	new_lemessage->next = NULL;
-
-	size_t length = strlen(text) + 1;
 
 	new_lemessage->text = malloc(length);
 	new_lemessage->text[length - 1] = 0;
-	strncpy(new_lemessage->text, text, strlen(text));
+	strncpy(new_lemessage->text, text, length);
 
-	if (lethread->first_message == NULL) {
-		lethread->first_message = new_lemessage;
-		lethread->last_message = new_lemessage;
-	}
-	else {
-		lethread->last_message->next = new_lemessage;
-		lethread->last_message = new_lemessage;
-	}
+	queue_push(lethread->messages, new_lemessage, sizeof(struct LeMessage));
 
 	return new_lemessage;
 }
@@ -116,15 +92,8 @@ struct LeAuthor * leauthor_create(struct LeThread *lethread) {
 
 	new_leauthor->id = ++lethread->last_participant_id;
 	rand_string(new_leauthor->token, sizeof(new_leauthor->token) - 1);
-	
-	if (lethread->first_participant == NULL) {
-		lethread->first_participant = new_leauthor;
-		lethread->last_participant = new_leauthor;
-	}
-	else {
-		lethread->last_participant->next = new_leauthor;
-		lethread->last_participant = new_leauthor;
-	}
+
+	queue_push(lethread->participants, new_leauthor, sizeof(struct LeAuthor));
 
 	return new_leauthor;
 }

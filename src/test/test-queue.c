@@ -15,7 +15,7 @@ int main() {
 	for (size_t i = 0; i < 5; ++i) {
 		printf("Element #%llu:\n", i);
 		scanf("%s", tmp);
-		queue_push(queue, tmp);
+		queue_push(queue, tmp, strlen(tmp) + 1);
 	}
 
 	puts("=============");
