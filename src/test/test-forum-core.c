@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "lib/forum.h"
 #include "lib/queue.h"
 
 int main() {
@@ -17,7 +18,8 @@ int main() {
 		mkdir(".data/", 0770);
 	}
 
-	struct LeThread *thread = lethread_create("Test Topic", rand_u_int64_t() % 0xffffffff);
+	u_int64_t thread_id = rand_u_int64_t() % 0xffffffff;
+	struct LeThread *thread = lethread_create("Test Topic", thread_id);
 	struct QueueNode *node;
 	struct LeMessage *message;
 	u_int64_t author_id = 0;
@@ -46,5 +48,12 @@ int main() {
 
 	puts("Done, deleting the thread...");
 	lethread_delete(thread);
+
+	puts("Trying to load the saved thread...");
+	thread = (struct LeThread *)malloc(sizeof(struct LeThread));
+	lethread_load(thread, thread_id);
+	printf("id=%llu author_id=%llu: %s\n", thread->id, thread->author_id, thread->topic);
+	lethread_delete(thread);
+
 	return 0;
 }

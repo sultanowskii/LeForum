@@ -26,6 +26,7 @@ int main() {
 		is_empty = queue_is_empty(queue);
 		data = queue_pop(queue);
 		printf("queue_is_empty()=%d, pop(), cntr=%llu: %s\n", is_empty, cntr++, data);
+		free(data);
 	}
 
 	printf("Finished! queue_is_emtpy()=%llu\n", queue_is_empty(queue));

@@ -1,31 +1,13 @@
 #include "lib/forum.h"
 
-FILE * get_thread_file(u_int64_t id, char *mode) {
-	char filename[256];
-	char id_str[32];
-
-	struct stat st = {0};
-
-	memset(id_str, 0, sizeof(id_str));
-	memset(filename, 0, sizeof(filename));
-
-	strcat(filename, DATA_DIR);
-	strcat(filename, "/");
-	sprintf(id_str, "%llu", id);
-	strcat(filename, id_str);
-	
-	if (stat(filename, &st) == -1) {
-		mkdir(filename, 0700);
-	}
-
-	strcat(filename, "/");
-	strcat(filename, THREAD_FILENAME);
-	FILE *thread_info_file = fopen(filename, mode);
-
-	return thread_info_file;
-}
-
 struct LeThread * lethread_create(char *topic, u_int64_t id) {
+	// if file thread file already exist, then we should do nothing
+	FILE* thread_file = get_thread_file(id, "rb", FALSE);
+	if (thread_file != ERRNSFD) {
+		fclose(thread_file);
+		return ERREXST;
+	}
+	
 	struct LeThread *new_lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
 	size_t topic_length = strlen(topic);
 
@@ -38,20 +20,11 @@ struct LeThread * lethread_create(char *topic, u_int64_t id) {
 	new_lethread->messages = queue_create();
 	new_lethread->participants = queue_create();
 	
-	new_lethread->topic = malloc(topic_length);
+	new_lethread->topic = malloc(topic_length + 1);
+	memset(new_lethread->topic, 0, topic_length + 1);
 	strncpy(new_lethread->topic, topic, topic_length);
 
-	// save the thread information to the file
-	FILE *thread_info_file = get_thread_file(id, "ab");
-	fwrite(&new_lethread->id, sizeof(new_lethread->id), 1, thread_info_file);
-	fwrite(&new_lethread->author_id, sizeof(new_lethread->author_id), 1, thread_info_file);
-	fwrite(&new_lethread->first_message_id, sizeof(new_lethread->first_message_id), 1, thread_info_file);
-	fwrite(&new_lethread->last_message_id, sizeof(new_lethread->last_message_id), 1, thread_info_file);
-	fwrite(&new_lethread->first_participant_id, sizeof(new_lethread->first_participant_id), 1, thread_info_file);
-	fwrite(&new_lethread->last_participant_id, sizeof(new_lethread->last_participant_id), 1, thread_info_file);
-	fwrite(&topic_length, sizeof(topic_length), 1, thread_info_file);
-	fwrite(topic, 1, topic_length, thread_info_file);
-	fclose(thread_info_file);
+	lethread_save(new_lethread);
 
 	return new_lethread;
 }
@@ -101,4 +74,87 @@ struct LeAuthor * leauthor_create(struct LeThread *lethread) {
 int32_t leauthor_delete(struct LeAuthor *author) {
 	free(author);
 	return 0;
+}
+
+/*
+	Opens thread (with given id) file with the desired mode.
+	If file/directory doesn't exist and create==TRUE, creates file/directory.
+	Otherwise returns ERRNSFD
+*/
+FILE * get_thread_file(u_int64_t id, char *mode, int8_t create) {
+	char filename[256];
+	char id_str[32];
+
+	struct stat st = {0};
+
+	memset(id_str, 0, sizeof(id_str));
+	memset(filename, 0, sizeof(filename));
+
+	sprintf(filename, DATA_DIR "/%llu/", id);
+
+	// checking if the directory exists
+	if (stat(filename, &st) == -1) {
+		if (!create) return ERRNSFD;
+		mkdir(filename, 0700);
+	}
+
+	strcat(filename, "" THREAD_FILENAME);
+
+	// checking if the file exists
+	if (stat(filename, &st) == -1 && !create) {
+		return ERRNSFD;
+	}
+
+	FILE *thread_info_file = fopen(filename, mode);
+
+	return thread_info_file;
+}
+
+int8_t lethread_save(struct LeThread *thread) {
+	size_t topic_length = strlen(thread->topic);
+	FILE *thread_info_file;
+
+	// this trick clears the file so we don't have to have a headache with all these overwriting file stuff
+	thread_info_file = get_thread_file(thread->id, "wb", TRUE);
+	fclose(thread_info_file);
+
+	thread_info_file = get_thread_file(thread->id, "ab", TRUE);
+
+	fwrite(&thread->id, sizeof(thread->id), 1, thread_info_file);
+	fwrite(&thread->author_id, sizeof(thread->author_id), 1, thread_info_file);
+	fwrite(&thread->first_message_id, sizeof(thread->first_message_id), 1, thread_info_file);
+	fwrite(&thread->last_message_id, sizeof(thread->last_message_id), 1, thread_info_file);
+	fwrite(&thread->first_participant_id, sizeof(thread->first_participant_id), 1, thread_info_file);
+	fwrite(&thread->last_participant_id, sizeof(thread->last_participant_id), 1, thread_info_file);
+	fwrite(&topic_length, sizeof(topic_length), 1, thread_info_file);
+	fwrite(thread->topic, 1, topic_length, thread_info_file);
+
+	fclose(thread_info_file);
+}
+
+int8_t lethread_load(struct LeThread *thread, u_int64_t id) {
+	size_t topic_length;
+	FILE *thread_info_file = get_thread_file(id, "rb", FALSE);
+
+	if (thread_info_file == ERRNSFD) {
+		return ERRNSFD;
+	}
+
+	thread->messages = queue_create();
+	thread->participants = queue_create();
+
+	fread(&thread->id, sizeof(thread->id), 1, thread_info_file);
+	fread(&thread->author_id, sizeof(thread->author_id), 1, thread_info_file);
+	fread(&thread->first_message_id, sizeof(thread->first_message_id), 1, thread_info_file);
+	fread(&thread->last_message_id, sizeof(thread->last_message_id), 1, thread_info_file);
+	fread(&thread->first_participant_id, sizeof(thread->first_participant_id), 1, thread_info_file);
+	fread(&thread->last_participant_id, sizeof(thread->last_participant_id), 1, thread_info_file);
+	fread(&topic_length, sizeof(topic_length), 1, thread_info_file);
+	
+	thread->topic = malloc(topic_length + 1);
+	memset(thread->topic, 0, topic_length + 1);
+	
+	fread(thread->topic, 1, topic_length, thread_info_file);
+
+	fclose(thread_info_file);
 }
