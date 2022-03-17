@@ -1,12 +1,13 @@
-#include <stdio.h> // i/o
-#include <stdlib.h> // default functions
-#include <string.h> // strings, memory
-#include <stdint.h> // int types
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
 
-#include <pthread.h> // threading
+#include <pthread.h>
 
-#include <sys/socket.h> // sockets
-#include <arpa/inet.h> // inet_addr
+#include <sys/socket.h>
+#include <arpa/inet.h>
+
 
 int32_t main(size_t argc, char **argv) {
 	return 0;

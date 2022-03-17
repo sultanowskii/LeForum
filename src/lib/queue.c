@@ -1,5 +1,8 @@
 #include "lib/queue.h"
 
+/*
+ * Creates a new Queue object.
+ */
 struct Queue * queue_create() {
 	struct Queue *new_queue = (struct Queue *)malloc(sizeof(struct Queue));
 
@@ -10,6 +13,9 @@ struct Queue * queue_create() {
 	return new_queue;
 };
 
+/*
+ * Safely deletes the Queue and all the elements.
+ */
 int8_t queue_delete(struct Queue *queue) {
 	struct QueueNode *node = queue->first;
 	struct QueueNode *next;
@@ -26,6 +32,9 @@ int8_t queue_delete(struct Queue *queue) {
 	return 0;
 };
 
+/*
+ * Adds a new element to the end of the Queue.
+ */
 int32_t queue_push(struct Queue *queue, void *data, size_t length) {
 	struct QueueNode *new_node = (struct QueueNode *)malloc(sizeof(struct QueueNode));
 
@@ -49,24 +58,26 @@ int32_t queue_push(struct Queue *queue, void *data, size_t length) {
 	return 0;
 }
 
+/*
+ * Retrieves the first element and deletes it from the Queue.
+ */
 void * queue_pop(struct Queue *queue) {
 	struct QueueNode *first = queue->first;
 	void* data;
 
-	// checking if the queue is empty
 	if (queue_is_empty(queue) == TRUE) {
 		return NULL;
 	}
 
-	// retrieving data to return
+	/* Retrieve data to return */
 	data = first->data;
-	// pop()ing the first element
+	/* Removing the first element */
 	queue->first = first->next;
 
-	// we are freeing only node itself, because the data (which is a void *) has to be returned.
+	/* free() only node itself, because the data (which is a void *) has to be returned */
 	free(first);
 
-	// if queue is empty, the last element has to point to NULL
+	/* If Queue is empty, the last element has to point to NULL */
 	if (queue_is_empty(queue) == TRUE) {
 		queue->last = NULL;
 	}
@@ -76,6 +87,9 @@ void * queue_pop(struct Queue *queue) {
 	return data;
 }
 
+/* 
+ * Checks whether queue is empty or not
+ */
 int8_t queue_is_empty(struct Queue *queue) {
 	return queue->size == 0;
 }

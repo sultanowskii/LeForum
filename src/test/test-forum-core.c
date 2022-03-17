@@ -13,7 +13,7 @@
 int main() {
 	struct stat st = {0};
 
-	// create dir if it doesn't exist
+	/* create dir if it doesn't exist */
 	if (stat(".data/", &st) == -1) {
 		mkdir(".data/", 0770);
 	}
