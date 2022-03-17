@@ -1,7 +1,7 @@
 #include "lib/forum.h"
 
 struct LeThread * lethread_create(char *topic, u_int64_t id) {
-	// if file thread file already exist, then we should do nothing
+	// if file lethread file already exist, then we should do nothing
 	FILE* lethread_file = lethread_get_file(id, "rb", FALSE);
 	if (lethread_file != ERRNSFD) {
 		fclose(lethread_file);

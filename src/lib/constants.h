@@ -6,4 +6,4 @@
 #define TOKEN_LENGTH 24
 
 #define DATA_DIR ".data"
-#define THREAD_FILENAME "threadinfo"
+#define THREAD_FILENAME "lethreadinfo"
