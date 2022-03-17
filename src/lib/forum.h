@@ -42,6 +42,6 @@ int32_t lemessage_delete(struct LeMessage *message);
 struct LeAuthor * leauthor_create(struct LeThread *lethread);
 int32_t leauthor_delete(struct LeAuthor *author);
 
-FILE * get_thread_file(u_int64_t id, char *mode, int8_t create);
-int8_t lethread_save(struct LeThread *thread);
-int8_t lethread_load(struct LeThread *thread, u_int64_t id);
+FILE * lethread_get_file(u_int64_t id, char *mode, int8_t create);
+int8_t lethread_save(struct LeThread *lethread);
+int8_t lethread_load(struct LeThread *lethread, u_int64_t id);

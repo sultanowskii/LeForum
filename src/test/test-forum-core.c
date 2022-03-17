@@ -18,8 +18,8 @@ int main() {
 		mkdir(".data/", 0770);
 	}
 
-	u_int64_t thread_id = rand_u_int64_t() % 0xffffffff;
-	struct LeThread *thread = lethread_create("Test Topic", thread_id);
+	u_int64_t lethread_id = rand_u_int64_t() % 0xffffffff;
+	struct LeThread *lethread = lethread_create("Test Topic", lethread_id);
 	struct QueueNode *node;
 	struct LeMessage *message;
 	u_int64_t author_id = 0;
@@ -27,15 +27,15 @@ int main() {
 	size_t length = 1023;
 
 	for (size_t i = 0; i < 5; i++) {
-		printf("creator=%llu first_message_id=%llu last_message_id=%llu\n", thread->author_id, thread->first_message_id, thread->last_message_id); 
+		printf("creator=%llu first_message_id=%llu last_message_id=%llu\n", lethread->author_id, lethread->first_message_id, lethread->last_message_id); 
 		printf("author_id text:\n > ");
 		
 		scanf("%llu ", &author_id);
 		getline(&text, &length, stdin);
 		text[strlen(text) - 1] = 0;
 		
-		lemessage_create(thread, author_id, text);
-		node = thread->messages->first;
+		lemessage_create(lethread, author_id, text);
+		node = lethread->messages->first;
 		
 		printf("==== History ====\n");
 		while (node != NULL) {
@@ -46,14 +46,14 @@ int main() {
 		printf("=================\n");
 	}
 
-	puts("Done, deleting the thread...");
-	lethread_delete(thread);
+	puts("Done, deleting the lethread...");
+	lethread_delete(lethread);
 
-	puts("Trying to load the saved thread...");
-	thread = (struct LeThread *)malloc(sizeof(struct LeThread));
-	lethread_load(thread, thread_id);
-	printf("id=%llu author_id=%llu: %s\n", thread->id, thread->author_id, thread->topic);
-	lethread_delete(thread);
+	puts("Trying to load the saved lethread...");
+	lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
+	lethread_load(lethread, lethread_id);
+	printf("id=%llu author_id=%llu: %s\n", lethread->id, lethread->author_id, lethread->topic);
+	lethread_delete(lethread);
 
 	return 0;
 }
