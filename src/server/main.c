@@ -1,6 +1,7 @@
 #include <stdio.h> // i/o
 #include <stdlib.h> // default functions
 #include <string.h> // strings, memory
+#include <stdint.h> // int types
 
 #include <unistd.h> // uni calls
 

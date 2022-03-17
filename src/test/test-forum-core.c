@@ -1,4 +1,13 @@
-#include "lib/forum.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include "lib/queue.h"
 
 int main() {
 	struct stat st = {0};
