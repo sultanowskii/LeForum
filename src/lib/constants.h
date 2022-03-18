@@ -7,3 +7,4 @@
 
 #define DATA_DIR ".data"
 #define THREAD_FILENAME "lethreadinfo"
+#define MESSAGES_FILENAME "lemessages"
