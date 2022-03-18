@@ -11,8 +11,7 @@
 #include "lib/queue.h"
 
 void lethread_info(struct LeThread *lethread) {
-	printf("id=%llu author_id=%llu: %s\n", lethread->id, lethread->author_id, lethread->topic);
-	printf("creator=%llu first_message_id=%llu next_message_id=%llu\n", lethread->author_id, lethread->first_message_id, lethread->next_message_id);
+	printf("LeThread: id=%llu author_id=%llu first_message_id=%llu next_message_id=%llu: %s\n", lethread->id, lethread->author_id, lethread->first_message_id, lethread->next_message_id, lethread->topic);
 }
 
 void lethread_message_history(struct LeThread *lethread) {
@@ -40,6 +39,8 @@ int main() {
 	char *text = malloc(1024);
 	size_t length = 1023;
 
+	leauthor_create(lethread, TRUE);
+
 	/* create dir if it doesn't exist */
 	if (stat(".data/", &st) == -1) {
 		mkdir(".data/", 0770);
@@ -59,6 +60,7 @@ int main() {
 		lethread_message_history(lethread);
 	}
 
+	leauthor_save(lethread);
 	puts("Done, saving to file, deleting object...");
 	lethread_delete(lethread);
 
@@ -67,6 +69,8 @@ int main() {
 	lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
 	lethread_load(lethread, lethread_id);
 	lemessages_load(lethread);
+	leauthors_load(lethread);
+	printf("LeAuthor: id=%llu, token=%s !!!\n", ((struct LeAuthor *)lethread->participants->first->data)->id, ((struct LeAuthor *)lethread->participants->first->data)->token);
 	lethread_info(lethread);
 	lethread_message_history(lethread);
 	lethread_delete(lethread);

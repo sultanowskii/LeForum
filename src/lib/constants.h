@@ -8,3 +8,4 @@
 #define DATA_DIR ".data"
 #define FILENAME_LETHREAD "lethreadinfo"
 #define FILENAME_LEMESSAGES "lemessages"
+#define FILENAME_LEAUTHOR "leauthor"
