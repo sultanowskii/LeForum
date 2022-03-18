@@ -18,11 +18,11 @@ int main() {
 		mkdir(".data/", 0770);
 	}
 
-	u_int64_t lethread_id = rand_u_int64_t() % 0xffffffff;
+	uint64_t lethread_id = rand_uint64_t() % 0xffffffff;
 	struct LeThread *lethread = lethread_create("Test Topic", lethread_id);
 	struct QueueNode *node;
 	struct LeMessage *message;
-	u_int64_t author_id = 0;
+	uint64_t author_id = 0;
 	char *text = malloc(1024);
 	size_t length = 1023;
 

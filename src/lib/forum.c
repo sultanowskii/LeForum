@@ -4,7 +4,7 @@
  * Creates new LeThread, if there is no one with provided id.
  * If there is, then returns ERREXST.
  */
-struct LeThread * lethread_create(char *topic, u_int64_t id) {
+struct LeThread * lethread_create(char *topic, uint64_t id) {
 	// If the lethread file already exists, then nothing should be done
 	FILE* lethread_file = lethread_get_file(id, "rb", FALSE);
 	if (lethread_file != ERRNSFD) {
@@ -16,8 +16,8 @@ struct LeThread * lethread_create(char *topic, u_int64_t id) {
 	size_t topic_length = strlen(topic);
 
 	new_lethread->id = id;
-	new_lethread->author_id = rand_u_int64_t() % 0xffffffff;
-	new_lethread->first_message_id = rand_u_int64_t() % 0xffffffff;
+	new_lethread->author_id = rand_uint64_t() % 0xffffffff;
+	new_lethread->first_message_id = rand_uint64_t() % 0xffffffff;
 	new_lethread->last_message_id = new_lethread->first_message_id;
 	new_lethread->first_participant_id = new_lethread->author_id;
 	new_lethread->last_participant_id = new_lethread->first_participant_id;
@@ -49,7 +49,7 @@ int32_t lethread_delete(struct LeThread *lethread) {
 /*
  * Creates a new LeMessage and adds it to the given thread.
  */
-struct LeMessage * lemessage_create(struct LeThread *lethread, u_int64_t author_id, char *text) {
+struct LeMessage * lemessage_create(struct LeThread *lethread, uint64_t author_id, char *text) {
 	struct LeMessage *new_lemessage = (struct LeMessage *)malloc(sizeof(struct LeMessage));
 	size_t length = strlen(text) + 1;
 
@@ -102,7 +102,7 @@ int32_t leauthor_delete(struct LeAuthor *author) {
  * If file/directory doesn't exist and create==TRUE, creates file/directory,
  * otherwise returns ERRNSFD.
  */
-FILE * lethread_get_file(u_int64_t id, char *mode, int8_t create) {
+FILE * lethread_get_file(uint64_t id, char *mode, int8_t create) {
 	char filename[256];
 	char id_str[32];
 
@@ -161,7 +161,7 @@ int8_t lethread_save(struct LeThread *lethread) {
  * 
  * If file is not found, ERRNSFD is returned.
  */
-int8_t lethread_load(struct LeThread *lethread, u_int64_t id) {
+int8_t lethread_load(struct LeThread *lethread, uint64_t id) {
 	size_t topic_length;
 	FILE *lethread_info_file = lethread_get_file(id, "rb", FALSE);
 
