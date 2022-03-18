@@ -6,7 +6,7 @@
  */
 struct LeThread * lethread_create(char *topic, uint64_t lethread) {
 	// If the lethread file already exists, then nothing should be done
-	FILE* lethread_file = lethread_get_file(lethread, "rb", FALSE);
+	FILE* lethread_file = get_le_file(lethread, "rb", FILENAME_LETHREAD, FALSE);
 	if (lethread_file != ERRNSFD) {
 		fclose(lethread_file);
 		return ERREXST;
@@ -113,38 +113,38 @@ int32_t leauthor_delete(struct LeAuthor *author) {
 }
 
 /*
- * Opens lethread (with given id) file with the desired mode.
+ * Opens one (specified in filename) of the lethread files
  * 
  * If file/directory doesn't exist and create==TRUE, creates file/directory,
  * otherwise returns ERRNSFD.
  */
-FILE * lethread_get_file(uint64_t lethread_id, char *mode, int8_t create) {
-	char filename[256];
+FILE * get_le_file(uint64_t lethread_id, char *mode, char *filename, int8_t create) {
+	char path[256];
 	char id_str[32];
 
 	struct stat st = {0};
 
 	memset(id_str, 0, sizeof(id_str));
-	memset(filename, 0, sizeof(filename));
+	memset(path, 0, sizeof(path));
 
-	sprintf(filename, DATA_DIR "/%llu/", lethread_id);
+	sprintf(path, DATA_DIR "/%llu/", lethread_id);
 
 	/* Check if the directory exists */
-	if (stat(filename, &st) == -1) {
+	if (stat(path, &st) == -1) {
 		if (!create) return ERRNSFD;
-		mkdir(filename, 0700);
+		mkdir(path, 0700);
 	}
 
-	strcat(filename, "" THREAD_FILENAME);
+	strcat(path, filename);
 
 	/* Check if the file exists */
-	if (stat(filename, &st) == -1 && !create) {
+	if (stat(path, &st) == -1 && !create) {
 		return ERRNSFD;
 	}
 
-	FILE *lethread_info_file = fopen(filename, mode);
+	FILE *file = fopen(path, mode);
 
-	return lethread_info_file;
+	return file;
 }
 
 /*
@@ -155,10 +155,10 @@ int8_t lethread_save(struct LeThread *lethread) {
 	FILE *lethread_info_file;
 
 	/* This trick clears the file so we don't have to have a headache with all these overwriting file stuff */
-	lethread_info_file = lethread_get_file(lethread->id, "wb", TRUE);
+	lethread_info_file = get_le_file(lethread->id, "wb", FILENAME_LETHREAD, TRUE);
 	fclose(lethread_info_file);
 
-	lethread_info_file = lethread_get_file(lethread->id, "ab", TRUE);
+	lethread_info_file = get_le_file(lethread->id, "ab", FILENAME_LETHREAD, TRUE);
 
 	fwrite(&lethread->id, sizeof(lethread->id), 1, lethread_info_file);
 	fwrite(&lethread->author_id, sizeof(lethread->author_id), 1, lethread_info_file);
@@ -179,7 +179,7 @@ int8_t lethread_save(struct LeThread *lethread) {
  */
 int8_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 	size_t topic_length;
-	FILE *lethread_info_file = lethread_get_file(lethread, "rb", FALSE);
+	FILE *lethread_info_file = get_le_file(lethread, "rb", FILENAME_LETHREAD, FALSE);
 
 	if (lethread_info_file == ERRNSFD) {
 		return ERRNSFD;
@@ -207,41 +207,6 @@ int8_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 }
 
 /*
- * Opens lemessages (with given lethread id) file with the desired mode.
- * 
- * If file/directory doesn't exist and create==TRUE, creates file/directory,
- * otherwise returns ERRNSFD.
- */
-FILE * lemessage_get_file(uint64_t lethread_id, char *mode, int8_t create) {
-	char filename[256];
-	char id_str[32];
-
-	struct stat st = {0};
-
-	memset(id_str, 0, sizeof(id_str));
-	memset(filename, 0, sizeof(filename));
-
-	sprintf(filename, DATA_DIR "/%llu/", lethread_id);
-
-	/* Check if the directory exists */
-	if (stat(filename, &st) == -1) {
-		if (!create) return ERRNSFD;
-		mkdir(filename, 0700);
-	}
-
-	strcat(filename, "" MESSAGES_FILENAME);
-
-	/* Check if the file exists */
-	if (stat(filename, &st) == -1 && !create) {
-		return ERRNSFD;
-	}
-
-	FILE *lemessages_file = fopen(filename, mode);
-
-	return lemessages_file;
-}
-
-/*
  * Saves LeMessage history to the corresponding file.
  */
 int8_t lemessages_save(struct LeThread *lethread) {
@@ -251,10 +216,10 @@ int8_t lemessages_save(struct LeThread *lethread) {
 	FILE *lemessages_file;
 
 	/* This trick clears the file so we don't have to have a headache with all these overwriting file stuff */
-	lemessages_file = lemessage_get_file(lethread->id, "wb", TRUE);
+	lemessages_file = get_le_file(lethread->id, "wb", FILENAME_LEMESSAGES, TRUE);
 	fclose(lemessages_file);
 
-	lemessages_file = lemessage_get_file(lethread->id, "ab", TRUE);
+	lemessages_file = get_le_file(lethread->id, "ab", FILENAME_LEMESSAGES, TRUE);
 
 	while (node != NULL) {
 		lemessage = node->data;
@@ -276,7 +241,7 @@ int8_t lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage) {
 	size_t text_length = strlen(lemessage->text);
 	FILE *lemessages_file;
 	
-	lemessages_file = lemessage_get_file(lethread->id, "ab", TRUE);
+	lemessages_file = get_le_file(lethread->id, "ab", FILENAME_LEMESSAGES, TRUE);
 	
 	fwrite(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
 	fwrite(&lemessage->author_id, sizeof(lemessage->author_id), 1, lemessages_file);
@@ -293,7 +258,7 @@ int8_t lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage) {
  */
 int8_t lemessages_load(struct LeThread *lethread) {
 	size_t text_length;
-	FILE *lemessages_file = lemessage_get_file(lethread->id, "rb", FALSE);
+	FILE *lemessages_file = get_le_file(lethread->id, "rb", FILENAME_LEMESSAGES, FALSE);
 	struct LeMessage lemessage = {0};
 
 	if (lemessages_file == ERRNSFD) {
@@ -315,4 +280,18 @@ int8_t lemessages_load(struct LeThread *lethread) {
 	fclose(lemessages_file);
 
 	return 0;
+}
+
+int8_t lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage) {
+	size_t text_length = strlen(lemessage->text);
+	FILE *lemessages_file;
+	
+	lemessages_file = get_le_file(lethread->id, "ab", FILENAME_LEMESSAGES, TRUE);
+	
+	fwrite(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
+	fwrite(&lemessage->author_id, sizeof(lemessage->author_id), 1, lemessages_file);
+	fwrite(&text_length, sizeof(text_length), 1, lemessages_file);
+	fwrite(lemessage->text, 1, text_length, lemessages_file);
+	
+	fclose(lemessages_file);
 }

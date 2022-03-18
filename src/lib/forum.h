@@ -45,11 +45,11 @@ int32_t              leauthor_delete(struct LeAuthor *author);
 uint64_t             lethread_message_count(struct LeThread *lethread);
 uint64_t             lethread_participant_count(struct LeThread *lethread);
 
-FILE *               lethread_get_file(uint64_t lethread_id, char *mode, int8_t create);
+FILE *               get_le_file(uint64_t lethread_id, char *mode, char *filename, int8_t create);
+
 int8_t               lethread_save(struct LeThread *lethread);
 int8_t               lethread_load(struct LeThread *lethread, uint64_t id);
 
-FILE *               lemessage_get_file(uint64_t lethread_id, char *mode, int8_t create);
 int8_t               lemessages_save(struct LeThread *lethread);
 int8_t               lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage);
 int8_t               lemessages_load(struct LeThread *lethread);
