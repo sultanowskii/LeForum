@@ -37,7 +37,7 @@ struct LeClientInfo {
  * 
  * The purpose is to avoid accessing same file from different threads.
  */
-void * lethread_manage() {
+void * lethread_query_manage() {
 	while (TRUE) {
 		while (!queue_is_empty(lethread_query_queue)) {
 			lethread_save(queue_pop(lethread_query_queue));
@@ -50,16 +50,16 @@ void * lethread_manage() {
  * and requests.
  */
 void * handle_client(void *arg) {
-	char buffer[256];
 	struct LeClientInfo *client_info = (struct LeClientInfo *)arg;
 	struct sockaddr_in *sock_information = (struct sockaddr_in *)client_info->addr;
 	
-	char ip[128];
-	int16_t port = ntohs(&(sock_information->sin_port));
-	inet_ntop(AF_INET, &(sock_information->sin_addr), ip, 128);
+	char client_ip[128];
+
+	int16_t client_port = ntohs(&(sock_information->sin_port));
+	inet_ntop(AF_INET, &(sock_information->sin_addr), client_ip, 128);
 	
-	sendf(client_info->fd, "Hi! fd=%d, addr=%s:%d\n", client_info->fd, ip, port);
-	printf("Hi! fd=%d, addr=%s:%d\n", client_info->fd, ip, port);
+	sendf(client_info->fd, "Hi! fd=%d, addr=%s:%d\n", client_info->fd, client_ip, client_port);
+	printf("Hi! fd=%d, addr=%s:%d\n", client_info->fd, client_ip, client_port);
 
 	close(client_info->fd);
 }
@@ -71,8 +71,8 @@ int32_t main(int32_t argc, char *argv[]) {
 	struct sockaddr client_addr;
 	socklen_t client_addr_len;
 	
-	pthread_t client_thread;
-	pthread_t lethread_manager_thread;
+	pthread_t client_handler_thread;
+	pthread_t lethread_query_manager_thread;
 
 	struct LeClientInfo *client_info;
 
@@ -80,8 +80,8 @@ int32_t main(int32_t argc, char *argv[]) {
 
 	puts("LeForum Server");
 
-	if (pthread_create(&lethread_manager_thread, NULL, lethread_manage, NULL) != 0) {
-		perror("failed to start lethread manager");
+	if (pthread_create(&lethread_query_manager_thread, NULL, lethread_query_manage, NULL) != 0) {
+		perror("failed to start lethread query manager");
 		return ERRCLIB;
 	}
 
@@ -120,7 +120,7 @@ int32_t main(int32_t argc, char *argv[]) {
 		memcpy(client_info->addr, (void *)&client_addr, client_addr_len);
 		client_info->addr_len = client_addr_len;
 		
-		if (pthread_create(&client_thread, NULL, handle_client, (void*)client_info) != 0) {
+		if (pthread_create(&client_handler_thread, NULL, handle_client, (void*)client_info) != 0) {
 			perror("failed to create client handle");
 			return ERRCLIB;
 		}
