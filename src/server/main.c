@@ -13,13 +13,18 @@
 #include "lib/constants.h"
 #include "lib/error.h"
 #include "lib/communication.h"
+#include "lib/queue.h"
+#include "lib/forum.h"
 
 
 int32_t SERVER_PORT = 7431;
 char SERVER_ADDR[] = "0.0.0.0";
 int32_t MAX_CONNECTIONS = 100;
+struct Queue *lethread_query_queue;
 
-
+/*
+ * handle_client() argument
+ */
 struct LeClientInfo {
 	int32_t fd;
 	socklen_t addr_len;
@@ -27,17 +32,34 @@ struct LeClientInfo {
 };
 
 /*
+ * Saves LeThreads (to files). This function has to be run
+ * in the separate thread.
+ * 
+ * The purpose is to avoid accessing same file from different threads.
+ */
+void * lethread_manage() {
+	while (TRUE) {
+		while (!queue_is_empty(lethread_query_queue)) {
+			lethread_save(queue_pop(lethread_query_queue));
+		}
+	}
+}
+
+/*
  * Communicates with a client, gets and sends queries
  * and requests.
  */
 void * handle_client(void *arg) {
 	char buffer[256];
-	char tmp[128];
 	struct LeClientInfo *client_info = (struct LeClientInfo *)arg;
-
-	inet_ntop(AF_INET, &(((struct sockaddr_in *)client_info->addr)->sin_addr), tmp, 128);
-	sendf(client_info->fd, "Hi! fd=%d, addr=%s\n", client_info->fd, tmp);
-	printf("Hi! fd=%d addr=%s\n", client_info->fd, tmp);
+	struct sockaddr_in *sock_information = (struct sockaddr_in *)client_info->addr;
+	
+	char ip[128];
+	int16_t port = ntohs(&(sock_information->sin_port));
+	inet_ntop(AF_INET, &(sock_information->sin_addr), ip, 128);
+	
+	sendf(client_info->fd, "Hi! fd=%d, addr=%s:%d\n", client_info->fd, ip, port);
+	printf("Hi! fd=%d, addr=%s:%d\n", client_info->fd, ip, port);
 
 	close(client_info->fd);
 }
@@ -48,11 +70,20 @@ int32_t main(int32_t argc, char *argv[]) {
 	struct sockaddr_in server_addr;
 	struct sockaddr client_addr;
 	socklen_t client_addr_len;
+	
 	pthread_t client_thread;
+	pthread_t lethread_manager_thread;
 
 	struct LeClientInfo *client_info;
 
+	lethread_query_queue = queue_create();
+
 	puts("LeForum Server");
+
+	if (pthread_create(&lethread_manager_thread, NULL, lethread_manage, NULL) != 0) {
+		perror("failed to start lethread manager");
+		return ERRCLIB;
+	}
 
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
