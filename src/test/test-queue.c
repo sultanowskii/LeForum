@@ -5,6 +5,10 @@
 
 #include "lib/queue.h"
 
+void str_delete(void *s) {
+	free(s);
+}
+
 int main() {
 	struct Queue *queue = queue_create();
 	char tmp[1024];
@@ -32,7 +36,7 @@ int main() {
 	printf("Finished! queue_is_emtpy()=%llu\n", queue_is_empty(queue));
 
 	puts("Destroying queue...");
-	queue_delete(queue);
+	queue_delete(queue, str_delete);
 
 	return 0;
 }

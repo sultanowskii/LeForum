@@ -16,13 +16,13 @@ struct Queue * queue_create() {
 /*
  * Safely deletes the Queue and all the elements.
  */
-int8_t queue_delete(struct Queue *queue) {
+int8_t queue_delete(struct Queue *queue, void (*delete_func)(void *)) {
 	struct QueueNode *node = queue->first;
 	struct QueueNode *next;
 
 	while (node != NULL) {
 		next = node->next;
-		free(node->data);
+		delete_func(node->data);
 		free(node);
 		node = next;
 	}

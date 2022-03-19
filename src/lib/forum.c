@@ -14,21 +14,16 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	
 	struct LeThread *new_lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
 	size_t topic_length = strlen(topic);
-
+	
 	new_lethread->id = lethread_id;
-	new_lethread->author_id = rand_uint64_t() % 0xffffffff;
 	new_lethread->first_message_id = rand_uint64_t() % 0xffffffff;
 	new_lethread->next_message_id = new_lethread->first_message_id;
-	new_lethread->first_participant_id = new_lethread->author_id;
-	new_lethread->next_participant_id = new_lethread->first_participant_id;
 	new_lethread->messages = queue_create();
-	new_lethread->participants = queue_create();
+	new_lethread->author = NULL;
 	
 	new_lethread->topic = malloc(topic_length + 1);
 	memset(new_lethread->topic, 0, topic_length + 1);
 	strncpy(new_lethread->topic, topic, topic_length);
-
-	lethread_save(new_lethread);
 
 	return new_lethread;
 }
@@ -38,8 +33,13 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
  * Safely deletes the LeThread.
  */
 int32_t lethread_delete(struct LeThread *lethread) {
-	queue_delete(lethread->messages);
-	queue_delete(lethread->participants);
+	struct QueueNode *node = lethread->messages->first;
+	struct LeMessage *lemessage;
+
+	queue_delete(lethread->messages, lemessage_delete);
+	
+	leauthor_delete(lethread->author);
+	
 	free(lethread->topic);
 	free(lethread);
 
@@ -54,21 +54,14 @@ uint64_t lethread_message_count(struct LeThread *lethread) {
 }
 
 /*
- * Returns number of participants in the given lethread
- */
-uint64_t lethread_participant_count(struct LeThread *lethread) {
-	return lethread->next_participant_id - lethread->first_participant_id;
-}
-
-/*
  * Creates a new LeMessage and adds it to the given thread.
  */
-struct LeMessage * lemessage_create(struct LeThread *lethread, uint64_t author_id, char *text) {
+struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, int8_t by_lethread_author) {
 	struct LeMessage *new_lemessage = (struct LeMessage *)malloc(sizeof(struct LeMessage));
 	size_t length = strlen(text) + 1;
 
-	new_lemessage->author_id = author_id;
 	new_lemessage->id = lethread->next_message_id++;
+	new_lemessage->by_lethread_author = by_lethread_author;
 
 	new_lemessage->text = malloc(length);
 	new_lemessage->text[length - 1] = 0;
@@ -95,12 +88,12 @@ int32_t lemessage_delete(struct LeMessage *message) {
 struct LeAuthor * leauthor_create(struct LeThread *lethread, int8_t create_token) {
 	struct LeAuthor *new_leauthor = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
 
-	new_leauthor->id = lethread->next_participant_id;
+	new_leauthor->id = rand_uint64_t() % 0xffffffff;
 	new_leauthor->token = malloc(TOKEN_LENGTH + 1);
 	memset(new_leauthor->token, 0, TOKEN_LENGTH + 1);
 	if (create_token) rand_string(new_leauthor->token, TOKEN_LENGTH);
 
-	queue_push(lethread->participants, new_leauthor, sizeof(struct LeAuthor));
+	lethread->author = new_leauthor;
 
 	return new_leauthor;
 }
@@ -163,11 +156,9 @@ int8_t lethread_save(struct LeThread *lethread) {
 	lethread_info_file = get_le_file(lethread->id, "ab", FILENAME_LETHREAD, TRUE);
 
 	fwrite(&lethread->id, sizeof(lethread->id), 1, lethread_info_file);
-	fwrite(&lethread->author_id, sizeof(lethread->author_id), 1, lethread_info_file);
+	fwrite(&lethread->author->id, sizeof(lethread->author->id), 1, lethread_info_file);
 	fwrite(&lethread->first_message_id, sizeof(lethread->first_message_id), 1, lethread_info_file);
 	fwrite(&lethread->next_message_id, sizeof(lethread->next_message_id), 1, lethread_info_file);
-	fwrite(&lethread->first_participant_id, sizeof(lethread->first_participant_id), 1, lethread_info_file);
-	fwrite(&lethread->next_participant_id, sizeof(lethread->next_participant_id), 1, lethread_info_file);
 	fwrite(&topic_length, sizeof(topic_length), 1, lethread_info_file);
 	fwrite(lethread->topic, 1, topic_length, lethread_info_file);
 
@@ -188,14 +179,12 @@ int8_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 	}
 
 	lethread->messages = queue_create();
-	lethread->participants = queue_create();
+	lethread->author = leauthor_create(lethread, FALSE);
 
 	fread(&lethread->id, sizeof(lethread->id), 1, lethread_info_file);
-	fread(&lethread->author_id, sizeof(lethread->author_id), 1, lethread_info_file);
+	fread(&lethread->author->id, sizeof(lethread->author->id), 1, lethread_info_file);
 	fread(&lethread->first_message_id, sizeof(lethread->first_message_id), 1, lethread_info_file);
 	fread(&lethread->next_message_id, sizeof(lethread->next_message_id), 1, lethread_info_file);
-	fread(&lethread->first_participant_id, sizeof(lethread->first_participant_id), 1, lethread_info_file);
-	fread(&lethread->next_participant_id, sizeof(lethread->next_participant_id), 1, lethread_info_file);
 	fread(&topic_length, sizeof(topic_length), 1, lethread_info_file);
 	
 	lethread->topic = malloc(topic_length + 1);
@@ -227,7 +216,7 @@ int8_t lemessages_save(struct LeThread *lethread) {
 		lemessage = node->data;
 		text_length = strlen(lemessage->text);
 		fwrite(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
-		fwrite(&lemessage->author_id, sizeof(lemessage->author_id), 1, lemessages_file);
+		fwrite(&lemessage->by_lethread_author, sizeof(lemessage->by_lethread_author), 1, lemessages_file);
 		fwrite(&text_length, sizeof(text_length), 1, lemessages_file);
 		fwrite(lemessage->text, 1, text_length, lemessages_file);
 		node = node->next;
@@ -246,7 +235,7 @@ int8_t lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage) {
 	lemessages_file = get_le_file(lethread->id, "ab", FILENAME_LEMESSAGES, TRUE);
 	
 	fwrite(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
-	fwrite(&lemessage->author_id, sizeof(lemessage->author_id), 1, lemessages_file);
+	fwrite(&lemessage->by_lethread_author, sizeof(lemessage->by_lethread_author), 1, lemessages_file);
 	fwrite(&text_length, sizeof(text_length), 1, lemessages_file);
 	fwrite(lemessage->text, 1, text_length, lemessages_file);
 	
@@ -269,7 +258,7 @@ int8_t lemessages_load(struct LeThread *lethread) {
 
 	for (size_t i = 0; i < lethread_message_count(lethread); ++i) {
 		fread(&lemessage.id, sizeof(lemessage.id), 1, lemessages_file);
-		fread(&lemessage.author_id, sizeof(lemessage.author_id), 1, lemessages_file);
+		fread(&lemessage.by_lethread_author, sizeof(lemessage.by_lethread_author), 1, lemessages_file);
 		fread(&text_length, sizeof(text_length), 1, lemessages_file);
 
 		lemessage.text = malloc(text_length + 1);
@@ -287,7 +276,7 @@ int8_t lemessages_load(struct LeThread *lethread) {
 /*
  * Loads the author of the lethread from the corresponding file
  */
-int8_t leauthors_load(struct LeThread *lethread) {
+int8_t leauthor_load(struct LeThread *lethread) {
 	struct LeAuthor *leauthor;
 	FILE *leauthor_file = get_le_file(lethread->id, "rb", FILENAME_LEAUTHOR, FALSE);
 	
@@ -307,15 +296,13 @@ int8_t leauthors_load(struct LeThread *lethread) {
  * Saves author of the lethread to the corresponding file
  */
 int8_t leauthor_save(struct LeThread *lethread) {
-	struct LeAuthor *leauthor = (struct LeAuthor *)lethread->participants->first->data;
-	
-	FILE *leauthor_file = get_le_file(lethread->id, "wb", FILENAME_LEAUTHOR, TRUE);
+	FILE *leauthor_file = get_le_file(lethread->author->id, "wb", FILENAME_LEAUTHOR, TRUE);
 	fclose(leauthor_file);
 
-	leauthor_file = get_le_file(lethread->id, "ab", FILENAME_LEAUTHOR, TRUE);
+	leauthor_file = get_le_file(lethread->author->id, "ab", FILENAME_LEAUTHOR, TRUE);
 	
-	fwrite(&leauthor->id, sizeof(leauthor->id), 1, leauthor_file);
-	fwrite(leauthor->token, TOKEN_LENGTH, 1, leauthor_file);
+	fwrite(&lethread->author->id, sizeof(lethread->author->id), 1, leauthor_file);
+	fwrite(lethread->author->token, TOKEN_LENGTH, 1, leauthor_file);
 
 	fclose(leauthor_file);
 }

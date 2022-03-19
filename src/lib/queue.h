@@ -19,7 +19,7 @@ struct QueueNode {
 };
 
 struct Queue *     queue_create();
-int8_t             queue_delete(struct Queue *queue);
+int8_t             queue_delete(struct Queue *queue, void (*delete_func)(void *));
 int32_t            queue_push(struct Queue *queue, void *data, size_t length);
 void *             queue_pop(struct Queue *queue);
 int8_t             queue_is_empty(struct Queue *queue);

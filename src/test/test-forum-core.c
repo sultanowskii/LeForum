@@ -11,7 +11,7 @@
 #include "lib/queue.h"
 
 void lethread_info(struct LeThread *lethread) {
-	printf("LeThread: id=%llu author_id=%llu first_message_id=%llu next_message_id=%llu: %s\n", lethread->id, lethread->author_id, lethread->first_message_id, lethread->next_message_id, lethread->topic);
+	printf("LeThread: id=%llu author_id=%llu first_message_id=%llu next_message_id=%llu: %s\n", lethread->id, lethread->author->id, lethread->first_message_id, lethread->next_message_id, lethread->topic);
 }
 
 void lethread_message_history(struct LeThread *lethread) {
@@ -23,7 +23,7 @@ void lethread_message_history(struct LeThread *lethread) {
 	printf("==== History ====\n");
 	while (node != NULL) {
 		message = (struct LeMessage *)node->data;
-		printf("#%llu: %s\n", message->author_id, message->text);
+		printf("#%llu: %s\n", message->id, message->text);
 		node = node->next;
 	}
 	printf("=================\n");
@@ -39,7 +39,9 @@ int main() {
 	char *text = malloc(1024);
 	size_t length = 1023;
 
-	leauthor_create(lethread, TRUE);
+	struct LeAuthor *leauthor = leauthor_create(lethread, TRUE);
+
+	lethread_save(lethread);
 
 	/* create dir if it doesn't exist */
 	if (stat(".data/", &st) == -1) {
@@ -54,7 +56,7 @@ int main() {
 		getline(&text, &length, stdin);
 		text[strlen(text) - 1] = 0;
 		
-		message = lemessage_create(lethread, author_id, text);
+		message = lemessage_create(lethread, text, rand_uint64_t() % 2);
 		lemessage_save(lethread, message);
 		lethread_save(lethread);
 		lethread_message_history(lethread);
@@ -69,8 +71,8 @@ int main() {
 	lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
 	lethread_load(lethread, lethread_id);
 	lemessages_load(lethread);
-	leauthors_load(lethread);
-	printf("LeAuthor: id=%llu, token=%s !!!\n", ((struct LeAuthor *)lethread->participants->first->data)->id, ((struct LeAuthor *)lethread->participants->first->data)->token);
+	leauthor_load(lethread);
+	printf("LeAuthor: id=%llu, token=%s !!!\n", lethread->author->id, lethread->author->token);
 	lethread_info(lethread);
 	lethread_message_history(lethread);
 	lethread_delete(lethread);
