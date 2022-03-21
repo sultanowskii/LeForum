@@ -5,7 +5,7 @@
  * If there is, then returns LESTATUS_EXST.
  */
 struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
-	// If the lethread file already exists, then nothing should be done
+	/* If the lethread file already exists, then nothing should be done */
 	FILE* lethread_file = get_le_file(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
 	if (lethread_file != LESTATUS_NSFD) {
 		fclose(lethread_file);
