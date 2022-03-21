@@ -18,6 +18,7 @@
 #include "lib/queue.h"
 #include "lib/forum.h"
 
+#define PACKET_SIZE 16 * 1024
 
 int32_t SERVER_PORT = 7431;
 char SERVER_ADDR[] = "0.0.0.0";
@@ -103,8 +104,8 @@ void leclientinfo_delete(struct LeClientInfo *clinfo) {
 void * handle_client(void *arg) {
 	struct LeClientInfo *client_info = (struct LeClientInfo *)arg;
 
-	char cl_data[9 * 1024];
-	char sv_data[9 * 1024];
+	char cl_data[PACKET_SIZE];
+	char sv_data[PACKET_SIZE];
 
 	int64_t cl_data_size = 0;
 	int64_t sv_data_size = 0;
@@ -121,7 +122,7 @@ void * handle_client(void *arg) {
 	/* ================================= Example end ==================================== */
 
 	while (TRUE) {
-		cl_data_size = recv(client_info->fd, cl_data, 9 * 1024 - 1, NULL);
+		cl_data_size = recv(client_info->fd, cl_data, PACKET_SIZE, NULL);
 
 		/* Timeout/connection closed */
 		if (cl_data_size < 0) {
