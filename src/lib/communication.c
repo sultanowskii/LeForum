@@ -11,6 +11,6 @@ ssize_t sendf(int32_t fd, char *str, ...) {
 	result = send(fd, buffer, strlen(buffer), 0);
 
 	va_end(args);
-	
+
 	return result;
 }

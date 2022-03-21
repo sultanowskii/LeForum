@@ -102,13 +102,13 @@ void leclientinfo_delete(struct LeClientInfo *clinfo) {
  */
 void * handle_client(void *arg) {
 	struct LeClientInfo *client_info = (struct LeClientInfo *)arg;
-	
+
 	char cl_data[9 * 1024];
 	char sv_data[9 * 1024];
 
 	int64_t cl_data_size = 0;
 	int64_t sv_data_size = 0;
-	
+
 	/* =================================== Example ====================================== */
 	char client_ip[128];
 
@@ -122,7 +122,7 @@ void * handle_client(void *arg) {
 
 	while (TRUE) {
 		cl_data_size = recv(client_info->fd, cl_data, 9 * 1024 - 1, NULL);
-		
+
 		/* Timeout/connection closed */
 		if (cl_data_size < 0) {
 			break;
@@ -139,7 +139,7 @@ int32_t main(int32_t argc, char *argv[]) {
 	struct sockaddr client_addr;
 	socklen_t client_addr_len;
 	socklen_t socakddr_in_len = sizeof(struct sockaddr_in);
-	
+
 	pthread_t client_handler_thread;
 	pthread_t lethread_query_manager_thread;
 	pthread_t lemessage_query_manager_thread;
@@ -192,7 +192,7 @@ int32_t main(int32_t argc, char *argv[]) {
 
 	while (TRUE) {
 		client_fd = accept(server_fd, &client_addr, &client_addr_len);
-		
+
 		if (client_fd < 0) {
 			perror("accept() failed");
 			return ERRCLIB;

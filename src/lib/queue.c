@@ -26,7 +26,7 @@ int8_t queue_delete(struct Queue *queue, void (*delete_func)(void *)) {
 		free(node);
 		node = next;
 	}
-	
+
 	free(queue);
 
 	return 0;

@@ -11,16 +11,16 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 		fclose(lethread_file);
 		return ERREXST;
 	}
-	
+
 	struct LeThread *new_lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
 	size_t topic_length = strlen(topic);
-	
+
 	new_lethread->id = lethread_id;
 	new_lethread->first_message_id = rand_uint64_t() % 0xffffffff;
 	new_lethread->next_message_id = new_lethread->first_message_id;
 	new_lethread->messages = queue_create();
 	new_lethread->author = NULL;
-	
+
 	new_lethread->topic = malloc(topic_length + 1);
 	memset(new_lethread->topic, 0, topic_length + 1);
 	strncpy(new_lethread->topic, topic, topic_length);
@@ -37,9 +37,9 @@ int32_t lethread_delete(struct LeThread *lethread) {
 	struct LeMessage *lemessage;
 
 	queue_delete(lethread->messages, lemessage_delete);
-	
+
 	leauthor_delete(lethread->author);
-	
+
 	free(lethread->topic);
 	free(lethread);
 
@@ -186,10 +186,10 @@ int8_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 	fread(&lethread->first_message_id, sizeof(lethread->first_message_id), 1, lethread_info_file);
 	fread(&lethread->next_message_id, sizeof(lethread->next_message_id), 1, lethread_info_file);
 	fread(&topic_length, sizeof(topic_length), 1, lethread_info_file);
-	
+
 	lethread->topic = malloc(topic_length + 1);
 	memset(lethread->topic, 0, topic_length + 1);
-	
+
 	fread(lethread->topic, 1, topic_length, lethread_info_file);
 
 	fclose(lethread_info_file);
@@ -231,14 +231,14 @@ int8_t lemessages_save(struct LeThread *lethread) {
 int8_t lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage) {
 	size_t text_length = strlen(lemessage->text);
 	FILE *lemessages_file;
-	
+
 	lemessages_file = get_le_file(lethread->id, "ab", FILENAME_LEMESSAGES, TRUE);
-	
+
 	fwrite(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
 	fwrite(&lemessage->by_lethread_author, sizeof(lemessage->by_lethread_author), 1, lemessages_file);
 	fwrite(&text_length, sizeof(text_length), 1, lemessages_file);
 	fwrite(lemessage->text, 1, text_length, lemessages_file);
-	
+
 	fclose(lemessages_file);
 }
 
@@ -279,17 +279,17 @@ int8_t lemessages_load(struct LeThread *lethread) {
 int8_t leauthor_load(struct LeThread *lethread) {
 	struct LeAuthor *leauthor;
 	FILE *leauthor_file = get_le_file(lethread->id, "rb", FILENAME_LEAUTHOR, FALSE);
-	
+
 	if (leauthor_file == ERRNSFD) {
 		return ERRNSFD;
 	}
 
 	leauthor = leauthor_create(lethread, FALSE);
-	
+
 	fread(&leauthor->id, sizeof(leauthor->id), 1, leauthor_file);
 	fread(leauthor->token, 1, TOKEN_LENGTH, leauthor_file);
 
-	fclose(leauthor_file);	
+	fclose(leauthor_file);
 }
 
 /*
@@ -300,7 +300,7 @@ int8_t leauthor_save(struct LeThread *lethread) {
 	fclose(leauthor_file);
 
 	leauthor_file = get_le_file(lethread->author->id, "ab", FILENAME_LEAUTHOR, TRUE);
-	
+
 	fwrite(&lethread->author->id, sizeof(lethread->author->id), 1, leauthor_file);
 	fwrite(lethread->author->token, TOKEN_LENGTH, 1, leauthor_file);
 

@@ -17,9 +17,9 @@ void lethread_info(struct LeThread *lethread) {
 void lethread_message_history(struct LeThread *lethread) {
 	struct QueueNode *node;
 	struct LeMessage *message;
-	
+
 	node = lethread->messages->first;
-	
+
 	printf("==== History ====\n");
 	while (node != NULL) {
 		message = (struct LeMessage *)node->data;
@@ -51,11 +51,11 @@ int main() {
 	for (size_t i = 0; i < 5; i++) {
 		lethread_info(lethread);
 		printf("author_id text:\n > ");
-		
+
 		scanf("%llu ", &author_id);
 		getline(&text, &length, stdin);
 		text[strlen(text) - 1] = 0;
-		
+
 		message = lemessage_create(lethread, text, rand_uint64_t() % 2);
 		lemessage_save(lethread, message);
 		lethread_save(lethread);
