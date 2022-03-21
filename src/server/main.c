@@ -34,6 +34,11 @@ struct Queue *lemessage_query_queue;
 struct Queue *leauthor_query_queue;
 
 /*
+ * To free() all the LeClientInfo structs in the end.
+ */
+struct Queue *leclientinfo_queue;
+
+/*
  * handle_client() argument
  */
 struct LeClientInfo {
@@ -85,6 +90,13 @@ void * leauthor_query_manage() {
 }
 
 /*
+ * Used by queue_delete()
+ */
+void leclientinfo_delete(struct LeClientInfo *clinfo) {
+	free(clinfo);
+}
+
+/*
  * Communicates with a client, gets and sends queries
  * and requests.
  */
@@ -133,11 +145,12 @@ int32_t main(int32_t argc, char *argv[]) {
 	pthread_t lemessage_query_manager_thread;
 	pthread_t leauthor_query_manager_thread;
 
-	struct LeClientInfo *client_info;
+	struct LeClientInfo *leclientinfo;
 
 	lethread_query_queue = queue_create();
 	lemessage_query_queue = queue_create();
 	leauthor_query_queue = queue_create();
+	leclientinfo_queue = queue_create();
 
 	puts("LeForum Server");
 
@@ -185,24 +198,28 @@ int32_t main(int32_t argc, char *argv[]) {
 			return ERRCLIB;
 		}
 
-		client_info = malloc(sizeof(struct LeClientInfo));
-		client_info->fd = client_fd;
+		leclientinfo = malloc(sizeof(struct LeClientInfo));
+		leclientinfo->fd = client_fd;
 
-		if (getpeername(client_fd, &client_info->addr, &socakddr_in_len) < 0) {
+		if (getpeername(client_fd, &leclientinfo->addr, &socakddr_in_len) < 0) {
 			perror("getpeername()");
 			return ERRCLIB;
 		}
+
+		queue_push(leclientinfo_queue, leclientinfo, sizeof(leclientinfo));
 
 		if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&TIMEOUT, sizeof(TIMEOUT)) < 0) {
 			perror("setsockopt() failed");
 			return ERRCLIB;
 		}
 
-		if (pthread_create(&client_handler_thread, NULL, handle_client, (void*)client_info) != 0) {
+		if (pthread_create(&client_handler_thread, NULL, handle_client, (void*)leclientinfo) != 0) {
 			perror("failed to create client handle");
 			return ERRCLIB;
 		}
 	}
+
+	queue_delete(leclientinfo_queue, leclientinfo_delete);
 
 	return 0;
 }
