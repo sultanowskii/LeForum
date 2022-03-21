@@ -4,13 +4,14 @@
 #include <stdint.h>
 
 #include <unistd.h>
+#include <sys/time.h>
 
 #include <pthread.h>
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#include <sys/time.h>
+#include <signal.h>
 
 #include "lib/constants.h"
 #include "lib/status.h"
@@ -24,6 +25,11 @@ int32_t SERVER_PORT = 7431;
 char SERVER_ADDR[] = "0.0.0.0";
 int32_t MAX_CONNECTIONS = 100;
 struct timeval TIMEOUT = {3, 0};
+
+/*
+ * Flag for threads
+ */
+bool_t program_on_finish = FALSE;
 
 /*
  * Query queues
@@ -55,8 +61,8 @@ struct LeClientInfo {
  * The purpose is to avoid accessing same file from different threads.
  */
 void * lethread_query_manage() {
-	while (TRUE) {
-		while (!queue_is_empty(lethread_query_queue)) {
+	while (!program_on_finish) {
+		while (!queue_is_empty(lethread_query_queue) && !program_on_finish) {
 			lethread_save(queue_pop(lethread_query_queue));
 		}
 	}
@@ -69,8 +75,8 @@ void * lethread_query_manage() {
  * The purpose is to avoid accessing same file from different threads.
  */
 void * lemessage_query_manage() {
-	while (TRUE) {
-		while (!queue_is_empty(lemessage_query_queue)) {
+	while (!program_on_finish) {
+		while (!queue_is_empty(lemessage_query_queue) && !program_on_finish) {
 			lemessages_save(queue_pop(lemessage_query_queue));
 		}
 	}
@@ -83,8 +89,8 @@ void * lemessage_query_manage() {
  * The purpose is to avoid accessing same file from different threads.
  */
 void * leauthor_query_manage() {
-	while (TRUE) {
-		while (!queue_is_empty(leauthor_query_queue)) {
+	while (!program_on_finish) {
+		while (!queue_is_empty(leauthor_query_queue) && !program_on_finish) {
 			leauthor_save(queue_pop(leauthor_query_queue));
 		}
 	}
@@ -121,7 +127,7 @@ void * handle_client(void *arg) {
 
 	/* ================================= Example end ==================================== */
 
-	while (TRUE) {
+	while (!program_on_finish) {
 		cl_data_size = recv(client_info->fd, cl_data, PACKET_SIZE, NULL);
 
 		/* Timeout/connection closed */
@@ -131,8 +137,32 @@ void * handle_client(void *arg) {
 	}
 
 	close(client_info->fd);
+	pthread_exit(0);
 }
 
+/* 
+ * Clean up and exit if some signal occurs
+ */
+void signal_handler(const int signum) {
+	cleanup();
+	exit(signum);
+}
+
+/* 
+ * free()s allocated data
+ */
+void cleanup() {
+	static bool_t cleaned = FALSE;
+	program_on_finish = TRUE;
+	if (!cleaned) {
+		cleaned = TRUE;
+		puts("meme");
+		queue_delete(leclientinfo_queue, leclientinfo_delete);
+		queue_delete(lethread_query_queue, lethread_delete);
+		queue_delete(lemessage_query_queue, lethread_delete);
+		queue_delete(leauthor_query_queue, lethread_delete);
+	}
+}
 
 int32_t main(int32_t argc, char *argv[]) {
 	int32_t client_fd, server_fd;
@@ -152,6 +182,10 @@ int32_t main(int32_t argc, char *argv[]) {
 	lemessage_query_queue = queue_create();
 	leauthor_query_queue = queue_create();
 	leclientinfo_queue = queue_create();
+
+	atexit(cleanup);
+	signal(SIGTERM, cleanup);
+	signal(SIGINT, signal_handler);
 
 	puts("LeForum Server");
 
@@ -219,8 +253,6 @@ int32_t main(int32_t argc, char *argv[]) {
 			return LESTATUS_CLIB;
 		}
 	}
-
-	queue_delete(leclientinfo_queue, leclientinfo_delete);
 
 	return 0;
 }
