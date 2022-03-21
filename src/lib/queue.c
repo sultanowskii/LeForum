@@ -16,7 +16,7 @@ struct Queue * queue_create() {
 /*
  * Safely deletes the Queue and all the elements.
  */
-int8_t queue_delete(struct Queue *queue, void (*delete_func)(void *)) {
+status_t queue_delete(struct Queue *queue, void (*delete_func)(void *)) {
 	struct QueueNode *node = queue->first;
 	struct QueueNode *next;
 
@@ -29,13 +29,13 @@ int8_t queue_delete(struct Queue *queue, void (*delete_func)(void *)) {
 
 	free(queue);
 
-	return 0;
+	return LESTATUS_OK;
 };
 
 /*
  * Adds a new element to the end of the Queue.
  */
-int32_t queue_push(struct Queue *queue, void *data, size_t length) {
+status_t queue_push(struct Queue *queue, void *data, size_t length) {
 	struct QueueNode *new_node = (struct QueueNode *)malloc(sizeof(struct QueueNode));
 
 	new_node->data = malloc(length);
@@ -55,7 +55,7 @@ int32_t queue_push(struct Queue *queue, void *data, size_t length) {
 
 	queue->size++;
 
-	return 0;
+	return LESTATUS_OK;
 }
 
 /*
@@ -90,6 +90,6 @@ void * queue_pop(struct Queue *queue) {
 /* 
  * Checks whether queue is empty or not
  */
-int8_t queue_is_empty(struct Queue *queue) {
+bool_t queue_is_empty(struct Queue *queue) {
 	return queue->size == 0;
 }

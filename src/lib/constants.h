@@ -9,3 +9,5 @@
 #define FILENAME_LETHREAD "lethreadinfo"
 #define FILENAME_LEMESSAGES "lemessages"
 #define FILENAME_LEAUTHOR "leauthor"
+
+typedef int8_t bool_t;

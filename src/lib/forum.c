@@ -2,14 +2,14 @@
 
 /*
  * Creates new LeThread, if there is no one with provided id.
- * If there is, then returns ERREXST.
+ * If there is, then returns LESTATUS_EXST.
  */
 struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	// If the lethread file already exists, then nothing should be done
 	FILE* lethread_file = get_le_file(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
-	if (lethread_file != ERRNSFD) {
+	if (lethread_file != LESTATUS_NSFD) {
 		fclose(lethread_file);
-		return ERREXST;
+		return LESTATUS_EXST;
 	}
 
 	struct LeThread *new_lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
@@ -32,7 +32,7 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 /*
  * Safely deletes the LeThread.
  */
-int32_t lethread_delete(struct LeThread *lethread) {
+status_t lethread_delete(struct LeThread *lethread) {
 	struct QueueNode *node = lethread->messages->first;
 	struct LeMessage *lemessage;
 
@@ -43,7 +43,7 @@ int32_t lethread_delete(struct LeThread *lethread) {
 	free(lethread->topic);
 	free(lethread);
 
-	return 0;
+	return LESTATUS_OK;
 }
 
 /*
@@ -56,7 +56,7 @@ uint64_t lethread_message_count(struct LeThread *lethread) {
 /*
  * Creates a new LeMessage and adds it to the given thread.
  */
-struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, int8_t by_lethread_author) {
+struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_t by_lethread_author) {
 	struct LeMessage *new_lemessage = (struct LeMessage *)malloc(sizeof(struct LeMessage));
 	size_t length = strlen(text) + 1;
 
@@ -76,16 +76,17 @@ struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, int8_
 /*
  * Safely deletes LeMessage.
  */
-int32_t lemessage_delete(struct LeMessage *message) {
+status_t lemessage_delete(struct LeMessage *message) {
 	free(message->text);
 	free(message);
-	return 0;
+
+	return LESTATUS_OK;
 }
 
 /*
  * Creates a new LeAuthor and adds it to the given thread.
  */
-struct LeAuthor * leauthor_create(struct LeThread *lethread, int8_t create_token) {
+struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token) {
 	struct LeAuthor *new_leauthor = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
 
 	new_leauthor->id = rand_uint64_t() % 0xffffffff;
@@ -101,19 +102,20 @@ struct LeAuthor * leauthor_create(struct LeThread *lethread, int8_t create_token
 /*
  * Safely deletes LeAuthor.
  */
-int32_t leauthor_delete(struct LeAuthor *author) {
+status_t leauthor_delete(struct LeAuthor *author) {
 	free(author->token);
 	free(author);
-	return 0;
+
+	return LESTATUS_OK;
 }
 
 /*
  * Opens one (specified in filename) of the lethread files
  * 
  * If file/directory doesn't exist and create==TRUE, creates file/directory,
- * otherwise returns ERRNSFD.
+ * otherwise returns LESTATUS_NSFD.
  */
-FILE * get_le_file(uint64_t lethread_id, char *mode, char *filename, int8_t create) {
+FILE * get_le_file(uint64_t lethread_id, char *mode, char *filename, bool_t create) {
 	char path[256];
 	char id_str[32];
 
@@ -126,7 +128,7 @@ FILE * get_le_file(uint64_t lethread_id, char *mode, char *filename, int8_t crea
 
 	/* Check if the directory exists */
 	if (stat(path, &st) == -1) {
-		if (!create) return ERRNSFD;
+		if (!create) return LESTATUS_NSFD;
 		mkdir(path, 0700);
 	}
 
@@ -134,7 +136,7 @@ FILE * get_le_file(uint64_t lethread_id, char *mode, char *filename, int8_t crea
 
 	/* Check if the file exists */
 	if (stat(path, &st) == -1 && !create) {
-		return ERRNSFD;
+		return LESTATUS_NSFD;
 	}
 
 	FILE *file = fopen(path, mode);
@@ -145,7 +147,7 @@ FILE * get_le_file(uint64_t lethread_id, char *mode, char *filename, int8_t crea
 /*
  * Saves LeThread to the corresponding file.
  */
-int8_t lethread_save(struct LeThread *lethread) {
+status_t lethread_save(struct LeThread *lethread) {
 	size_t topic_length = strlen(lethread->topic);
 	FILE *lethread_info_file;
 
@@ -163,19 +165,21 @@ int8_t lethread_save(struct LeThread *lethread) {
 	fwrite(lethread->topic, 1, topic_length, lethread_info_file);
 
 	fclose(lethread_info_file);
+
+	return LESTATUS_OK;
 }
 
 /*
  * Loads LeThread from the corresponding file.
  * 
- * If file is not found, ERRNSFD is returned.
+ * If file is not found, LESTATUS_NSFD is returned.
  */
-int8_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
+status_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 	size_t topic_length;
 	FILE *lethread_info_file = get_le_file(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
 
-	if (lethread_info_file == ERRNSFD) {
-		return ERRNSFD;
+	if (lethread_info_file == LESTATUS_NSFD) {
+		return LESTATUS_NSFD;
 	}
 
 	lethread->messages = queue_create();
@@ -194,13 +198,13 @@ int8_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 
 	fclose(lethread_info_file);
 
-	return 0;
+	return LESTATUS_OK;
 }
 
 /*
  * Saves LeMessage history to the corresponding file.
  */
-int8_t lemessages_save(struct LeThread *lethread) {
+status_t lemessages_save(struct LeThread *lethread) {
 	struct QueueNode *node = lethread->messages->first;
 	struct LeMessage *lemessage;
 	size_t text_length;
@@ -223,12 +227,14 @@ int8_t lemessages_save(struct LeThread *lethread) {
 	}
 
 	fclose(lemessages_file);
+
+	return LESTATUS_OK;
 }
 
 /*
  * Saves one LeMessage to the corresponding file.
  */
-int8_t lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage) {
+status_t lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage) {
 	size_t text_length = strlen(lemessage->text);
 	FILE *lemessages_file;
 
@@ -240,20 +246,22 @@ int8_t lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage) {
 	fwrite(lemessage->text, 1, text_length, lemessages_file);
 
 	fclose(lemessages_file);
+
+	return LESTATUS_OK;
 }
 
 /*
  * Loads LeMessage history from the corresponding file to the lethread object.
  * 
- * If file is not found, ERRNSFD is returned.
+ * If file is not found, LESTATUS_NSFD is returned.
  */
-int8_t lemessages_load(struct LeThread *lethread) {
+status_t lemessages_load(struct LeThread *lethread) {
 	size_t text_length;
 	FILE *lemessages_file = get_le_file(lethread->id, "rb", FILENAME_LEMESSAGES, FALSE);
 	struct LeMessage lemessage = {0};
 
-	if (lemessages_file == ERRNSFD) {
-		return ERRNSFD;
+	if (lemessages_file == LESTATUS_NSFD) {
+		return LESTATUS_NSFD;
 	}
 
 	for (size_t i = 0; i < lethread_message_count(lethread); ++i) {
@@ -270,18 +278,18 @@ int8_t lemessages_load(struct LeThread *lethread) {
 
 	fclose(lemessages_file);
 
-	return 0;
+	return LESTATUS_OK;
 }
 
 /*
  * Loads the author of the lethread from the corresponding file
  */
-int8_t leauthor_load(struct LeThread *lethread) {
+status_t leauthor_load(struct LeThread *lethread) {
 	struct LeAuthor *leauthor;
 	FILE *leauthor_file = get_le_file(lethread->id, "rb", FILENAME_LEAUTHOR, FALSE);
 
-	if (leauthor_file == ERRNSFD) {
-		return ERRNSFD;
+	if (leauthor_file == LESTATUS_NSFD) {
+		return LESTATUS_NSFD;
 	}
 
 	leauthor = leauthor_create(lethread, FALSE);
@@ -290,12 +298,14 @@ int8_t leauthor_load(struct LeThread *lethread) {
 	fread(leauthor->token, 1, TOKEN_LENGTH, leauthor_file);
 
 	fclose(leauthor_file);
+
+	return LESTATUS_OK;
 }
 
 /*
  * Saves author of the lethread to the corresponding file
  */
-int8_t leauthor_save(struct LeThread *lethread) {
+status_t leauthor_save(struct LeThread *lethread) {
 	FILE *leauthor_file = get_le_file(lethread->author->id, "wb", FILENAME_LEAUTHOR, TRUE);
 	fclose(leauthor_file);
 
@@ -305,4 +315,6 @@ int8_t leauthor_save(struct LeThread *lethread) {
 	fwrite(lethread->author->token, TOKEN_LENGTH, 1, leauthor_file);
 
 	fclose(leauthor_file);
+
+	return LESTATUS_OK;
 }

@@ -10,12 +10,12 @@
 #include "lib/security.h"
 #include "lib/constants.h"
 #include "lib/queue.h"
-#include "lib/error.h"
+#include "lib/status.h"
 
 struct LeMessage {
 	uint64_t         id;
 	char             *text;
-	int8_t           by_lethread_author;
+	bool_t           by_lethread_author;
 };
 
 struct LeAuthor {
@@ -33,23 +33,23 @@ struct LeThread {
 };
 
 struct LeThread *    lethread_create(char *topic, uint64_t lethread_id);
-int32_t              lethread_delete(struct LeThread *lethread);
-struct LeMessage *   lemessage_create(struct LeThread *lethread, char *text, int8_t by_lethread_author);
-int32_t              lemessage_delete(struct LeMessage *message);
-struct LeAuthor *    leauthor_create(struct LeThread *lethread, int8_t create_token);
-int32_t              leauthor_delete(struct LeAuthor *author);
+status_t             lethread_delete(struct LeThread *lethread);
+struct LeMessage *   lemessage_create(struct LeThread *lethread, char *text, bool_t by_lethread_author);
+status_t             lemessage_delete(struct LeMessage *message);
+struct LeAuthor *    leauthor_create(struct LeThread *lethread, bool_t create_token);
+status_t             leauthor_delete(struct LeAuthor *author);
 
 uint64_t             lethread_message_count(struct LeThread *lethread);
 uint64_t             lethread_participant_count(struct LeThread *lethread);
 
-FILE *               get_le_file(uint64_t lethread_id, char *mode, char *filename, int8_t create);
+FILE *               get_le_file(uint64_t lethread_id, char *mode, char *filename, bool_t create);
 
-int8_t               lethread_save(struct LeThread *lethread);
-int8_t               lethread_load(struct LeThread *lethread, uint64_t id);
+status_t             lethread_save(struct LeThread *lethread);
+status_t             lethread_load(struct LeThread *lethread, uint64_t id);
 
-int8_t               lemessages_save(struct LeThread *lethread);
-int8_t               lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage);
-int8_t               lemessages_load(struct LeThread *lethread);
+status_t             lemessages_save(struct LeThread *lethread);
+status_t             lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage);
+status_t             lemessages_load(struct LeThread *lethread);
 
-int8_t               leauthor_load(struct LeThread *lethread);
-int8_t               leauthor_save(struct LeThread *lethread);
+status_t             leauthor_load(struct LeThread *lethread);
+status_t             leauthor_save(struct LeThread *lethread);

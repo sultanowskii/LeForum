@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "lib/queue.h"
+#include "lib/status.h"
 
 void str_delete(void *s) {
 	free(s);
@@ -12,7 +13,7 @@ void str_delete(void *s) {
 int main() {
 	struct Queue *queue = queue_create();
 	char tmp[1024];
-	int8_t is_empty;
+	bool_t is_empty;
 	char *data;
 
 	memset(tmp, 0, 1024);

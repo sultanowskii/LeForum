@@ -13,7 +13,7 @@
 #include <sys/time.h>
 
 #include "lib/constants.h"
-#include "lib/error.h"
+#include "lib/status.h"
 #include "lib/communication.h"
 #include "lib/queue.h"
 #include "lib/forum.h"
@@ -156,25 +156,25 @@ int32_t main(int32_t argc, char *argv[]) {
 	puts("LeForum Server");
 
 	if (pthread_create(&lethread_query_manager_thread, NULL, lethread_query_manage, NULL) != 0) {
-		perror("failed to start lethread query manager");
-		return ERRCLIB;
+		pLESTATUS_or("failed to start lethread query manager");
+		return LESTATUS_CLIB;
 	}
 
 	if (pthread_create(&lemessage_query_manager_thread, NULL, lemessage_query_manage, NULL) != 0) {
-		perror("failed to start lemessage query manager");
-		return ERRCLIB;
+		pLESTATUS_or("failed to start lemessage query manager");
+		return LESTATUS_CLIB;
 	}
 
 	if (pthread_create(&leauthor_query_manager_thread, NULL, leauthor_query_manage, NULL) != 0) {
-		perror("failed to start leauthor query manager");
-		return ERRCLIB;
+		pLESTATUS_or("failed to start leauthor query manager");
+		return LESTATUS_CLIB;
 	}
 
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (server_fd < 0) {
-		perror("socket() failed");
-		return ERRCLIB;
+		pLESTATUS_or("socket() failed");
+		return LESTATUS_CLIB;
 	}
 
 	server_addr.sin_addr.s_addr = inet_addr(SERVER_ADDR);
@@ -182,41 +182,41 @@ int32_t main(int32_t argc, char *argv[]) {
 	server_addr.sin_port = htons(SERVER_PORT);
 
 	if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
-		perror("bind() failed");
-		return ERRCLIB;
+		pLESTATUS_or("bind() failed");
+		return LESTATUS_CLIB;
 	}
 
 	if (listen(server_fd, MAX_CONNECTIONS) != 0) {
-		perror("listen() failed");
-		return ERRCLIB;
+		pLESTATUS_or("listen() failed");
+		return LESTATUS_CLIB;
 	}
 
 	while (TRUE) {
 		client_fd = accept(server_fd, &client_addr, &client_addr_len);
 
 		if (client_fd < 0) {
-			perror("accept() failed");
-			return ERRCLIB;
+			pLESTATUS_or("accept() failed");
+			return LESTATUS_CLIB;
 		}
 
 		leclientinfo = malloc(sizeof(struct LeClientInfo));
 		leclientinfo->fd = client_fd;
 
 		if (getpeername(client_fd, &leclientinfo->addr, &socakddr_in_len) < 0) {
-			perror("getpeername()");
-			return ERRCLIB;
+			pLESTATUS_or("getpeername()");
+			return LESTATUS_CLIB;
 		}
 
 		queue_push(leclientinfo_queue, leclientinfo, sizeof(leclientinfo));
 
 		if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&TIMEOUT, sizeof(TIMEOUT)) < 0) {
-			perror("setsockopt() failed");
-			return ERRCLIB;
+			pLESTATUS_or("setsockopt() failed");
+			return LESTATUS_CLIB;
 		}
 
 		if (pthread_create(&client_handler_thread, NULL, handle_client, (void*)leclientinfo) != 0) {
-			perror("failed to create client handle");
-			return ERRCLIB;
+			pLESTATUS_or("failed to create client handle");
+			return LESTATUS_CLIB;
 		}
 	}
 
