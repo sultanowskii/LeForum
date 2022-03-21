@@ -76,6 +76,7 @@ int main() {
 	lethread_info(lethread);
 	lethread_message_history(lethread);
 	lethread_delete(lethread);
+	free(text);
 
 	puts("Done!");
 

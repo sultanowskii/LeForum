@@ -156,24 +156,24 @@ int32_t main(int32_t argc, char *argv[]) {
 	puts("LeForum Server");
 
 	if (pthread_create(&lethread_query_manager_thread, NULL, lethread_query_manage, NULL) != 0) {
-		pLESTATUS_or("failed to start lethread query manager");
+		perror("failed to start lethread query manager");
 		return LESTATUS_CLIB;
 	}
 
 	if (pthread_create(&lemessage_query_manager_thread, NULL, lemessage_query_manage, NULL) != 0) {
-		pLESTATUS_or("failed to start lemessage query manager");
+		perror("failed to start lemessage query manager");
 		return LESTATUS_CLIB;
 	}
 
 	if (pthread_create(&leauthor_query_manager_thread, NULL, leauthor_query_manage, NULL) != 0) {
-		pLESTATUS_or("failed to start leauthor query manager");
+		perror("failed to start leauthor query manager");
 		return LESTATUS_CLIB;
 	}
 
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (server_fd < 0) {
-		pLESTATUS_or("socket() failed");
+		perror("socket() failed");
 		return LESTATUS_CLIB;
 	}
 
@@ -182,12 +182,12 @@ int32_t main(int32_t argc, char *argv[]) {
 	server_addr.sin_port = htons(SERVER_PORT);
 
 	if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
-		pLESTATUS_or("bind() failed");
+		perror("bind() failed");
 		return LESTATUS_CLIB;
 	}
 
 	if (listen(server_fd, MAX_CONNECTIONS) != 0) {
-		pLESTATUS_or("listen() failed");
+		perror("listen() failed");
 		return LESTATUS_CLIB;
 	}
 
@@ -195,7 +195,7 @@ int32_t main(int32_t argc, char *argv[]) {
 		client_fd = accept(server_fd, &client_addr, &client_addr_len);
 
 		if (client_fd < 0) {
-			pLESTATUS_or("accept() failed");
+			perror("accept() failed");
 			return LESTATUS_CLIB;
 		}
 
@@ -203,19 +203,19 @@ int32_t main(int32_t argc, char *argv[]) {
 		leclientinfo->fd = client_fd;
 
 		if (getpeername(client_fd, &leclientinfo->addr, &socakddr_in_len) < 0) {
-			pLESTATUS_or("getpeername()");
+			perror("getpeername()");
 			return LESTATUS_CLIB;
 		}
 
 		queue_push(leclientinfo_queue, leclientinfo, sizeof(leclientinfo));
 
 		if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&TIMEOUT, sizeof(TIMEOUT)) < 0) {
-			pLESTATUS_or("setsockopt() failed");
+			perror("setsockopt() failed");
 			return LESTATUS_CLIB;
 		}
 
 		if (pthread_create(&client_handler_thread, NULL, handle_client, (void*)leclientinfo) != 0) {
-			pLESTATUS_or("failed to create client handle");
+			perror("failed to create client handle");
 			return LESTATUS_CLIB;
 		}
 	}
