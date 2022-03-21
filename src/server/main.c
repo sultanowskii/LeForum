@@ -10,6 +10,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include <sys/time.h>
+
 #include "lib/constants.h"
 #include "lib/error.h"
 #include "lib/communication.h"
@@ -20,19 +22,28 @@
 int32_t SERVER_PORT = 7431;
 char SERVER_ADDR[] = "0.0.0.0";
 int32_t MAX_CONNECTIONS = 100;
+struct timeval TIMEOUT = {3, 0};
+
+/*
+ * Query queues
+ * 
+ * Please note that they have to contain pointers to LeThreads.
+ */
 struct Queue *lethread_query_queue;
+struct Queue *lemessage_query_queue;
+struct Queue *leauthor_query_queue;
 
 /*
  * handle_client() argument
  */
 struct LeClientInfo {
 	int32_t fd;
-	socklen_t addr_len;
-	struct sockaddr *addr;
+	socklen_t addr_size;
+	struct sockaddr_in addr;
 };
 
 /*
- * Saves LeThreads (to files). This function has to be run
+ * Saves LeThreads (to corresponding files). This function has to be run
  * in the separate thread.
  * 
  * The purpose is to avoid accessing same file from different threads.
@@ -46,20 +57,65 @@ void * lethread_query_manage() {
 }
 
 /*
+ * Saves LeMessages (to corresponding files). This function has to be run
+ * in the separate thread.
+ * 
+ * The purpose is to avoid accessing same file from different threads.
+ */
+void * lemessage_query_manage() {
+	while (TRUE) {
+		while (!queue_is_empty(lemessage_query_queue)) {
+			lemessages_save(queue_pop(lemessage_query_queue));
+		}
+	}
+}
+
+/*
+ * Saves LeAuthors (to corresponding files). This function has to be run
+ * in the separate thread.
+ * 
+ * The purpose is to avoid accessing same file from different threads.
+ */
+void * leauthor_query_manage() {
+	while (TRUE) {
+		while (!queue_is_empty(leauthor_query_queue)) {
+			leauthor_save(queue_pop(leauthor_query_queue));
+		}
+	}
+}
+
+/*
  * Communicates with a client, gets and sends queries
  * and requests.
  */
 void * handle_client(void *arg) {
 	struct LeClientInfo *client_info = (struct LeClientInfo *)arg;
-	struct sockaddr_in *sock_information = (struct sockaddr_in *)client_info->addr;
 	
+	char cl_data[9 * 1024];
+	char sv_data[9 * 1024];
+
+	int64_t cl_data_size = 0;
+	int64_t sv_data_size = 0;
+	
+	/* =================================== Example ====================================== */
 	char client_ip[128];
 
-	int16_t client_port = ntohs(&(sock_information->sin_port));
-	inet_ntop(AF_INET, &(sock_information->sin_addr), client_ip, 128);
-	
-	sendf(client_info->fd, "Hi! fd=%d, addr=%s:%d\n", client_info->fd, client_ip, client_port);
-	printf("Hi! fd=%d, addr=%s:%d\n", client_info->fd, client_ip, client_port);
+	uint16_t client_port = ntohs(client_info->addr.sin_port);
+	inet_ntop(AF_INET, &(client_info->addr.sin_addr), client_ip, 128);
+
+	sendf(client_info->fd, "Hi! You are fd=%d, addr=%s:%hu\n", client_info->fd, client_ip, client_port);
+	printf("Connection from fd=%d, addr=%s:%hu\n", client_info->fd, client_ip, client_port);
+
+	/* ================================= Example end ==================================== */
+
+	while (TRUE) {
+		cl_data_size = recv(client_info->fd, cl_data, 9 * 1024 - 1, NULL);
+		
+		/* Timeout/connection closed */
+		if (cl_data_size < 0) {
+			break;
+		}
+	}
 
 	close(client_info->fd);
 }
@@ -70,18 +126,33 @@ int32_t main(int32_t argc, char *argv[]) {
 	struct sockaddr_in server_addr;
 	struct sockaddr client_addr;
 	socklen_t client_addr_len;
+	socklen_t socakddr_in_len = sizeof(struct sockaddr_in);
 	
 	pthread_t client_handler_thread;
 	pthread_t lethread_query_manager_thread;
+	pthread_t lemessage_query_manager_thread;
+	pthread_t leauthor_query_manager_thread;
 
 	struct LeClientInfo *client_info;
 
 	lethread_query_queue = queue_create();
+	lemessage_query_queue = queue_create();
+	leauthor_query_queue = queue_create();
 
 	puts("LeForum Server");
 
 	if (pthread_create(&lethread_query_manager_thread, NULL, lethread_query_manage, NULL) != 0) {
 		perror("failed to start lethread query manager");
+		return ERRCLIB;
+	}
+
+	if (pthread_create(&lemessage_query_manager_thread, NULL, lemessage_query_manage, NULL) != 0) {
+		perror("failed to start lemessage query manager");
+		return ERRCLIB;
+	}
+
+	if (pthread_create(&leauthor_query_manager_thread, NULL, leauthor_query_manage, NULL) != 0) {
+		perror("failed to start leauthor query manager");
 		return ERRCLIB;
 	}
 
@@ -116,10 +187,17 @@ int32_t main(int32_t argc, char *argv[]) {
 
 		client_info = malloc(sizeof(struct LeClientInfo));
 		client_info->fd = client_fd;
-		client_info->addr = malloc(sizeof(struct LeClientInfo));
-		memcpy(client_info->addr, (void *)&client_addr, client_addr_len);
-		client_info->addr_len = client_addr_len;
-		
+
+		if (getpeername(client_fd, &client_info->addr, &socakddr_in_len) < 0) {
+			perror("getpeername()");
+			return ERRCLIB;
+		}
+
+		if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&TIMEOUT, sizeof(TIMEOUT)) < 0) {
+			perror("setsockopt() failed");
+			return ERRCLIB;
+		}
+
 		if (pthread_create(&client_handler_thread, NULL, handle_client, (void*)client_info) != 0) {
 			perror("failed to create client handle");
 			return ERRCLIB;
