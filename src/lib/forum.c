@@ -318,3 +318,13 @@ status_t leauthor_save(struct LeThread *lethread) {
 
 	return LESTATUS_OK;
 }
+
+/*
+ * Checks author token for a specific lethread
+ */
+bool_t is_token_valid(struct LeThread *lethread, const char *token) {
+	if (strncmp(lethread->author->token, token, TOKEN_LENGTH) != 0) {
+		return FALSE;
+	}
+	return TRUE;
+}
