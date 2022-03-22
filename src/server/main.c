@@ -18,6 +18,7 @@
 #include "lib/communication.h"
 #include "lib/queue.h"
 #include "lib/forum.h"
+#include "lib/query.h"
 
 #define PACKET_SIZE 16 * 1024
 
@@ -109,6 +110,7 @@ void leclientinfo_delete(struct LeClientInfo *clinfo) {
  */
 void * handle_client(void *arg) {
 	struct LeClientInfo *client_info = (struct LeClientInfo *)arg;
+	struct LeCommandResult query_result;
 
 	char cl_data[PACKET_SIZE];
 	char sv_data[PACKET_SIZE];
@@ -133,6 +135,28 @@ void * handle_client(void *arg) {
 		/* Timeout/connection closed */
 		if (cl_data_size < 0) {
 			break;
+		}
+
+		query_result = query_process(cl_data, cl_data_size);
+
+		if (query_result.status == LESTATUS_OK) {
+			if (query_result.size == 0) {
+				/* send OK */
+			}
+			else {
+				if (query_result.data != NULL) {
+					/* send query_result.data */
+
+					free(query_result.data);
+					query_result.data = NULL;
+				}
+				else {
+					/* Internal error: size != 0 && data != NULL */
+				}
+			}
+		}
+		else {
+			/* send Error */
 		}
 	}
 

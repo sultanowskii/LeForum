@@ -9,9 +9,19 @@
 
 #define CMD_COUNT 2
 
+/*
+ * This function has to be implemented somewhere.
+ *
+ * The concept is that from this perspective it's unknown how
+ * do you store all the lethreads (in linked list, in array, ...?).
+ * Therefore, as a user of this interface, you have to implement
+ * this function yourself.
+ */
+struct Lethread* lethread_get_by_id(uint64_t lethread_id);
+
 struct LeCommand {
 	char *                     name;
-	struct LeCommandResult   (*query_process)(char *, size_t);
+	struct LeCommandResult   (*process)(char *, size_t);
 };
 
 struct LeCommandResult {
@@ -22,4 +32,4 @@ struct LeCommandResult {
 
 struct LeCommandResult         cmd_get_lethread(char *raw_data, size_t size);
 struct LeCommandResult         cmd_send_lemessage(char *raw_data, size_t size);
-struct LeCommandResult         query_parse(char *raw_data, size_t size);
+struct LeCommandResult         query_process(char *raw_data, size_t size);
