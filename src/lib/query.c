@@ -1,4 +1,4 @@
-#include "lib/parse.h"
+#include "lib/query.h"
 
 struct LeCommand CMDS[CMD_COUNT] = {
 	{"GET", cmd_get_lethread},
@@ -9,7 +9,7 @@ struct LeCommand CMDS[CMD_COUNT] = {
  * Parses a query, if valid, retrieves lethread information,
  * including topic, message history, etc.
  */
-status_t cmd_get_lethread(char *raw_data, size_t size) {
+struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
 
 }
 
@@ -19,22 +19,25 @@ status_t cmd_get_lethread(char *raw_data, size_t size) {
  * TOKEN is an optional argument. If not presented/not correct, then the message
  * will be posted anonymously.
  */
-status_t cmd_send_lemessage(char *raw_data, size_t size) {
+struct LeCommandResult cmd_send_lemessage(char *raw_data, size_t size) {
 	uint64_t lethread_id;
 	uint16_t text_size;
 	char *text;
 	bool_t is_author;
 	char token[TOKEN_LENGTH];
 	struct LeThread *lethread;
+	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
 
 	char *data_ptr = raw_data;
 
 	if (size < sizeof("THRID") + sizeof(lethread_id) + sizeof("TXTSZ") + sizeof(text_size) + sizeof("TXT")) {
-		return LESTATUS_ISYN;
+		result.status = LESTATUS_ISYN;
+		return result;
 	}
 
 	if (strncmp(data_ptr, "THRID", 5) != 0) {
-		return LESTATUS_ISYN;
+		result.status = LESTATUS_ISYN;
+		return result;
 	}
 	data_ptr += 5;
 
@@ -42,18 +45,21 @@ status_t cmd_send_lemessage(char *raw_data, size_t size) {
 	lethread = lethread_get_by_id(lethread_id);
 
 	if (lethread == LESTATUS_NFND) {
-		return LESTATUS_IDAT;
+		result.status = LESTATUS_IDAT;
+		return result;
 	}
 
 	if (strncmp(data_ptr, "TXTSZ", 5) != 0) {
-		return LESTATUS_ISYN;
+		result.status = LESTATUS_ISYN;
+		return result;
 	}
 	data_ptr += 5;
 
 	text_size = *(uint16_t *)data_ptr;
 
 	if (strncmp(data_ptr, "TXT", 3) != 0) {
-		return LESTATUS_ISYN;
+		result.status = LESTATUS_ISYN;
+		return result;
 	}
 	data_ptr += 3;
 
@@ -69,11 +75,21 @@ status_t cmd_send_lemessage(char *raw_data, size_t size) {
 	}
 
 	lemessage_create(lethread, text, is_author);
-	free(text);	
+	free(text);
+	
+	result.status = LESTATUS_OK;
+	result.size = 0;
+	result.data = NULL;
+
+	return result;
 }
 
-status_t query_parse(char *raw_data, size_t size) {
-	struct LeCommand cmd = {0, 0};
+/*
+ * Tries to find specified command. If found, executes it.
+ */
+struct LeCommandResult query_process(char *raw_data, size_t size) {
+	struct LeCommand cmd = {NULL, NULL};
+	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
 
 	for (size_t i = 0; i < CMD_COUNT; i++) {
 		if (strncmp(raw_data, CMDS[i].name, strlen(CMDS[i].name)) == 0) {
@@ -83,8 +99,9 @@ status_t query_parse(char *raw_data, size_t size) {
 	}
 
 	if (cmd.name == NULL || cmd.parse == NULL) {
-		return LESTATUS_ISYN;
+		result.status = LESTATUS_ISYN;
+		return result;
 	}
 
-	cmd.parse(raw_data + strlen(cmd.name), size - strlen(cmd.name));
+	return cmd.parse(raw_data + strlen(cmd.name), size - strlen(cmd.name));
 }
