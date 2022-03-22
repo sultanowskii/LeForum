@@ -98,10 +98,10 @@ struct LeCommandResult query_process(char *raw_data, size_t size) {
 		}
 	}
 
-	if (cmd.name == NULL || cmd.parse == NULL) {
+	if (cmd.name == NULL || cmd.query_process == NULL) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
 
-	return cmd.parse(raw_data + strlen(cmd.name), size - strlen(cmd.name));
+	return cmd.query_process(raw_data + strlen(cmd.name), size - strlen(cmd.name));
 }
