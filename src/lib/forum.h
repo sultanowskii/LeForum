@@ -53,3 +53,5 @@ status_t             lemessages_load(struct LeThread *lethread);
 
 status_t             leauthor_load(struct LeThread *lethread);
 status_t             leauthor_save(struct LeThread *lethread);
+
+bool_t               is_token_valid(struct LeThread *lethread, const char *token)
