@@ -6,14 +6,15 @@ struct LeCommand CMDS[CMD_COUNT] = {
 };
 
 /*
- * Retrieves lethread information, including topic, message history, etc.
+ * Parses a query, if valid, retrieves lethread information,
+ * including topic, message history, etc.
  */
 status_t cmd_get_lethread(char *raw_data, size_t size) {
 
 }
 
 /*
- * Adds a new message to the specific lethread.
+ * Parses a query, if valid, adds a new message to the specific lethread.
  *
  * TOKEN is an optional argument. If not presented/not correct, then the message
  * will be posted anonymously.
