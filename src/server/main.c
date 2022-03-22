@@ -141,14 +141,6 @@ void * handle_client(void *arg) {
 }
 
 /* 
- * Clean up and exit if some signal occurs
- */
-void signal_handler(const int signum) {
-	cleanup();
-	exit(signum);
-}
-
-/* 
  * free()s allocated data
  */
 void cleanup() {
@@ -157,11 +149,19 @@ void cleanup() {
 	if (!cleaned) {
 		cleaned = TRUE;
 		puts("meme");
-		queue_delete(leclientinfo_queue, leclientinfo_delete);
-		queue_delete(lethread_query_queue, lethread_delete);
-		queue_delete(lemessage_query_queue, lethread_delete);
-		queue_delete(leauthor_query_queue, lethread_delete);
+		queue_delete(leclientinfo_queue, (void (*)(void *))leclientinfo_delete);
+		queue_delete(lethread_query_queue, (void (*)(void *))lethread_delete);
+		queue_delete(lemessage_query_queue, (void (*)(void *))lethread_delete);
+		queue_delete(leauthor_query_queue, (void (*)(void *))lethread_delete);
 	}
+}
+
+/* 
+ * Clean up and exit if some signal occurs
+ */
+void signal_handler(const int signum) {
+	cleanup();
+	exit(signum);
 }
 
 int32_t main(int32_t argc, char *argv[]) {

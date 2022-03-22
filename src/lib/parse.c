@@ -8,7 +8,7 @@ struct LeCommand CMDS[CMD_COUNT] = {
 /*
  * Retrieves lethread information, including topic, message history, etc.
  */
-void cmd_get_lethread(char *raw_data, size_t size) {
+status_t cmd_get_lethread(char *raw_data, size_t size) {
 
 }
 
@@ -18,7 +18,7 @@ void cmd_get_lethread(char *raw_data, size_t size) {
  * TOKEN is an optional argument. If not presented/not correct, then the message
  * will be posted anonymously.
  */
-void cmd_send_lemessage(char *raw_data, size_t size) {
+status_t cmd_send_lemessage(char *raw_data, size_t size) {
 	uint64_t lethread_id;
 	uint16_t text_size;
 	char *text;
@@ -68,7 +68,7 @@ void cmd_send_lemessage(char *raw_data, size_t size) {
 	}
 
 	lemessage_create(lethread, text, is_author);
-	free(text);
+	free(text);	
 }
 
 status_t query_parse(char *raw_data, size_t size) {

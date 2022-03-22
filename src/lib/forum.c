@@ -36,7 +36,7 @@ status_t lethread_delete(struct LeThread *lethread) {
 	struct QueueNode *node = lethread->messages->first;
 	struct LeMessage *lemessage;
 
-	queue_delete(lethread->messages, lemessage_delete);
+	queue_delete(lethread->messages, (void (*)(void *))lemessage_delete);
 
 	leauthor_delete(lethread->author);
 
