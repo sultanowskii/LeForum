@@ -58,14 +58,14 @@ uint64_t lethread_message_count(struct LeThread *lethread) {
  */
 struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_t by_lethread_author) {
 	struct LeMessage *new_lemessage = (struct LeMessage *)malloc(sizeof(struct LeMessage));
-	size_t length = strlen(text) + 1;
+	size_t length = strlen(text);
 
 	new_lemessage->id = lethread->next_message_id++;
 	new_lemessage->by_lethread_author = by_lethread_author;
 
-	new_lemessage->text = malloc(length);
-	new_lemessage->text[length - 1] = 0;
+	new_lemessage->text = malloc(length + 1);
 	strncpy(new_lemessage->text, text, length);
+	new_lemessage->text[length] = '\0';
 
 	queue_push(lethread->messages, new_lemessage, sizeof(struct LeMessage));
 	free(new_lemessage);

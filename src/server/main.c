@@ -109,24 +109,6 @@ void leclientinfo_delete(struct LeClientInfo *clinfo) {
 	free(clinfo);
 }
 
-/* 
- * lethread_get_by_id() implementation (required by query.h)
- */
-struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
-	struct QueueNode *node = lethreads->first;
-	struct LeThread *lethread = NULL;
-
-	while (node != NULL) {
-		lethread = node->data;
-		if (lethread->id == lethread_id) {
-			return lethread;
-		}
-		node = node->next;
-	}
-
-	return LESTATUS_NFND;
-}
-
 /*
  * Communicates with a client, gets and sends queries
  * and requests.
@@ -196,7 +178,6 @@ void cleanup() {
 	program_on_finish = TRUE;
 	if (!cleaned) {
 		cleaned = TRUE;
-		puts("meme");
 		queue_delete(leclientinfo_queue, (void (*)(void *))leclientinfo_delete);
 		queue_delete(lethread_query_queue, (void (*)(void *))lethread_delete);
 		queue_delete(lemessage_query_queue, (void (*)(void *))lethread_delete);
