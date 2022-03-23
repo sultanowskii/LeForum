@@ -10,6 +10,8 @@
 #define CMD_COUNT 2
 
 /*
+ * Finds a lethread with id=lethread_id. If not found, LESTATUS_NFND is returned.
+ *
  * This function has to be implemented somewhere.
  *
  * The concept is that from this perspective it's unknown how
@@ -17,7 +19,7 @@
  * Therefore, as a user of this interface, you have to implement
  * this function yourself.
  */
-struct Lethread* lethread_get_by_id(uint64_t lethread_id);
+struct LeThread * lethread_get_by_id(uint64_t lethread_id);
 
 struct LeCommand {
 	char *                     name;

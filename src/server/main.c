@@ -47,6 +47,11 @@ struct Queue *leauthor_query_queue;
 struct Queue *leclientinfo_queue;
 
 /*
+ * Here we store all the LeThreads
+ */
+struct Queue *lethreads;
+
+/*
  * handle_client() argument
  */
 struct LeClientInfo {
@@ -102,6 +107,24 @@ void * leauthor_query_manage() {
  */
 void leclientinfo_delete(struct LeClientInfo *clinfo) {
 	free(clinfo);
+}
+
+/* 
+ * lethread_get_by_id() implementation (required by query.h)
+ */
+struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
+	struct QueueNode *node = lethreads->first;
+	struct LeThread *lethread = NULL;
+
+	while (node != NULL) {
+		lethread = node->data;
+		if (lethread->id == lethread_id) {
+			return lethread;
+		}
+		node = node->next;
+	}
+
+	return LESTATUS_NFND;
 }
 
 /*
