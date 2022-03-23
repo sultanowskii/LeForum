@@ -139,24 +139,25 @@ void * handle_client(void *arg) {
 
 		query_result = query_process(cl_data, cl_data_size);
 
-		if (query_result.status == LESTATUS_OK) {
-			if (query_result.size == 0) {
-				/* send OK */
+		if (query_result.size == 0) {
+			if (query_result.status == LESTATUS_OK) {
+				send(client_info->fd, "OK", 2, NULL); /* If query returned nothing, then sends OK */
 			}
 			else {
-				if (query_result.data != NULL) {
-					/* send query_result.data */
-
-					free(query_result.data);
-					query_result.data = NULL;
-				}
-				else {
-					/* Internal error: size != 0 && data != NULL */
-				}
+				send(client_info->fd, "ERR", 3, NULL); /* Error without description */
 			}
 		}
 		else {
-			/* send Error */
+			if (query_result.data != NULL) {
+				send(client_info->fd, query_result.data, query_result.size, NULL); /* Sends the query result */
+			}
+			else {
+				send(client_info->fd, "ERR", 3, NULL); /* This case is not valid, sends error without description */
+			}
+		}
+
+		if (query_result.data != NULL) {
+			free(query_result.data);
 		}
 	}
 
