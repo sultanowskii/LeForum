@@ -2,7 +2,8 @@
 
 struct LeCommand CMDS[CMD_COUNT] = {
 	{"GET", cmd_get_lethread},
-	{"MSG", cmd_send_lemessage}
+	{"MSG", cmd_send_lemessage},
+	{"LIV", cmd_alive}
 };
 
 /*
@@ -81,6 +82,11 @@ struct LeCommandResult cmd_send_lemessage(char *raw_data, size_t size) {
 	result.size = 0;
 	result.data = NULL;
 
+	return result;
+}
+
+struct LeCommandResult cmd_alive(char *raw_data, size_t size) {
+	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
 	return result;
 }
 

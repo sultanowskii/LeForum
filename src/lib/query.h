@@ -34,4 +34,6 @@ struct LeCommandResult {
 
 struct LeCommandResult         cmd_get_lethread(char *raw_data, size_t size);
 struct LeCommandResult         cmd_send_lemessage(char *raw_data, size_t size);
+struct LeCommandResult         cmd_alive(char *raw_data, size_t size);
+
 struct LeCommandResult         query_process(char *raw_data, size_t size);
