@@ -90,9 +90,9 @@ struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token
 	struct LeAuthor *new_leauthor = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
 
 	new_leauthor->id = rand_uint64_t() % 0xffffffff;
-	new_leauthor->token = malloc(TOKEN_LENGTH + 1);
-	memset(new_leauthor->token, 0, TOKEN_LENGTH + 1);
-	if (create_token) rand_string(new_leauthor->token, TOKEN_LENGTH);
+	new_leauthor->token = malloc(TOKEN_SIZE + 1);
+	memset(new_leauthor->token, 0, TOKEN_SIZE + 1);
+	if (create_token) rand_string(new_leauthor->token, TOKEN_SIZE);
 
 	lethread->author = new_leauthor;
 
@@ -295,7 +295,7 @@ status_t leauthor_load(struct LeThread *lethread) {
 	leauthor = leauthor_create(lethread, FALSE);
 
 	fread(&leauthor->id, sizeof(leauthor->id), 1, leauthor_file);
-	fread(leauthor->token, 1, TOKEN_LENGTH, leauthor_file);
+	fread(leauthor->token, 1, TOKEN_SIZE, leauthor_file);
 
 	fclose(leauthor_file);
 
@@ -312,7 +312,7 @@ status_t leauthor_save(struct LeThread *lethread) {
 	leauthor_file = get_le_file(lethread->author->id, "ab", FILENAME_LEAUTHOR, TRUE);
 
 	fwrite(&lethread->author->id, sizeof(lethread->author->id), 1, leauthor_file);
-	fwrite(lethread->author->token, TOKEN_LENGTH, 1, leauthor_file);
+	fwrite(lethread->author->token, TOKEN_SIZE, 1, leauthor_file);
 
 	fclose(leauthor_file);
 
@@ -323,7 +323,7 @@ status_t leauthor_save(struct LeThread *lethread) {
  * Checks author token for a specific lethread
  */
 bool_t is_token_valid(struct LeThread *lethread, const char *token) {
-	if (strncmp(lethread->author->token, token, TOKEN_LENGTH) != 0) {
+	if (strncmp(lethread->author->token, token, TOKEN_SIZE) != 0) {
 		return FALSE;
 	}
 	return TRUE;

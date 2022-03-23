@@ -24,7 +24,7 @@ struct LeCommandResult cmd_send_lemessage(char *raw_data, size_t size) {
 	uint16_t text_size;
 	char *text;
 	bool_t is_author;
-	char token[TOKEN_LENGTH];
+	char token[TOKEN_SIZE];
 	struct LeThread *lethread;
 	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
 
