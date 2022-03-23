@@ -12,6 +12,13 @@
 #include "lib/queue.h"
 #include "lib/status.h"
 
+#define TOKEN_SIZE 24
+
+#define DATA_DIR ".data"
+#define FILENAME_LETHREAD "lethreadinfo"
+#define FILENAME_LEMESSAGES "lemessages"
+#define FILENAME_LEAUTHOR "leauthor"
+
 struct LeMessage {
 	uint64_t         id;
 	char             *text;
