@@ -1,8 +1,9 @@
 #include "lib/query.h"
 
 struct LeCommand CMDS[CMD_COUNT] = {
-	{"GET", cmd_get_lethread},
-	{"MSG", cmd_send_lemessage},
+	{"GTHR", cmd_get_lethread},
+	{"CTHR", cmd_create_lethread},
+	{"CMSG", cmd_create_lemessage},
 	{"LIV", cmd_alive}
 };
 
@@ -15,12 +16,19 @@ struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
 }
 
 /*
+ * Creates LeThread with given parameters.
+ */
+struct LeCommandResult cmd_create_lethread(char *raw_data, size_t size) {
+
+}
+
+/*
  * Parses a query, if valid, adds a new message to the specific lethread.
  *
  * TOKEN is an optional argument. If not presented/not correct, then the message
  * will be posted anonymously.
  */
-struct LeCommandResult cmd_send_lemessage(char *raw_data, size_t size) {
+struct LeCommandResult cmd_create_lemessage(char *raw_data, size_t size) {
 	uint64_t lethread_id;
 	uint16_t text_size;
 	char *text;
@@ -85,6 +93,9 @@ struct LeCommandResult cmd_send_lemessage(char *raw_data, size_t size) {
 	return result;
 }
 
+/* 
+ * Assures the connection is not lost.
+ */
 struct LeCommandResult cmd_alive(char *raw_data, size_t size) {
 	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
 	return result;
