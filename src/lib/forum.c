@@ -306,10 +306,10 @@ status_t leauthor_load(struct LeThread *lethread) {
  * Saves author of the lethread to the corresponding file
  */
 status_t leauthor_save(struct LeThread *lethread) {
-	FILE *leauthor_file = get_le_file(lethread->author->id, "wb", FILENAME_LEAUTHOR, TRUE);
+	FILE *leauthor_file = get_le_file(lethread->id, "wb", FILENAME_LEAUTHOR, TRUE);
 	fclose(leauthor_file);
 
-	leauthor_file = get_le_file(lethread->author->id, "ab", FILENAME_LEAUTHOR, TRUE);
+	leauthor_file = get_le_file(lethread->id, "ab", FILENAME_LEAUTHOR, TRUE);
 
 	fwrite(&lethread->author->id, sizeof(lethread->author->id), 1, leauthor_file);
 	fwrite(lethread->author->token, TOKEN_SIZE, 1, leauthor_file);

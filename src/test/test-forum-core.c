@@ -10,6 +10,17 @@
 #include "lib/forum.h"
 #include "lib/queue.h"
 
+struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
+	struct LeThread *lethread = malloc(sizeof(struct LeThread));
+	if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
+		free(lethread);
+		return LESTATUS_NSFD;
+	}
+	lemessages_load(lethread);
+	leauthor_load(lethread);
+	return lethread;
+}
+
 void lethread_info(struct LeThread *lethread) {
 	printf("LeThread: id=%llu author_id=%llu first_message_id=%llu next_message_id=%llu: %s\n", lethread->id, lethread->author->id, lethread->first_message_id, lethread->next_message_id, lethread->topic);
 }
@@ -40,6 +51,7 @@ int main() {
 	size_t length = 1023;
 
 	struct LeAuthor *leauthor = leauthor_create(lethread, TRUE);
+	leauthor_save(lethread);
 
 	lethread_save(lethread);
 

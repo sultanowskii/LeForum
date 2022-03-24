@@ -10,8 +10,8 @@ server: server/main.c $(LIB_FILES_SERVER)
 client: client/main.c $(LIB_FILES)
 	$(CC) $(CFLAGS) $(LIBS_CLIENT) $^ -o server/LeForumClient
 
-test-forum-core: test/test-forum-core.c $(LIB_FILES)
+test-forum-core: test/test-forum-core.c $(LIB_FILES_SERVER)
 	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -g -o test/LeForumCoreTest
 
-test-queue: test/test-queue.c $(LIB_FILES)
+test-queue: test/test-queue.c $(LIB_FILES_SERVER)
 	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -g -o test/QueueTest

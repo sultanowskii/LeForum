@@ -109,6 +109,17 @@ void leclientinfo_delete(struct LeClientInfo *clinfo) {
 	free(clinfo);
 }
 
+struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
+	struct LeThread *lethread = malloc(sizeof(struct LeThread));
+	if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
+		free(lethread);
+		return LESTATUS_NSFD;
+	}
+	lemessages_load(lethread);
+	leauthor_load(lethread);
+	return lethread;
+}
+
 /*
  * Communicates with a client, gets and sends queries
  * and requests.
