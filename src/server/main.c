@@ -33,11 +33,12 @@ struct timeval TIMEOUT = {3, 0};
 bool_t program_on_finish = FALSE;
 
 /*
- * Query queues
+ * Save file query queues with the purpose of prevention data race.
  * 
  * Please note that they have to contain pointers to LeThreads.
  */
 struct Queue *lethread_query_queue;
+struct Queue *lemessages_query_queue;
 struct Queue *lemessage_query_queue;
 struct Queue *leauthor_query_queue;
 
@@ -74,26 +75,22 @@ void * lethread_query_manage() {
 	}
 }
 
-/*
- * Saves LeMessages (to corresponding files). This function has to be run
- * in the separate thread.
- * 
- * The purpose is to avoid accessing same file from different threads.
- */
-void * lemessage_query_manage() {
+void * lemessages_query_manage() {
 	while (!program_on_finish) {
-		while (!queue_is_empty(lemessage_query_queue) && !program_on_finish) {
-			lemessages_save(queue_pop(lemessage_query_queue));
+		while (!queue_is_empty(lemessages_query_queue) && !program_on_finish) {
+			lemessages_save(queue_pop(lemessages_query_queue));
 		}
 	}
 }
 
-/*
- * Saves LeAuthors (to corresponding files). This function has to be run
- * in the separate thread.
- * 
- * The purpose is to avoid accessing same file from different threads.
- */
+void * lemessage_query_manage() {
+	while (!program_on_finish) {
+		while (!queue_is_empty(lemessage_query_queue) && !program_on_finish) {
+			lemessage_save(queue_pop(lemessage_query_queue));
+		}
+	}
+}
+
 void * leauthor_query_manage() {
 	while (!program_on_finish) {
 		while (!queue_is_empty(leauthor_query_queue) && !program_on_finish) {

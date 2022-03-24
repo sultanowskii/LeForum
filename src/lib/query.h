@@ -12,14 +12,28 @@
 /*
  * Finds a lethread with id=lethread_id. If not found, LESTATUS_NFND is returned.
  *
- * This function has to be implemented somewhere.
+ * This function has to implemented by you as a user of this library.
  *
- * The concept is that from this perspective it's unknown how
+ * The reason is that from this perspective it's unknown how
  * do you store all the lethreads (in linked list, in array, ...?).
- * Therefore, as a user of this interface, you have to implement
- * this function yourself.
+ * 
+ * By using this interface, you promise you will free() lethread 
+ * (the one this function returns) after query processing.
  */
 struct LeThread * lethread_get_by_id(uint64_t lethread_id);
+
+/*
+ * Multithread-safe save() functions.
+ * 
+ * This functions have to implemented by you as a user of this library.
+ * 
+ * The reason is that from this perspective it's unknown how
+ * safe it is to save file with direct save call (data race).
+ */
+status_t             s_lethread_save(struct LeThread *lethread);
+status_t             s_lemessages_save(struct LeThread *lethread);
+status_t             s_lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage);
+status_t             s_leauthor_save(struct LeThread *lethread);
 
 struct LeCommand {
 	char *                     name;

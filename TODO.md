@@ -6,4 +6,5 @@
 - [] Tests for query.c with python + socket
 - [] Check if all the `status_t`s are appropriate
 - [] Tests for most of the features
-- [] decide about lethread_get_by_id finally (if returned from the list, then remove free() in the end of queries)
+- [] Decide about lethread_get_by_id finally (if returned from the list, then remove free() in the end of queries)
+- [] Query manager for LeMessage. Current problem is that all the "*_save()" functions take only LeThread, and lemessage_save() takes 2 arguments. How should they be stored?
