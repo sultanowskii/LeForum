@@ -32,7 +32,7 @@ struct LeThread * lethread_get_by_id(uint64_t lethread_id);
  */
 status_t             s_lethread_save(struct LeThread *lethread);
 status_t             s_lemessages_save(struct LeThread *lethread);
-status_t             s_lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage);
+status_t             s_lemessage_save(struct LeMessage *lemessage);
 status_t             s_leauthor_save(struct LeThread *lethread);
 
 struct LeCommand {

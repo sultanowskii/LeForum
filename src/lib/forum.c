@@ -66,6 +66,7 @@ struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_
 	new_lemessage->text = malloc(length + 1);
 	strncpy(new_lemessage->text, text, length);
 	new_lemessage->text[length] = '\0';
+	new_lemessage->lethread = lethread;
 
 	queue_push(lethread->messages, new_lemessage, sizeof(struct LeMessage));
 	free(new_lemessage);
@@ -234,11 +235,11 @@ status_t lemessages_save(struct LeThread *lethread) {
 /*
  * Saves one LeMessage to the corresponding file.
  */
-status_t lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage) {
+status_t lemessage_save(struct LeMessage *lemessage) {
 	size_t text_length = strlen(lemessage->text);
 	FILE *lemessages_file;
 
-	lemessages_file = get_le_file(lethread->id, "ab", FILENAME_LEMESSAGES, TRUE);
+	lemessages_file = get_le_file(lemessage->lethread->id, "ab", FILENAME_LEMESSAGES, TRUE);
 
 	fwrite(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
 	fwrite(&lemessage->by_lethread_author, sizeof(lemessage->by_lethread_author), 1, lemessages_file);

@@ -21,8 +21,9 @@
 
 struct LeMessage {
 	uint64_t         id;
-	char             *text;
+	char            *text;
 	bool_t           by_lethread_author;
+	struct LeThread *lethread;
 };
 
 struct LeAuthor {
@@ -55,7 +56,7 @@ status_t             lethread_save(struct LeThread *lethread);
 status_t             lethread_load(struct LeThread *lethread, uint64_t id);
 
 status_t             lemessages_save(struct LeThread *lethread);
-status_t             lemessage_save(struct LeThread *lethread, struct LeMessage *lemessage);
+status_t             lemessage_save(struct LeMessage *lemessage);
 status_t             lemessages_load(struct LeThread *lethread);
 
 status_t             leauthor_load(struct LeThread *lethread);

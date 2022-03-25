@@ -33,9 +33,7 @@ struct timeval TIMEOUT = {3, 0};
 bool_t program_on_finish = FALSE;
 
 /*
- * Save file query queues with the purpose of prevention data race.
- * 
- * Please note that they have to contain pointers to LeThreads.
+ * Save file query queues with the purpose of prevention data race..
  */
 struct Queue *lethread_query_queue;
 struct Queue *lemessages_query_queue;
@@ -106,6 +104,9 @@ void leclientinfo_delete(struct LeClientInfo *clinfo) {
 	free(clinfo);
 }
 
+/*
+ * Implementation of lethread_get_by_id() required by query.h
+ */
 struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
 	struct LeThread *lethread = malloc(sizeof(struct LeThread));
 	if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
@@ -115,6 +116,25 @@ struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
 	lemessages_load(lethread);
 	leauthor_load(lethread);
 	return lethread;
+}
+
+/*
+ * Implementation of safe "write-to-file" functions required by query.h
+ */
+status_t s_lethread_save(struct LeThread *lethread) {
+	queue_push(lethread_query_queue, lethread, sizeof(struct LeThread));
+}
+
+status_t s_lemessages_save(struct LeThread *lethread) {
+	queue_push(lemessages_query_queue, lethread, sizeof(struct LeThread));
+}
+
+status_t s_lemessage_save(struct LeMessage *lemessage) {
+	queue_push(lemessage_query_queue, lemessage, sizeof(struct LeMessage));
+}
+
+status_t s_leauthor_save(struct LeThread *lethread) {
+	queue_push(leauthor_query_queue, lethread, sizeof(struct LeThread));
 }
 
 /*
