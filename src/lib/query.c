@@ -190,13 +190,13 @@ struct LeCommandResult cmd_create_lemessage(char *raw_data, size_t size) {
 		is_author = is_token_valid(lethread, data_ptr);
 	}
 
-	lemessage = lemessage_create(lethread, text, is_author);
-	lemessage_save(lethread, lemessage);
-	lethread_save(lethread);
+	lemessage = message_create(lethread, text, is_author);
+	s_lemessage_save(lemessage);
+	s_lethread_save(lethread);
 
 	free(text);
 
-	free(lethread);	
+	free(lethread);
 
 	result.status = LESTATUS_OK;
 	result.size = 0;

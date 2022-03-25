@@ -48,7 +48,7 @@ struct Queue *leclientinfo_queue;
 /*
  * Here we store all the LeThreads
  */
-struct Queue *lethreads;
+struct Queue *lethread_queue;
 
 /*
  * handle_client() argument
@@ -119,7 +119,7 @@ struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
 }
 
 /*
- * Implementation of safe "write-to-file" functions required by query.h
+ * Implementation of safe functions required by query.h
  */
 status_t s_lethread_save(struct LeThread *lethread) {
 	queue_push(lethread_query_queue, lethread, sizeof(struct LeThread));
@@ -135,6 +135,15 @@ status_t s_lemessage_save(struct LeMessage *lemessage) {
 
 status_t s_leauthor_save(struct LeThread *lethread) {
 	queue_push(leauthor_query_queue, lethread, sizeof(struct LeThread));
+}
+
+struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
+	struct LeThread *lethread = lethread_create(topic, lethread_id);
+	queue_push(lethread_queue, lethread, sizeof(struct LeThread));
+
+	free(lethread);
+
+	return lethread_queue->last->data; /* Is not very reliable because of multithreading */ 
 }
 
 /*

@@ -23,17 +23,16 @@
 struct LeThread * lethread_get_by_id(uint64_t lethread_id);
 
 /*
- * Multithread-safe save() functions.
+ * Multithread-safe functions.
  * 
  * This functions have to implemented by you as a user of this library.
- * 
- * The reason is that from this perspective it's unknown how
- * safe it is to save file with direct save call (data race).
  */
 status_t             s_lethread_save(struct LeThread *lethread);
 status_t             s_lemessages_save(struct LeThread *lethread);
 status_t             s_lemessage_save(struct LeMessage *lemessage);
 status_t             s_leauthor_save(struct LeThread *lethread);
+
+struct LeThread *    s_lethread_create(char *topic, uint64_t lethread_id);
 
 struct LeCommand {
 	char *                     name;
