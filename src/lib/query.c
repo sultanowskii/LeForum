@@ -82,7 +82,7 @@ struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
 
 	while (node != NULL) {
 		lemessage = (struct LeMessage *)node->data;
-		puts(lemessage->text);
+
 		text_size = strlen(lemessage->text);
 
 		while (data_size + sizeof("MSG") - 1 + sizeof(uint8_t) + sizeof(size_t) + text_size + sizeof("MSGEND") - 1 >= chunk_size) {
@@ -190,13 +190,11 @@ struct LeCommandResult cmd_create_lemessage(char *raw_data, size_t size) {
 		is_author = is_token_valid(lethread, data_ptr);
 	}
 
-	lemessage = message_create(lethread, text, is_author);
+	lemessage = lemessage_create(lethread, text, is_author);
 	s_lemessage_save(lemessage);
 	s_lethread_save(lethread);
 
 	free(text);
-
-	free(lethread);
 
 	result.status = LESTATUS_OK;
 	result.size = 0;

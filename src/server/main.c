@@ -13,6 +13,8 @@
 
 #include <signal.h>
 
+#include <dirent.h>
+
 #include "lib/constants.h"
 #include "lib/status.h"
 #include "lib/communication.h"
@@ -108,13 +110,33 @@ void leclientinfo_delete(struct LeClientInfo *clinfo) {
  * Implementation of lethread_get_by_id() required by query.h
  */
 struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
-	struct LeThread *lethread = malloc(sizeof(struct LeThread));
+	struct LeThread *lethread;
+	struct QueueNode *node = lethread_queue->first;
+
+	while (node != NULL) {
+		lethread = node->data;
+		if (lethread->id == lethread_id) {
+			goto SUCCESS;
+		}
+		node = node->next;
+	}
+
+	lethread = malloc(sizeof(struct LeThread));
+
 	if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
 		free(lethread);
-		return LESTATUS_NSFD;
+		return LESTATUS_NFND;
 	}
-	lemessages_load(lethread);
-	leauthor_load(lethread);
+
+SUCCESS:
+	if (lethread->messages->first == NULL && lethread_message_count(lethread) != 0) {
+		lemessages_load(lethread);
+	}
+	
+	if (lethread->author->token == NULL) {
+		leauthor_load(lethread);
+	}
+
 	return lethread;
 }
 
@@ -137,6 +159,9 @@ status_t s_leauthor_save(struct LeThread *lethread) {
 	queue_push(leauthor_query_queue, lethread, sizeof(struct LeThread));
 }
 
+/*
+ * Safe lethread creation required by queue.h
+ */
 struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
 	struct LeThread *lethread = lethread_create(topic, lethread_id);
 	queue_push(lethread_queue, lethread, sizeof(struct LeThread));
@@ -144,6 +169,52 @@ struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
 	free(lethread);
 
 	return lethread_queue->last->data; /* Is not very reliable because of multithreading */ 
+}
+
+/*
+ * Loads already existing lethreads to the queue.
+ * 
+ * Notice that this fucntion doesn't load lemessages - we load them when we are
+ * asked to by client for the first time.
+ */
+size_t startup() {
+    struct dirent* dent;
+	uint64_t lethread_id;
+	struct LeThread *lethread;
+	size_t dir_cnt = 0;
+    DIR* srcdir = opendir(DATA_DIR);
+
+    if (srcdir == NULL) {
+        perror("opendir() failed");
+        return LESTATUS_CLIB;
+    }
+
+	lethread = malloc(sizeof(struct LeThread));
+
+    while ((dent = readdir(srcdir)) != NULL) {
+        struct stat st;
+
+        if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0)
+            continue;
+
+        if (fstatat(dirfd(srcdir), dent->d_name, &st, 0) < 0) {
+            continue;
+        }
+
+        if (S_ISDIR(st.st_mode)) {
+			lethread_id = strtoull(dent->d_name, dent->d_name + strlen(dent->d_name), 10);
+			if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
+				continue;
+			}
+			queue_push(lethread_queue, lethread, sizeof(struct LeThread));
+			dir_cnt++;
+		}
+    }
+
+    closedir(srcdir);
+	free(lethread);
+
+    return dir_cnt;
 }
 
 /*
@@ -219,6 +290,7 @@ void cleanup() {
 		queue_delete(lethread_query_queue, (void (*)(void *))lethread_delete);
 		queue_delete(lemessage_query_queue, (void (*)(void *))lethread_delete);
 		queue_delete(leauthor_query_queue, (void (*)(void *))lethread_delete);
+		queue_delete(lethread_queue, (void (*)(void *))lethread_delete);
 	}
 }
 
@@ -248,10 +320,13 @@ int32_t main(int32_t argc, char *argv[]) {
 	lemessage_query_queue = queue_create();
 	leauthor_query_queue = queue_create();
 	leclientinfo_queue = queue_create();
+	lethread_queue = queue_create();
 
 	atexit(cleanup);
 	signal(SIGTERM, cleanup);
 	signal(SIGINT, signal_handler);
+
+	startup();
 
 	puts("LeForum Server");
 

@@ -39,6 +39,14 @@ void lethread_message_history(struct LeThread *lethread) {
 	}
 	printf("=================\n");
 }
+
+status_t s_lemessage_save(struct LeMessage *lemessage) {
+	return lemessage_save(lemessage);
+}
+
+status_t s_lethread_save(struct LeThread *lethread) {
+	return lethread_save(lethread);
+}
  
 int main() {
 	struct stat st = {0};
@@ -69,7 +77,7 @@ int main() {
 		text[strlen(text) - 1] = 0;
 
 		message = lemessage_create(lethread, text, rand_uint64_t() % 2);
-		lemessage_save(lethread, message);
+		lemessage_save(message);
 		lethread_save(lethread);
 		lethread_message_history(lethread);
 	}

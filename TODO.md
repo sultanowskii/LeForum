@@ -9,9 +9,10 @@
 ### Mini-tasks
 - [x] Clean up lib/query.c
 - [ ] Tests for query.c with python + socket (compile + run server, then check explicit queries)
-- [ ] Make lethread_get_by_id work with lethread_queue (then remove free(lethread) from query.c)
+- [x] Make lethread_get_by_id work with lethread_queue (then remove free(lethread) from query.c)
 - [x] Query manager for LeMessage. Current problem is that all the "*_save()" functions take only LeThread, and lemessage_save() takes 2 arguments. How should they be stored?
-- [ ] Already existing lethreads loader on a startup
+- [x] Already existing lethreads loader on a startup
+- [ ] Thread creation query
 
 ### Global features
 #### Server
