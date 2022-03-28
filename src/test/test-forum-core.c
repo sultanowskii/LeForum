@@ -11,13 +11,16 @@
 #include "lib/queue.h"
 
 struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
-	struct LeThread *lethread = malloc(sizeof(struct LeThread));
+	struct LeThread         *lethread  = malloc(sizeof(struct LeThread));
+
 	if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
 		free(lethread);
 		return LESTATUS_NSFD;
 	}
+
 	lemessages_load(lethread);
 	leauthor_load(lethread);
+
 	return lethread;
 }
 
@@ -26,8 +29,9 @@ void lethread_info(struct LeThread *lethread) {
 }
 
 void lethread_message_history(struct LeThread *lethread) {
-	struct QueueNode *node;
-	struct LeMessage *message;
+	struct QueueNode        *node;
+	struct LeMessage        *message;
+
 
 	node = lethread->messages->first;
 
@@ -48,17 +52,20 @@ status_t s_lethread_save(struct LeThread *lethread) {
 	return lethread_save(lethread);
 }
  
-int main() {
-	struct stat st = {0};
-	struct LeMessage *message;
+status_t main() {
+	struct stat              st             = {0};
 
-	uint64_t lethread_id = rand_uint64_t() % 0xffffffff;
-	struct LeThread *lethread = lethread_create("Test Topic", lethread_id);
-	uint64_t author_id = 0;
-	char *text = malloc(1024);
-	size_t length = 1023;
+	uint64_t                 lethread_id    = rand_uint64_t() % 0xffffffff;
+	struct LeThread         *lethread       = lethread_create("Test Topic", lethread_id);
 
-	struct LeAuthor *leauthor = leauthor_create(lethread, TRUE);
+	struct LeMessage        *message;
+	char                    *text           = malloc(1024);
+	size_t                   text_size      = 1023;
+
+	struct LeAuthor         *leauthor       = leauthor_create(lethread, TRUE);
+	uint64_t                 author_id      = 0;
+
+
 	leauthor_save(lethread);
 
 	lethread_save(lethread);
@@ -73,32 +80,39 @@ int main() {
 		printf("author_id text:\n > ");
 
 		scanf("%llu ", &author_id);
-		getline(&text, &length, stdin);
+		getline(&text, &text_size, stdin);
 		text[strlen(text) - 1] = 0;
 
 		message = lemessage_create(lethread, text, rand_uint64_t() % 2);
+
 		lemessage_save(message);
 		lethread_save(lethread);
+
 		lethread_message_history(lethread);
 	}
 
-	leauthor_save(lethread);
 	puts("Done, saving to file, deleting object...");
+
+	leauthor_save(lethread);
 	lethread_delete(lethread);
 
 	puts("Trying to load the saved lethread...");
 
 	lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
+
 	lethread_load(lethread, lethread_id);
 	lemessages_load(lethread);
 	leauthor_load(lethread);
+
 	printf("LeAuthor: id=%llu, token=%s !!!\n", lethread->author->id, lethread->author->token);
+
 	lethread_info(lethread);
 	lethread_message_history(lethread);
+
 	lethread_delete(lethread);
 	free(text);
 
 	puts("Done!");
 
-	return 0;
+	return LESTATUS_OK;
 }

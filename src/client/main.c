@@ -8,7 +8,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include "lib/status.h"
 
-int32_t main(size_t argc, char **argv) {
-	return 0;
+status_t main(size_t argc, char **argv) {
+	return LESTATUS_OK;
 }

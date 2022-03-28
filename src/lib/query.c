@@ -33,7 +33,6 @@ struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
 	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
 
 
-
 	if (size < sizeof("THRID") - 1 + sizeof(lethread_id)) {
 		result.status = LESTATUS_ISYN;
 		return result;
@@ -140,7 +139,6 @@ struct LeCommandResult cmd_create_lethread(char *raw_data, size_t size) {
 	struct LeCommandResult   result                = {0, LESTATUS_OK, NULL};
 
 
-
 	if (size < sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1) {
 		result.status = LESTATUS_ISYN;
 		return result;
@@ -209,7 +207,6 @@ struct LeCommandResult cmd_create_lemessage(char *raw_data, size_t size) {
 	struct LeCommandResult result         = {0, LESTATUS_OK, NULL};
 
 
-
 	if (size < sizeof("THRID") - 1 + sizeof(lethread_id) + sizeof("TXTSZ") - 1 + sizeof(text_size) + sizeof("TXT") - 1) {
 		result.status = LESTATUS_ISYN;
 		return result;
@@ -276,7 +273,7 @@ struct LeCommandResult cmd_create_lemessage(char *raw_data, size_t size) {
  * Assures the connection is not lost.
  */
 struct LeCommandResult cmd_alive(char *raw_data, size_t size) {
-	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
+	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
 
 	return result;
 }
@@ -288,7 +285,6 @@ struct LeCommandResult query_process(char *raw_data, size_t size) {
 	struct LeCommand         cmd            = {NULL, NULL};
 	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
 	size_t                   cmd_name_size;
-
 
 
 	for (size_t i = 0; i < CMD_COUNT; i++) {

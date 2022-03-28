@@ -1,14 +1,16 @@
 #include "lib/security.h"
 
-#define ALLOWED_SYMBOLS (0x7e - 0x20)
-#define MIN_SYMBOL 0x21
+#define ALLOWED_SYMBOLS     (0x7e - 0x20)
+#define MIN_SYMBOL           0x21
 
 /*
  * Generates random string of a size=length,
  * puts it into str.
  */
 void rand_string(char *str, size_t length) {
-	unsigned char tmp;
+	unsigned char       tmp;
+
+
 	FILE *f = fopen("/dev/urandom", "r");
 	for (size_t i = 0; i < length; ++i) {
 		tmp = 0;
@@ -17,6 +19,7 @@ void rand_string(char *str, size_t length) {
 			str[i] = tmp % ALLOWED_SYMBOLS + MIN_SYMBOL;
 		}
 	}
+
 	fclose(f);
 }
 
@@ -24,9 +27,14 @@ void rand_string(char *str, size_t length) {
  * Returns random unsigned 8-byte long number.
  */
 uint64_t rand_uint64_t() {
-	uint64_t tmp;
+	uint64_t            tmp;
+
+
 	FILE *f = fopen("/dev/urandom", "r");
+
 	fread((char*)&tmp, sizeof(uint64_t), 1, f);
+
 	fclose(f);
+
 	return tmp;
 }

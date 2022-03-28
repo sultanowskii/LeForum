@@ -10,11 +10,14 @@ void str_delete(void *s) {
 	free(s);
 }
 
-int main() {
-	struct Queue *queue = queue_create();
-	char tmp[1024];
-	bool_t is_empty;
-	char *data;
+status_t main() {
+	struct Queue            *queue          = queue_create();
+	char                    *data;
+
+	char                     tmp[1024];
+	bool_t                   is_empty;
+	size_t                   cntr           = 0;
+
 
 	memset(tmp, 0, 1024);
 
@@ -26,7 +29,7 @@ int main() {
 
 	puts("=============");
 
-	size_t cntr = 0;
+
 	while (!queue_is_empty(queue)) {
 		is_empty = queue_is_empty(queue);
 		data = queue_pop(queue);
@@ -37,7 +40,8 @@ int main() {
 	printf("Finished! queue_is_emtpy()=%llu\n", queue_is_empty(queue));
 
 	puts("Destroying queue...");
+
 	queue_delete(queue, str_delete);
 
-	return 0;
+	return LESTATUS_OK;
 }

@@ -24,41 +24,41 @@
 
 #define PACKET_SIZE 16 * 1024
 
-int32_t SERVER_PORT = 7431;
-char SERVER_ADDR[] = "0.0.0.0";
-int32_t MAX_CONNECTIONS = 100;
-struct timeval TIMEOUT = {3, 0};
+int32_t            SERVER_PORT              = 7431;
+char               SERVER_ADDR[]            = "0.0.0.0";
+int32_t            MAX_CONNECTIONS          = 100;
+struct timeval     TIMEOUT                  = {3, 0};
 
 /*
  * Flag for threads
  */
-bool_t program_on_finish = FALSE;
+bool_t             program_on_finish        = FALSE;
 
 /*
  * Save file query queues with the purpose of prevention data race..
  */
-struct Queue *lethread_query_queue;
-struct Queue *lemessages_query_queue;
-struct Queue *lemessage_query_queue;
-struct Queue *leauthor_query_queue;
+struct Queue      *lethread_query_queue;
+struct Queue      *lemessages_query_queue;
+struct Queue      *lemessage_query_queue;
+struct Queue      *leauthor_query_queue;
 
 /*
  * To free() all the LeClientInfo structs in the end.
  */
-struct Queue *leclientinfo_queue;
+struct Queue      *leclientinfo_queue;
 
 /*
  * Here we store all the LeThreads
  */
-struct Queue *lethread_queue;
+struct Queue      *lethread_queue;
 
 /*
  * handle_client() argument
  */
 struct LeClientInfo {
-	int32_t fd;
-	socklen_t addr_size;
-	struct sockaddr_in addr;
+	int32_t             fd;
+	socklen_t           addr_size;
+	struct sockaddr_in  addr;
 };
 
 /*
@@ -110,8 +110,9 @@ void leclientinfo_delete(struct LeClientInfo *clinfo) {
  * Implementation of lethread_get_by_id() required by query.h
  */
 struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
-	struct LeThread *lethread;
-	struct QueueNode *node = lethread_queue->first;
+	struct LeThread         *lethread;
+	struct QueueNode        *node           = lethread_queue->first;
+
 
 	while (node != NULL) {
 		lethread = node->data;
@@ -163,7 +164,8 @@ status_t s_leauthor_save(struct LeThread *lethread) {
  * Safe lethread creation required by queue.h
  */
 struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
-	struct LeThread *lethread = lethread_create(topic, lethread_id);
+	struct LeThread    *lethread            = lethread_create(topic, lethread_id);
+
 	queue_push(lethread_queue, lethread, sizeof(struct LeThread));
 
 	free(lethread);
@@ -178,11 +180,13 @@ struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
  * asked to by client for the first time.
  */
 size_t startup() {
-    struct dirent* dent;
-	uint64_t lethread_id;
-	struct LeThread *lethread;
-	size_t dir_cnt = 0;
-    DIR* srcdir = opendir(DATA_DIR);
+	struct LeThread         *lethread;
+    uint64_t                 lethread_id;
+
+	DIR                     *srcdir              = opendir(DATA_DIR);
+	struct dirent           *dent;
+	size_t                   dir_cnt             = 0;
+
 
     if (srcdir == NULL) {
         perror("opendir() failed");
@@ -222,14 +226,14 @@ size_t startup() {
  * and requests.
  */
 void * handle_client(void *arg) {
-	struct LeClientInfo *client_info = (struct LeClientInfo *)arg;
-	struct LeCommandResult query_result;
+	struct LeClientInfo     *client_info              = (struct LeClientInfo *)arg;
+	struct LeCommandResult   query_result;
 
-	char cl_data[PACKET_SIZE];
-	char sv_data[PACKET_SIZE];
+	char                     cl_data[PACKET_SIZE];
+	char                     sv_data[PACKET_SIZE];
 
-	int64_t cl_data_size = 0;
-	int64_t sv_data_size = 0;
+	int64_t                  cl_data_size             = 0;
+	int64_t                  sv_data_size             = 0;
 
 	/* =================================== Example ====================================== */
 	char client_ip[128];
@@ -275,6 +279,7 @@ void * handle_client(void *arg) {
 	}
 
 	close(client_info->fd);
+
 	pthread_exit(0);
 }
 
@@ -282,8 +287,10 @@ void * handle_client(void *arg) {
  * free()s allocated data
  */
 void cleanup() {
-	static bool_t cleaned = FALSE;
+	static bool_t       cleaned        = FALSE;
+
 	program_on_finish = TRUE;
+
 	if (!cleaned) {
 		cleaned = TRUE;
 		queue_delete(leclientinfo_queue, (void (*)(void *))leclientinfo_delete);
@@ -302,19 +309,24 @@ void signal_handler(const int signum) {
 	exit(signum);
 }
 
-int32_t main(int32_t argc, char *argv[]) {
-	int32_t client_fd, server_fd;
-	struct sockaddr_in server_addr;
-	struct sockaddr client_addr;
-	socklen_t client_addr_len;
-	socklen_t socakddr_in_len = sizeof(struct sockaddr_in);
+status_t main(int32_t argc, char *argv[]) {
+	struct LeClientInfo     *leclientinfo;
 
-	pthread_t client_handler_thread;
-	pthread_t lethread_query_manager_thread;
-	pthread_t lemessage_query_manager_thread;
-	pthread_t leauthor_query_manager_thread;
+	int32_t                  client_fd;
+	int32_t                  server_fd;
 
-	struct LeClientInfo *leclientinfo;
+	struct sockaddr_in       server_addr;
+
+	struct sockaddr          client_addr;
+	socklen_t                client_addr_len;
+
+	socklen_t                socakddr_in_len     = sizeof(struct sockaddr_in);
+
+	pthread_t                client_handler_thread;
+	pthread_t                lethread_query_manager_thread;
+	pthread_t                lemessage_query_manager_thread;
+	pthread_t                leauthor_query_manager_thread;
+
 
 	lethread_query_queue = queue_create();
 	lemessage_query_queue = queue_create();
@@ -395,5 +407,5 @@ int32_t main(int32_t argc, char *argv[]) {
 		}
 	}
 
-	return 0;
+	return LESTATUS_OK;
 }
