@@ -7,12 +7,18 @@
 - Tests for most of the features
 
 ### Mini-tasks
+#### Server
 - [x] Clean up lib/query.c
 - [ ] Tests for query.c with python + socket (compile + run server, then check explicit queries)
 - [x] Make lethread_get_by_id work with lethread_queue (then remove free(lethread) from query.c)
 - [x] Query manager for LeMessage. Current problem is that all the "*_save()" functions take only LeThread, and lemessage_save() takes 2 arguments. How should they be stored?
 - [x] Already existing lethreads loader on a startup
-- [ ] Thread creation query
+- [x] Thread creation query
+- [ ] Find by topic query
+- [ ] Meta-query (to get lethreads)
+- [ ] Spam protection (against message/lethread creation)
+#### Client
+
 
 ### Global features
 #### Server

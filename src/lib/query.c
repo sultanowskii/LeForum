@@ -12,20 +12,27 @@ struct LeCommand CMDS[CMD_COUNT] = {
  * including topic, message history, etc.
  */
 struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
-	struct LeThread *lethread = NULL;
-	struct QueueNode *node;
-	struct LeMessage *lemessage;
-	uint64_t lethread_id;
-	size_t topic_size;
-	size_t text_size;
-	size_t data_size;
-	size_t chunk_size;
-	size_t message_cnt;
-	char *data;
-	char *data_start;
+	char                    *data_ptr       = raw_data;
 
-	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
-	char *data_ptr = raw_data;
+	struct LeThread         *lethread       = NULL;
+	uint64_t                 lethread_id;
+	size_t                   topic_size;
+	size_t                   message_cnt;
+
+	struct QueueNode        *node;
+
+	struct LeMessage        *lemessage;
+	size_t                   text_size;
+
+	size_t                   chunk_size;
+
+	char                    *answer;
+	char                    *answer_start;
+	size_t                   answer_size;
+
+	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
+
+
 
 	if (size < sizeof("THRID") - 1 + sizeof(lethread_id)) {
 		result.status = LESTATUS_ISYN;
@@ -49,34 +56,34 @@ struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
 	topic_size = strlen(lethread->topic);
 
 	message_cnt = lethread_message_count(lethread);
-	data_size = sizeof("THRID") - 1 + sizeof(lethread_id) + sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1 + topic_size + sizeof("MSGCNT") - 1 + sizeof(message_cnt);
-	chunk_size = data_size + 1024;
+	answer_size = sizeof("THRID") - 1 + sizeof(lethread_id) + sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1 + topic_size + sizeof("MSGCNT") - 1 + sizeof(message_cnt);
+	chunk_size = answer_size + 1024;
 
-	data_start = malloc(chunk_size);
-	data = data_start;
+	answer_start = malloc(chunk_size);
+	answer = answer_start;
 
-	strncpy(data, "THRID", sizeof("THRID") - 1);
-	data += sizeof("THRID") - 1;
+	strncpy(answer, "THRID", sizeof("THRID") - 1);
+	answer += sizeof("THRID") - 1;
 
-	*(uint64_t *)data = lethread_id;
-	data += sizeof(lethread_id);
+	*(uint64_t *)answer = lethread_id;
+	answer += sizeof(lethread_id);
 
-	strncpy(data, "TPCSZ", sizeof("TPCSZ") - 1);
-	data += sizeof("TPCSZ") - 1;
-	*(size_t *)data = topic_size;
-	data += sizeof(topic_size);
+	strncpy(answer, "TPCSZ", sizeof("TPCSZ") - 1);
+	answer += sizeof("TPCSZ") - 1;
+	*(size_t *)answer = topic_size;
+	answer += sizeof(topic_size);
 
-	strncpy(data, "TPC", sizeof("TPC") - 1);
-	data += sizeof("TPC") - 1;
+	strncpy(answer, "TPC", sizeof("TPC") - 1);
+	answer += sizeof("TPC") - 1;
 
-	strncpy(data, lethread->topic, topic_size);
-	data += topic_size;
+	strncpy(answer, lethread->topic, topic_size);
+	answer += topic_size;
 
-	strncpy(data, "MSGCNT", sizeof("MSGCNT") - 1);
-	data += sizeof("MSGCNT") - 1;
+	strncpy(answer, "MSGCNT", sizeof("MSGCNT") - 1);
+	answer += sizeof("MSGCNT") - 1;
 
-	*(uint64_t *)data = message_cnt;
-	data += sizeof(message_cnt);
+	*(uint64_t *)answer = message_cnt;
+	answer += sizeof(message_cnt);
 
 	node = lethread->messages->first;
 
@@ -85,33 +92,33 @@ struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
 
 		text_size = strlen(lemessage->text);
 
-		while (data_size + sizeof("MSG") - 1 + sizeof(uint8_t) + sizeof(size_t) + text_size + sizeof("MSGEND") - 1 >= chunk_size) {
+		while (answer_size + sizeof("MSG") - 1 + sizeof(uint8_t) + sizeof(size_t) + text_size + sizeof("MSGEND") - 1 >= chunk_size) {
 			chunk_size *= 2;
-			data_start = realloc(data_start, chunk_size);
-			data = data_start + data_size;
+			answer_start = realloc(answer_start, chunk_size);
+			answer = answer_start + answer_size;
 		}
 
-		strncpy(data, "MSG", sizeof("MSG") - 1);
-		data += sizeof("MSG") - 1;
+		strncpy(answer, "MSG", sizeof("MSG") - 1);
+		answer += sizeof("MSG") - 1;
 
-		*(uint8_t *)data = lemessage->by_lethread_author;
-		data += sizeof(lemessage->by_lethread_author);
+		*(uint8_t *)answer = lemessage->by_lethread_author;
+		answer += sizeof(lemessage->by_lethread_author);
 
-		*(size_t *)data = text_size;
-		data += sizeof(size_t);
+		*(size_t *)answer = text_size;
+		answer += sizeof(size_t);
 
-		strncpy(data, lemessage->text, text_size);
-		data += text_size;
+		strncpy(answer, lemessage->text, text_size);
+		answer += text_size;
 
-		strncpy(data, "MSGEND", sizeof("MSGEND") - 1);
-		data += sizeof("MSGEND") - 1;
+		strncpy(answer, "MSGEND", sizeof("MSGEND") - 1);
+		answer += sizeof("MSGEND") - 1;
 		node = node->next;
 	}
 
 	free(lethread);
 
-	result.data = data_start;
-	result.size = data - data_start;
+	result.data = answer_start;
+	result.size = answer - answer_start;
 	result.status = LESTATUS_OK;
 
 	return result;
@@ -121,13 +128,18 @@ struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
  * Creates LeThread with given parameters.
  */
 struct LeCommandResult cmd_create_lethread(char *raw_data, size_t size) {
-	struct LeThread *new_lethread;
-	size_t topic_size;
-	char *answer_start, *answer;
+	char                    *data_ptr              = raw_data;
 
-	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
-	char *data_ptr = raw_data;
-	size_t answer_size = sizeof("OKTHRID") - 1 + sizeof(uint64_t) + sizeof("TKN") - 1 + TOKEN_SIZE;
+	struct LeThread         *new_lethread;
+	size_t                   topic_size;
+
+	char                    *answer_start;
+	char                    *answer;
+	size_t                   answer_size           = sizeof("OKTHRID") - 1 + sizeof(uint64_t) + sizeof("TKN") - 1 + TOKEN_SIZE;
+
+	struct LeCommandResult   result                = {0, LESTATUS_OK, NULL};
+
+
 
 	if (size < sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1) {
 		result.status = LESTATUS_ISYN;
@@ -184,15 +196,19 @@ struct LeCommandResult cmd_create_lethread(char *raw_data, size_t size) {
  * will be posted anonymously.
  */
 struct LeCommandResult cmd_create_lemessage(char *raw_data, size_t size) {
-	struct LeThread *lethread;
-	struct LeMessage *lemessage;
-	uint64_t lethread_id;
-	size_t text_size;
-	char *text;
-	bool_t is_author;
-	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
+	char                  *data_ptr       = raw_data;
 
-	char *data_ptr = raw_data;
+	struct LeThread       *lethread;
+	uint64_t               lethread_id;
+
+	struct LeMessage      *lemessage;
+	char                  *text;
+	size_t                 text_size;
+	bool_t                 is_author;
+
+	struct LeCommandResult result         = {0, LESTATUS_OK, NULL};
+
+
 
 	if (size < sizeof("THRID") - 1 + sizeof(lethread_id) + sizeof("TXTSZ") - 1 + sizeof(text_size) + sizeof("TXT") - 1) {
 		result.status = LESTATUS_ISYN;
@@ -249,9 +265,9 @@ struct LeCommandResult cmd_create_lemessage(char *raw_data, size_t size) {
 
 	free(text);
 
-	result.status = LESTATUS_OK;
-	result.size = 0;
 	result.data = NULL;
+	result.size = 0;
+	result.status = LESTATUS_OK;
 
 	return result;
 }
@@ -261,6 +277,7 @@ struct LeCommandResult cmd_create_lemessage(char *raw_data, size_t size) {
  */
 struct LeCommandResult cmd_alive(char *raw_data, size_t size) {
 	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
+
 	return result;
 }
 
@@ -268,9 +285,11 @@ struct LeCommandResult cmd_alive(char *raw_data, size_t size) {
  * Tries to find specified command. If found, executes it.
  */
 struct LeCommandResult query_process(char *raw_data, size_t size) {
-	struct LeCommand cmd = {NULL, NULL};
-	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
-	size_t cmd_name_size;
+	struct LeCommand         cmd            = {NULL, NULL};
+	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
+	size_t                   cmd_name_size;
+
+
 
 	for (size_t i = 0; i < CMD_COUNT; i++) {
 		if (strncmp(raw_data, CMDS[i].name, strlen(CMDS[i].name)) == 0) {
