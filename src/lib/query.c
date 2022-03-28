@@ -121,7 +121,60 @@ struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
  * Creates LeThread with given parameters.
  */
 struct LeCommandResult cmd_create_lethread(char *raw_data, size_t size) {
+	struct LeThread *new_lethread;
+	size_t topic_size;
+	char *answer_start, *answer;
 
+	struct LeCommandResult result = {0, LESTATUS_OK, NULL};
+	char *data_ptr = raw_data;
+	size_t answer_size = sizeof("OKTHRID") - 1 + sizeof(uint64_t) + sizeof("TKN") - 1 + TOKEN_SIZE;
+
+	if (size < sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1) {
+		result.status = LESTATUS_ISYN;
+		return result;
+	}
+
+	if (strncmp(data_ptr, "TPCSZ", sizeof("TPCSZ") - 1) != 0) {
+		result.status = LESTATUS_ISYN;
+		return result;
+	}
+	data_ptr += sizeof("TPCSZ") - 1;
+
+	topic_size = *(size_t *)data_ptr;
+	data_ptr += sizeof(size_t);
+
+	if (strncmp(data_ptr, "TPC", sizeof("TPC") - 1) != 0) {
+		result.status = LESTATUS_ISYN;
+		return result;
+	}
+	data_ptr += sizeof("TPC") - 1;
+
+	new_lethread = s_lethread_create(data_ptr, rand_uint64_t() % 0xffffffff);
+	leauthor_create(new_lethread, TRUE);
+
+	s_lethread_save(new_lethread);
+	s_leauthor_save(new_lethread);
+
+	answer_start = malloc(answer_size);
+	answer = answer_start;
+
+	strncpy(answer, "OKTHRID", sizeof("OKTHRID") - 1);
+	answer += sizeof("OKTHRID") - 1;
+
+	*(uint64_t*)answer = new_lethread->id;
+	answer += sizeof(uint64_t);
+
+	strncpy(answer, "TKN", sizeof("TKN") - 1);
+	answer += sizeof("TKN") - 1;
+
+	strncpy(answer, new_lethread->author->token, TOKEN_SIZE);
+	answer += TOKEN_SIZE;
+
+	result.data = answer_start;
+	result.size = answer_size;
+	result.status = LESTATUS_OK;
+
+	return result;
 }
 
 /*

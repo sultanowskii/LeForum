@@ -292,9 +292,9 @@ status_t leauthor_load(struct LeThread *lethread) {
 	if (leauthor_file == LESTATUS_NSFD) {
 		return LESTATUS_NSFD;
 	}
-	
+
 	leauthor = leauthor_create(lethread, FALSE);
-	
+
 	fread(&leauthor->id, sizeof(leauthor->id), 1, leauthor_file);
 	fread(leauthor->token, 1, TOKEN_SIZE, leauthor_file);
 

@@ -132,7 +132,7 @@ SUCCESS:
 	if (lethread->messages->first == NULL && lethread_message_count(lethread) != 0) {
 		lemessages_load(lethread);
 	}
-	
+
 	if (lethread->author->token == NULL) {
 		leauthor_load(lethread);
 	}
