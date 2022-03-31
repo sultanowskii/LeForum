@@ -18,7 +18,8 @@
 - [ ] Meta-query (to get lethreads)
 - [ ] Spam protection (against message/lethread creation)
 - [ ] Safe ID generation in lethread creation (to prevent collisions)
-- [ ] Safe multithread counter interface (using locks, idk)
+- [x] Safe multithread counter interface (using locks, idk)
+- [ ] Metadata file interface (it has to contain number of lethreads at least)
 #### Client
 
 

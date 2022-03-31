@@ -34,6 +34,16 @@ struct timeval     TIMEOUT                  = {3, 0};
  */
 bool_t             program_on_finish        = FALSE;
 
+/* 
+ * Stores the value of the next created LeThread id
+ */
+uint64_t           next_lethread_id_value   = 0;
+
+/*
+ * Pthread mutexes
+ */
+pthread_mutex_t   *next_lethread_id_mutex;
+
 /*
  * Save file query queues with the purpose of prevention data race..
  */
@@ -162,9 +172,13 @@ status_t s_leauthor_save(struct LeThread *lethread) {
 
 /*
  * Safe lethread creation required by queue.h
+ * 
+ * Here we fill lethread_id inddependently on the argument, because we want
+ * to keep all the lethreads stay in the right order without collisions.
  */
 struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
-	struct LeThread    *lethread            = lethread_create(topic, lethread_id);
+	struct LeThread    *lethread            = lethread_create(topic, next_lethread_id());
+
 
 	queue_push(lethread_queue, lethread, sizeof(struct LeThread));
 
@@ -192,6 +206,10 @@ size_t startup() {
         perror("opendir() failed");
         return LESTATUS_CLIB;
     }
+
+	/*
+	 * TODO: initialize next_lethread_id_value, next_lethread_id_mutex here
+	 */
 
 	lethread = malloc(sizeof(struct LeThread));
 
@@ -221,6 +239,43 @@ size_t startup() {
     return dir_cnt;
 }
 
+/* 
+ * free()s allocated data
+ */
+void cleanup() {
+	static bool_t       cleaned        = FALSE;
+
+	program_on_finish = TRUE;
+
+	if (!cleaned) {
+		cleaned = TRUE;
+		queue_delete(leclientinfo_queue, (void (*)(void *))leclientinfo_delete);
+		queue_delete(lethread_query_queue, (void (*)(void *))lethread_delete);
+		queue_delete(lemessage_query_queue, (void (*)(void *))lethread_delete);
+		queue_delete(leauthor_query_queue, (void (*)(void *))lethread_delete);
+		queue_delete(lethread_queue, (void (*)(void *))lethread_delete);
+	}
+}
+
+/* 
+ * Clean up and exit if some signal occurs
+ */
+void signal_handler(const int signum) {
+	cleanup();
+	exit(signum);
+}
+
+uint64_t next_lethread_id() {
+	uint64_t            value;
+
+
+	pthread_mutex_lock(next_lethread_id_mutex);
+	value = next_lethread_id_value++;
+	pthread_mutex_unlock(next_lethread_id_mutex);
+
+	return value;
+}
+
 /*
  * Communicates with a client, gets and sends queries
  * and requests.
@@ -236,6 +291,7 @@ void * handle_client(void *arg) {
 	int64_t                  sv_data_size             = 0;
 
 	/* =================================== Example ====================================== */
+
 	char client_ip[128];
 
 	uint16_t client_port = ntohs(client_info->addr.sin_port);
@@ -281,32 +337,6 @@ void * handle_client(void *arg) {
 	close(client_info->fd);
 
 	pthread_exit(0);
-}
-
-/* 
- * free()s allocated data
- */
-void cleanup() {
-	static bool_t       cleaned        = FALSE;
-
-	program_on_finish = TRUE;
-
-	if (!cleaned) {
-		cleaned = TRUE;
-		queue_delete(leclientinfo_queue, (void (*)(void *))leclientinfo_delete);
-		queue_delete(lethread_query_queue, (void (*)(void *))lethread_delete);
-		queue_delete(lemessage_query_queue, (void (*)(void *))lethread_delete);
-		queue_delete(leauthor_query_queue, (void (*)(void *))lethread_delete);
-		queue_delete(lethread_queue, (void (*)(void *))lethread_delete);
-	}
-}
-
-/* 
- * Clean up and exit if some signal occurs
- */
-void signal_handler(const int signum) {
-	cleanup();
-	exit(signum);
 }
 
 status_t main(int32_t argc, char *argv[]) {
