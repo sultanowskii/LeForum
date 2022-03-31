@@ -91,7 +91,7 @@ status_t lemessage_delete(struct LeMessage *message) {
 }
 
 /*
- * Creates a new LeAuthor and adds it to the given thread.
+ * Creates a LeAuthor and adds it to the given thread.
  */
 struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token) {
 	struct LeAuthor         *new_leauthor   = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
@@ -187,6 +187,7 @@ status_t lethread_save(struct LeThread *lethread) {
 status_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 	FILE                    *lethread_info_file  = get_le_file(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
 	size_t                   topic_length;
+	uint64_t                 leauthor_id;
 
 
 	if (lethread_info_file == LESTATUS_NSFD) {
@@ -194,10 +195,10 @@ status_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 	}
 
 	lethread->messages = queue_create();
-	lethread->author = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
+	lethread->author = NULL;
 
 	fread(&lethread->id, sizeof(lethread->id), 1, lethread_info_file);
-	fread(&lethread->author->id, sizeof(lethread->author->id), 1, lethread_info_file);
+	fread(&leauthor_id, sizeof(lethread->author->id), 1, lethread_info_file);
 	fread(&lethread->first_message_id, sizeof(lethread->first_message_id), 1, lethread_info_file);
 	fread(&lethread->next_message_id, sizeof(lethread->next_message_id), 1, lethread_info_file);
 	fread(&topic_length, sizeof(topic_length), 1, lethread_info_file);

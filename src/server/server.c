@@ -1,28 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
+#include "server/server.h"
 
-#include <unistd.h>
-#include <sys/time.h>
-
-#include <pthread.h>
-
-#include <sys/socket.h>
-#include <arpa/inet.h>
-
-#include <signal.h>
-
-#include <dirent.h>
-
-#include "lib/constants.h"
-#include "lib/status.h"
-#include "lib/communication.h"
-#include "lib/queue.h"
-#include "lib/forum.h"
-#include "lib/query.h"
-
-#define PACKET_SIZE 16 * 1024
 
 int32_t            SERVER_PORT              = 7431;
 char               SERVER_ADDR[]            = "0.0.0.0";
@@ -61,15 +38,6 @@ struct Queue      *leclientinfo_queue;
  * Here we store all the LeThreads
  */
 struct Queue      *lethread_queue;
-
-/*
- * handle_client() argument
- */
-struct LeClientInfo {
-	int32_t             fd;
-	socklen_t           addr_size;
-	struct sockaddr_in  addr;
-};
 
 /*
  * Saves LeThreads (to corresponding files). This function has to be run
@@ -207,6 +175,16 @@ size_t startup() {
         return LESTATUS_CLIB;
     }
 
+	lethread_query_queue = queue_create();
+	lemessage_query_queue = queue_create();
+	leauthor_query_queue = queue_create();
+	leclientinfo_queue = queue_create();
+	lethread_queue = queue_create();
+
+	atexit(cleanup);
+	signal(SIGTERM, cleanup);
+	signal(SIGINT, signal_handler);
+
 	/*
 	 * TODO: initialize next_lethread_id_value, next_lethread_id_mutex here
 	 */
@@ -228,6 +206,7 @@ size_t startup() {
 			if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
 				continue;
 			}
+			leauthor_load(lethread);
 			queue_push(lethread_queue, lethread, sizeof(struct LeThread));
 			dir_cnt++;
 		}
@@ -357,16 +336,6 @@ status_t main(int32_t argc, char *argv[]) {
 	pthread_t                lemessage_query_manager_thread;
 	pthread_t                leauthor_query_manager_thread;
 
-
-	lethread_query_queue = queue_create();
-	lemessage_query_queue = queue_create();
-	leauthor_query_queue = queue_create();
-	leclientinfo_queue = queue_create();
-	lethread_queue = queue_create();
-
-	atexit(cleanup);
-	signal(SIGTERM, cleanup);
-	signal(SIGINT, signal_handler);
 
 	startup();
 

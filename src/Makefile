@@ -4,10 +4,10 @@ LIBS_CLIENT = "-pthread"
 LIB_FILES_SERVER = $(wildcard lib/*.c)
 LIB_FILES_CLIENT = $(wildcard lib/*.c)
 
-server: server/main.c $(LIB_FILES_SERVER)
+server: server/server.c $(LIB_FILES_SERVER)
 	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -o server/LeForumServer
 
-client: client/main.c $(LIB_FILES)
+client: client/client.c $(LIB_FILES)
 	$(CC) $(CFLAGS) $(LIBS_CLIENT) $^ -o server/LeForumClient
 
 test-forum-core: test/test-forum-core.c $(LIB_FILES_SERVER)
