@@ -163,17 +163,17 @@ struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
  */
 size_t startup() {
 	struct LeThread         *lethread;
-    uint64_t                 lethread_id;
+	uint64_t                 lethread_id;
 
 	DIR                     *srcdir              = opendir(DATA_DIR);
 	struct dirent           *dent;
 	size_t                   dir_cnt             = 0;
 
 
-    if (srcdir == NULL) {
-        perror("opendir() failed");
-        return LESTATUS_CLIB;
-    }
+	if (srcdir == NULL) {
+		perror("opendir() failed");
+		return LESTATUS_CLIB;
+	}
 
 	lethread_query_queue = queue_create();
 	lemessage_query_queue = queue_create();
@@ -192,16 +192,17 @@ size_t startup() {
 	lethread = malloc(sizeof(struct LeThread));
 
     while ((dent = readdir(srcdir)) != NULL) {
-        struct stat st;
+		struct stat st;
 
-        if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0)
-            continue;
+		if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0) {
+			continue;
+		}
 
-        if (fstatat(dirfd(srcdir), dent->d_name, &st, 0) < 0) {
-            continue;
-        }
+		if (fstatat(dirfd(srcdir), dent->d_name, &st, 0) < 0) {
+			continue;
+		}
 
-        if (S_ISDIR(st.st_mode)) {
+		if (S_ISDIR(st.st_mode)) {
 			lethread_id = strtoull(dent->d_name, dent->d_name + strlen(dent->d_name), 10);
 			if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
 				continue;
@@ -210,7 +211,7 @@ size_t startup() {
 			queue_push(lethread_queue, lethread, sizeof(struct LeThread));
 			dir_cnt++;
 		}
-    }
+	}
 
     closedir(srcdir);
 	free(lethread);
