@@ -17,6 +17,8 @@
 - [ ] Find by topic query
 - [ ] Meta-query (to get lethreads)
 - [ ] Spam protection (against message/lethread creation)
+- [ ] Safe ID generation in lethread creation (to prevent collisions)
+- [ ] Safe multithread counter interface (using locks, idk)
 #### Client
 
 
