@@ -191,7 +191,7 @@ size_t startup() {
 
 	lethread = malloc(sizeof(struct LeThread));
 
-    while ((dent = readdir(srcdir)) != NULL) {
+	while ((dent = readdir(srcdir)) != NULL) {
 		struct stat st;
 
 		if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0) {
