@@ -19,7 +19,7 @@ uint64_t           next_lethread_id_value   = 0;
 /*
  * Pthread mutexes
  */
-pthread_mutex_t   *next_lethread_id_mutex;
+pthread_mutex_t    next_lethread_id_mutex;
 
 /*
  * Save file query queues with the purpose of prevention data race..
@@ -147,12 +147,40 @@ status_t s_leauthor_save(struct LeThread *lethread) {
 struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
 	struct LeThread    *lethread            = lethread_create(topic, next_lethread_id());
 
-
 	queue_push(lethread_queue, lethread, sizeof(struct LeThread));
 
 	free(lethread);
 
 	return lethread_queue->last->data; /* Is not very reliable because of multithreading */ 
+}
+
+/*
+ * Loads program metadata
+ */
+void lemeta_load() {
+	FILE                    *metafile;
+	struct stat              st                  = {0};
+
+
+	if (stat(DATA_DIR "/" FILENAME_LEMETA, &st) == -1) {
+		next_lethread_id_value = 0;
+	}
+	else {
+		metafile = fopen(DATA_DIR "/" FILENAME_LEMETA, "rb");
+		fread(&next_lethread_id_value, sizeof(next_lethread_id_value), 1, metafile);
+		fclose(metafile);
+	}
+}
+
+/*
+ * Saves program metadata
+ */
+void lemeta_save() {
+	FILE                    *metafile;
+
+	metafile = fopen(DATA_DIR "/" FILENAME_LEMETA, "wb");
+	fwrite(&next_lethread_id_value, sizeof(next_lethread_id_value), 1, metafile);
+	fclose(metafile);
 }
 
 /*
@@ -213,10 +241,14 @@ size_t startup() {
 		}
 	}
 
-    closedir(srcdir);
+	closedir(srcdir);
 	free(lethread);
 
-    return dir_cnt;
+	lemeta_load();
+
+	pthread_mutex_init(&next_lethread_id_mutex, NULL);
+
+	return dir_cnt;
 }
 
 /* 
@@ -225,15 +257,23 @@ size_t startup() {
 void cleanup() {
 	static bool_t       cleaned        = FALSE;
 
+	FILE                    *metafile;
+
+
 	program_on_finish = TRUE;
 
 	if (!cleaned) {
 		cleaned = TRUE;
+
 		queue_delete(leclientinfo_queue, (void (*)(void *))leclientinfo_delete);
 		queue_delete(lethread_query_queue, (void (*)(void *))lethread_delete);
 		queue_delete(lemessage_query_queue, (void (*)(void *))lethread_delete);
 		queue_delete(leauthor_query_queue, (void (*)(void *))lethread_delete);
 		queue_delete(lethread_queue, (void (*)(void *))lethread_delete);
+
+		pthread_mutex_destroy(&next_lethread_id_mutex);
+
+		lemeta_save();
 	}
 }
 
@@ -249,9 +289,9 @@ uint64_t next_lethread_id() {
 	uint64_t            value;
 
 
-	pthread_mutex_lock(next_lethread_id_mutex);
+	pthread_mutex_lock(&next_lethread_id_mutex);
 	value = next_lethread_id_value++;
-	pthread_mutex_unlock(next_lethread_id_mutex);
+	pthread_mutex_unlock(&next_lethread_id_mutex);
 
 	return value;
 }

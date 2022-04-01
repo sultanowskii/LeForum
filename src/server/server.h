@@ -22,7 +22,8 @@
 #include "lib/forum.h"
 #include "lib/query.h"
 
-#define PACKET_SIZE 16 * 1024
+#define PACKET_SIZE          16 * 1024
+#define FILENAME_LEMETA      "lemeta"
 
 /*
  * handle_client() argument
@@ -37,6 +38,9 @@ status_t                main(int32_t argc, char *argv[]);
 
 size_t                  startup();
 void                    cleanup();
+
+void                    lemeta_load();
+void                    lemeta_save();
 
 void *                  lethread_query_manage();
 void *                  lemessages_query_manage();
