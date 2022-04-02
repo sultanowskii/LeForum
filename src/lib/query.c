@@ -1,9 +1,10 @@
 #include "lib/query.h"
 
 struct LeCommand CMDS[CMD_COUNT] = {
-	{"GTHR", cmd_get_lethread},
-	{"CTHR", cmd_create_lethread},
-	{"CMSG", cmd_create_lemessage},
+	{"GTHR", cmd_lethread_get},
+	{"CTHR", cmd_lethread_create},
+	{"FTHR", cmd_lethread_find},
+	{"CMSG", cmd_lemessage_create},
 	{"LIVE", cmd_alive}
 };
 
@@ -11,7 +12,7 @@ struct LeCommand CMDS[CMD_COUNT] = {
  * Parses a query, if valid, retrieves lethread information,
  * including topic, message history, etc.
  */
-struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
+struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	char                    *data_ptr       = raw_data;
 
 	struct LeThread         *lethread       = NULL;
@@ -38,11 +39,11 @@ struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
 		return result;
 	}
 
-	if (strncmp(data_ptr, "THRID", 5) != 0) {
+	if (strncmp(data_ptr, "THRID", sizeof("THRID") - 1) != 0) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
-	data_ptr += 5;
+	data_ptr += sizeof("THRID") - 1;
 
 	lethread_id = *(uint64_t *)data_ptr;
 	lethread = lethread_get_by_id(lethread_id);
@@ -112,6 +113,8 @@ struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
 		strncpy(answer, "MSGEND", sizeof("MSGEND") - 1);
 		answer += sizeof("MSGEND") - 1;
 		node = node->next;
+
+		answer_size = answer - answer_start;
 	}
 
 	free(lethread);
@@ -126,7 +129,7 @@ struct LeCommandResult cmd_get_lethread(char *raw_data, size_t size) {
 /*
  * Creates LeThread with given parameters.
  */
-struct LeCommandResult cmd_create_lethread(char *raw_data, size_t size) {
+struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	char                    *data_ptr              = raw_data;
 
 	struct LeThread         *new_lethread;
@@ -188,12 +191,110 @@ struct LeCommandResult cmd_create_lethread(char *raw_data, size_t size) {
 }
 
 /*
+ * Parses a query, if valid, retrieves finds lethread by provided parameters.
+ */
+struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
+	char                    *data_ptr       = raw_data;
+
+	struct Queue            *lethreads;
+	struct LeThread         *lethread       = NULL;
+	uint64_t                 lethread_id;
+	size_t                   topic_size;
+
+	struct QueueNode        *node;
+
+	char                    *topic_part;
+	size_t                   topic_part_size;
+
+	size_t                   chunk_size;
+
+	char                    *answer;
+	char                    *answer_start;
+	size_t                   answer_size;
+
+	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
+
+
+	if (strncmp(data_ptr, "TPCPSZ", sizeof("TPCPSZ") - 1) != 0) {
+		result.status = LESTATUS_ISYN;
+		return result;
+	}
+	data_ptr += sizeof("TPCPSZ") - 1;
+
+	topic_part_size = *(size_t *)data_ptr;
+	data_ptr += sizeof(topic_part_size);
+
+	if (strncmp(data_ptr, "TPCP", sizeof("TPCP") - 1) != 0) {
+		result.status = LESTATUS_ISYN;
+		return result;
+	}
+	data_ptr += sizeof("TPCP") - 1;
+
+	topic_part = malloc(topic_part_size + 1);
+	strncpy(topic_part, data_ptr, topic_part_size);
+	topic_part[topic_part_size] = '\0';
+	data_ptr += topic_part_size;
+
+	lethreads = lethread_find(topic_part, topic_part_size);
+
+	node = lethreads->first;
+
+	chunk_size = 1024;
+	answer_start = malloc(chunk_size);
+	answer = answer_start;
+	answer_size = answer - answer_start;
+
+	if (node == NULL) {
+		strncpy(answer, "NFND", sizeof("NFND") - 1);
+		goto FTHR_SUCCESS;
+	}
+
+	while (node != NULL) {
+		while (answer_size + sizeof("THRID") - 1 + sizeof(lethread->id) + sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1 + topic_size > chunk_size) {
+			chunk_size *= 2;
+			answer_start = realloc(answer_start, chunk_size);
+			answer = answer_start + answer_size;
+		}
+
+		lethread = node->data;
+		strncpy(answer, "THRID", sizeof("THRID") - 1);
+		answer += sizeof("THRID") - 1;
+
+		*(uint64_t *)answer = lethread->id;
+		answer += sizeof(lethread->id);
+
+		strncpy(answer, "TPCSZ", sizeof("TPCSZ") - 1);
+		answer += sizeof("TPCSZ") - 1;
+		topic_size = strlen(lethread->topic);
+		*(size_t *)answer = topic_size;
+		answer += sizeof(topic_size);
+
+		strncpy(answer, "TPC", sizeof("TPC") - 1);
+		answer += sizeof("TPC") - 1;
+
+		strncpy(answer, lethread->topic, topic_size);
+		answer += topic_size;
+
+		answer_size = answer - answer_start;
+	}
+
+FTHR_SUCCESS:
+	free(topic_part);
+
+	result.data = answer_start;
+	result.size = answer - answer_start;
+	result.status = LESTATUS_OK;
+
+	return result;
+}
+
+/*
  * Parses a query, if valid, adds a new message to the specific lethread.
  *
  * TOKEN is an optional argument. If not presented/not correct, then the message
  * will be posted anonymously.
  */
-struct LeCommandResult cmd_create_lemessage(char *raw_data, size_t size) {
+struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	char                  *data_ptr       = raw_data;
 
 	struct LeThread       *lethread;

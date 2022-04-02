@@ -7,25 +7,35 @@
 #include "lib/constants.h"
 #include "lib/status.h"
 
-#define CMD_COUNT 4
+#define CMD_COUNT 5
 
-/*
- * Finds a lethread with id=lethread_id. If not found, LESTATUS_NFND is returned.
- *
- * This function has to implemented by you as a user of this library.
+
+/* 
+ * ===============================================================================
+ * Following functions (in this section) have to implemented
+ * by you as a user of this library.
  *
  * The reason is that from this perspective it's unknown how
  * do you store all the lethreads (in linked list, in array, ...?).
+ */
+
+/*
+ * Finds a lethread with id=lethread_id. If not found, LESTATUS_NFND is returned.
  * 
- * By using this interface, you promise you will free() lethread 
- * (the one this function returns) after query processing.
+ * The returned LeThread has to be free()'d by you as a user of this interface
  */
 struct LeThread *            lethread_get_by_id(uint64_t lethread_id);
+
+
+/*
+ * Finds a lethread with given parameters, empty data is returned.
+ */
+struct Queue *               lethread_find(char *topic_part, size_t topic_part_size);
 
 /*
  * Multithread-safe functions.
  * 
- * This functions have to implemented by you as a user of this library.
+ * The returned LeThread (in s_lethread_create()) has to be free()'d by you as a user of this interface
  */
 status_t                     s_lethread_save(struct LeThread *lethread);
 status_t                     s_lemessages_save(struct LeThread *lethread);
@@ -33,6 +43,11 @@ status_t                     s_lemessage_save(struct LeMessage *lemessage);
 status_t                     s_leauthor_save(struct LeThread *lethread);
 
 struct LeThread *            s_lethread_create(char *topic, uint64_t lethread_id);
+
+/* 
+ * ===============================================================================
+ */
+
 
 struct LeCommand {
 	char                    *name;
@@ -45,9 +60,10 @@ struct LeCommandResult {
 	void                    *data;
 };
 
-struct LeCommandResult       cmd_get_lethread(char *raw_data, size_t size);
-struct LeCommandResult       cmd_create_lethread(char *raw_data, size_t size);
-struct LeCommandResult       cmd_create_lemessage(char *raw_data, size_t size);
+struct LeCommandResult       cmd_lethread_get(char *raw_data, size_t size);
+struct LeCommandResult       cmd_lethread_create(char *raw_data, size_t size);
+struct LeCommandResult       cmd_lemessage_create(char *raw_data, size_t size);
+struct LeCommandResult       cmd_lethread_find(char *raw_data, size_t size);
 struct LeCommandResult       cmd_alive(char *raw_data, size_t size);
 
 struct LeCommandResult       query_process(char *raw_data, size_t size);

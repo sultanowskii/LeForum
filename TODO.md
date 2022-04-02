@@ -14,7 +14,8 @@
 - [x] Query manager for LeMessage. Current problem is that all the "*_save()" functions take only LeThread, and lemessage_save() takes 2 arguments. How should they be stored?
 - [x] Already existing lethreads loader on a startup
 - [x] Thread creation query
-- [ ] Find by topic query
+- [x] Find by topic query
+- [ ] Test find by topic query
 - [ ] Meta-query (to get lethreads)
 - [ ] Spam protection (against message/lethread creation)
 - [x] Safe ID generation in lethread creation (to prevent collisions)

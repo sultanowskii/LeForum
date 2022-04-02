@@ -95,7 +95,7 @@ struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
 	while (node != NULL) {
 		lethread = node->data;
 		if (lethread->id == lethread_id) {
-			goto SUCCESS;
+			goto LTHR_GET_BY_ID_SUCCESS;
 		}
 		node = node->next;
 	}
@@ -107,7 +107,7 @@ struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
 		return LESTATUS_NFND;
 	}
 
-SUCCESS:
+LTHR_GET_BY_ID_SUCCESS:
 	if (lethread->messages->first == NULL && lethread_message_count(lethread) != 0) {
 		lemessages_load(lethread);
 	}
@@ -117,6 +117,28 @@ SUCCESS:
 	}
 
 	return lethread;
+}
+
+/*
+ * Implementation of lethread_find() required by query.h
+ */
+struct Queue * lethread_find(char *topic_part, size_t topic_part_size) {
+	struct LeThread         *lethread;
+	struct QueueNode        *node           = lethread_queue->first;
+
+	struct Queue            *lethreads_match;
+
+	lethreads_match = queue_create();
+
+	while (node != NULL) {
+		lethread = node->data;
+		if (strstr(lethread->topic, topic_part) != NULL) {
+			queue_push(lethreads_match, lethread, sizeof(struct LeThread));
+		}
+		node = node->next;
+	}
+
+	return lethreads_match;
 }
 
 /*
