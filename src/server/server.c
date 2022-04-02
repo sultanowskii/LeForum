@@ -307,8 +307,10 @@ void * handle_client(void *arg) {
 	char                     cl_data[PACKET_SIZE];
 	char                     sv_data[PACKET_SIZE];
 
-	int64_t                  cl_data_size             = 0;
-	int64_t                  sv_data_size             = 0;
+	size_t                  cl_expected_data_size    = 0;
+	size_t                  cl_data_size             = 0;
+	size_t                  sv_data_size             = 0;
+
 
 	/* =================================== Example ====================================== */
 
@@ -323,7 +325,8 @@ void * handle_client(void *arg) {
 	/* ================================= Example end ==================================== */
 
 	while (!program_on_finish) {
-		cl_data_size = recv(client_info->fd, cl_data, PACKET_SIZE, NULL);
+		recv(client_info->fd, cl_expected_data_size, sizeof(cl_expected_data_size), NULL);
+		cl_data_size = recv(client_info->fd, cl_data, cl_expected_data_size, NULL);
 
 		/* Timeout/connection closed */
 		if (cl_data_size < 0) {
@@ -334,17 +337,21 @@ void * handle_client(void *arg) {
 
 		if (query_result.size == 0) {
 			if (query_result.status == LESTATUS_OK) {
+				send(client_info->fd, (size_t)2, sizeof(size_t), NULL);
 				send(client_info->fd, "OK", 2, NULL); /* If query returned nothing, then sends OK */
 			}
 			else {
+				send(client_info->fd, (size_t)3, sizeof(size_t), NULL);
 				send(client_info->fd, "ERR", 3, NULL); /* Error without description */
 			}
 		}
 		else {
 			if (query_result.data != NULL) {
+				send(client_info->fd, query_result.size, sizeof(size_t), NULL);
 				send(client_info->fd, query_result.data, query_result.size, NULL); /* Sends the query result */
 			}
 			else {
+				send(client_info->fd, (size_t)3, sizeof(size_t), NULL);
 				send(client_info->fd, "ERR", 3, NULL); /* This case is not valid, sends error without description */
 			}
 		}

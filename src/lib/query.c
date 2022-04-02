@@ -4,7 +4,7 @@ struct LeCommand CMDS[CMD_COUNT] = {
 	{"GTHR", cmd_get_lethread},
 	{"CTHR", cmd_create_lethread},
 	{"CMSG", cmd_create_lemessage},
-	{"LIV", cmd_alive}
+	{"LIVE", cmd_alive}
 };
 
 /*
