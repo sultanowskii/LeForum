@@ -19,7 +19,7 @@
 - [ ] Spam protection (against message/lethread creation)
 - [x] Safe ID generation in lethread creation (to prevent collisions)
 - [x] Safe multithread counter interface (using locks, idk)
-- [ ] Metadata file interface (it has to contain number of lethreads at least) + loading next_lethread_id_value
+- [x] Metadata file interface (it has to contain number of lethreads at least) + loading next_lethread_id_value
 #### Client
 
 
