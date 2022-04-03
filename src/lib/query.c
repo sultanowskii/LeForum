@@ -8,10 +8,6 @@ struct LeCommand CMDS[CMD_COUNT] = {
 	{"LIVE", cmd_alive}
 };
 
-/*
- * Parses a query, if valid, retrieves lethread information,
- * including topic, message history, etc.
- */
 struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	char                    *data_ptr       = raw_data;
 
@@ -126,9 +122,6 @@ struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	return result;
 }
 
-/*
- * Creates LeThread with given parameters.
- */
 struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	char                    *data_ptr              = raw_data;
 
@@ -190,9 +183,6 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	return result;
 }
 
-/*
- * Parses a query, if valid, retrieves finds lethread by provided parameters.
- */
 struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	char                    *data_ptr       = raw_data;
 
@@ -288,12 +278,6 @@ FTHR_SUCCESS:
 	return result;
 }
 
-/*
- * Parses a query, if valid, adds a new message to the specific lethread.
- *
- * TOKEN is an optional argument. If not presented/not correct, then the message
- * will be posted anonymously.
- */
 struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	char                  *data_ptr       = raw_data;
 
@@ -352,6 +336,7 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	is_author = FALSE;
 
+	/* TOKEN is an optional argument. If not presented/not correct, then the message  will be posted anonymously. */
 	if (strncmp(data_ptr, "TKN", sizeof("TXT") - 1) == 0) {
 		data_ptr += sizeof("TXT") - 1;
 		is_author = is_token_valid(lethread, data_ptr);
@@ -370,18 +355,12 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	return result;
 }
 
-/* 
- * Assures the connection is not lost.
- */
 struct LeCommandResult cmd_alive(char *raw_data, size_t size) {
 	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
 
 	return result;
 }
 
-/*
- * Tries to find specified command. If found, executes it.
- */
 struct LeCommandResult query_process(char *raw_data, size_t size) {
 	struct LeCommand         cmd            = {NULL, NULL};
 	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};

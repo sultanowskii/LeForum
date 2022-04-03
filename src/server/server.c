@@ -39,12 +39,6 @@ struct Queue      *leclientinfo_queue;
  */
 struct Queue      *lethread_queue;
 
-/*
- * Saves LeThreads (to corresponding files). This function has to be run
- * in the separate thread.
- * 
- * The purpose is to avoid accessing same file from different threads.
- */
 void * lethread_query_manage() {
 	while (!program_on_finish) {
 		while (!queue_is_empty(lethread_query_queue) && !program_on_finish) {
@@ -77,16 +71,10 @@ void * leauthor_query_manage() {
 	}
 }
 
-/*
- * Used by queue_delete()
- */
 void leclientinfo_delete(struct LeClientInfo *clinfo) {
 	free(clinfo);
 }
 
-/*
- * Implementation of lethread_get_by_id() required by query.h
- */
 struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
 	struct LeThread         *lethread;
 	struct QueueNode        *node           = lethread_queue->first;
@@ -119,9 +107,6 @@ LTHR_GET_BY_ID_SUCCESS:
 	return lethread;
 }
 
-/*
- * Implementation of lethread_find() required by query.h
- */
 struct Queue * lethread_find(char *topic_part, size_t topic_part_size) {
 	struct LeThread         *lethread;
 	struct QueueNode        *node           = lethread_queue->first;
@@ -141,9 +126,6 @@ struct Queue * lethread_find(char *topic_part, size_t topic_part_size) {
 	return lethreads_match;
 }
 
-/*
- * Implementation of safe functions required by query.h
- */
 status_t s_lethread_save(struct LeThread *lethread) {
 	queue_push(lethread_query_queue, lethread, sizeof(struct LeThread));
 }
@@ -160,14 +142,12 @@ status_t s_leauthor_save(struct LeThread *lethread) {
 	queue_push(leauthor_query_queue, lethread, sizeof(struct LeThread));
 }
 
-/*
- * Safe lethread creation required by queue.h
- * 
- * Here we fill lethread_id inddependently on the argument, because we want
- * to keep all the lethreads stay in the right order without collisions.
- */
 struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
+	/* Here we fill lethread_id inddependently on the argument, 
+	 * because we want to keep all the lethreads stay in the right order without collisions. 
+	 */
 	struct LeThread    *lethread            = lethread_create(topic, next_lethread_id());
+
 
 	queue_push(lethread_queue, lethread, sizeof(struct LeThread));
 
@@ -176,9 +156,6 @@ struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
 	return lethread_queue->last->data; /* Is not very reliable because of multithreading */ 
 }
 
-/*
- * Loads program metadata
- */
 void lemeta_load() {
 	FILE                    *metafile;
 	struct stat              st                  = {0};
@@ -194,9 +171,6 @@ void lemeta_load() {
 	}
 }
 
-/*
- * Saves program metadata
- */
 void lemeta_save() {
 	FILE                    *metafile;
 
@@ -205,12 +179,6 @@ void lemeta_save() {
 	fclose(metafile);
 }
 
-/*
- * Loads already existing lethreads to the queue.
- * 
- * Notice that this fucntion doesn't load lemessages - we load them when we are
- * asked to by client for the first time.
- */
 size_t startup() {
 	struct LeThread         *lethread;
 	uint64_t                 lethread_id;
@@ -273,9 +241,6 @@ size_t startup() {
 	return dir_cnt;
 }
 
-/* 
- * free()s allocated data
- */
 void cleanup() {
 	static bool_t       cleaned        = FALSE;
 
@@ -299,9 +264,6 @@ void cleanup() {
 	}
 }
 
-/* 
- * Clean up and exit if some signal occurs
- */
 void signal_handler(const int signum) {
 	cleanup();
 	exit(signum);
@@ -318,10 +280,6 @@ uint64_t next_lethread_id() {
 	return value;
 }
 
-/*
- * Communicates with a client, gets and sends queries
- * and requests.
- */
 void * handle_client(void *arg) {
 	struct LeClientInfo     *client_info              = (struct LeClientInfo *)arg;
 	struct LeCommandResult   query_result;

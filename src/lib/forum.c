@@ -1,9 +1,5 @@
 #include "lib/forum.h"
 
-/*
- * Creates new LeThread, if there is no one with provided id.
- * If there is, then returns LESTATUS_EXST.
- */
 struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	struct LeThread         *new_lethread;
 	size_t                   topic_length;
@@ -32,10 +28,6 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	return new_lethread;
 }
 
-
-/*
- * Safely deletes the LeThread.
- */
 status_t lethread_delete(struct LeThread *lethread) {
 	struct QueueNode        *node           = lethread->messages->first;
 	struct LeMessage        *lemessage;
@@ -51,16 +43,10 @@ status_t lethread_delete(struct LeThread *lethread) {
 	return LESTATUS_OK;
 }
 
-/*
- * Returns number of lemessages in the given lethread
- */
 uint64_t lethread_message_count(struct LeThread *lethread) {
 	return lethread->next_message_id - lethread->first_message_id;
 }
 
-/*
- * Creates a new LeMessage and adds it to the given thread.
- */
 struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_t by_lethread_author) {
 	struct LeMessage        *new_lemessage  = (struct LeMessage *)malloc(sizeof(struct LeMessage));
 	size_t                   length         = strlen(text);
@@ -80,9 +66,6 @@ struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_
 	return lethread->messages->last->data;
 }
 
-/*
- * Safely deletes LeMessage.
- */
 status_t lemessage_delete(struct LeMessage *message) {
 	free(message->text);
 	free(message);
@@ -90,9 +73,6 @@ status_t lemessage_delete(struct LeMessage *message) {
 	return LESTATUS_OK;
 }
 
-/*
- * Creates a LeAuthor and adds it to the given thread.
- */
 struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token) {
 	struct LeAuthor         *new_leauthor   = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
 
@@ -106,9 +86,6 @@ struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token
 	return new_leauthor;
 }
 
-/*
- * Safely deletes LeAuthor.
- */
 status_t leauthor_delete(struct LeAuthor *author) {
 	free(author->token);
 	free(author);
@@ -116,12 +93,6 @@ status_t leauthor_delete(struct LeAuthor *author) {
 	return LESTATUS_OK;
 }
 
-/*
- * Opens one (specified in filename) of the lethread files
- * 
- * If file/directory doesn't exist and create==TRUE, creates file/directory,
- * otherwise returns LESTATUS_NSFD.
- */
 FILE * get_le_file(uint64_t lethread_id, char *mode, char *filename, bool_t create) {
 	char                     path[256];
 	char                     id_str[32];
@@ -153,9 +124,6 @@ FILE * get_le_file(uint64_t lethread_id, char *mode, char *filename, bool_t crea
 	return file;
 }
 
-/*
- * Saves LeThread to the corresponding file.
- */
 status_t lethread_save(struct LeThread *lethread) {
 	size_t                   topic_length   = strlen(lethread->topic);
 	FILE                    *lethread_info_file;
@@ -179,11 +147,6 @@ status_t lethread_save(struct LeThread *lethread) {
 	return LESTATUS_OK;
 }
 
-/*
- * Loads LeThread from the corresponding file.
- * 
- * If file is not found, LESTATUS_NSFD is returned.
- */
 status_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 	FILE                    *lethread_info_file  = get_le_file(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
 	size_t                   topic_length;
@@ -213,9 +176,6 @@ status_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 	return LESTATUS_OK;
 }
 
-/*
- * Saves LeMessage history to the corresponding file.
- */
 status_t lemessages_save(struct LeThread *lethread) {
 	FILE                    *lemessages_file;
 
@@ -246,9 +206,6 @@ status_t lemessages_save(struct LeThread *lethread) {
 	return LESTATUS_OK;
 }
 
-/*
- * Saves one LeMessage to the corresponding file.
- */
 status_t lemessage_save(struct LeMessage *lemessage) {
 	size_t                   text_length         = strlen(lemessage->text);
 	FILE                    *lemessages_file;
@@ -266,11 +223,6 @@ status_t lemessage_save(struct LeMessage *lemessage) {
 	return LESTATUS_OK;
 }
 
-/*
- * Loads LeMessage history from the corresponding file to the lethread object.
- * 
- * If file is not found, LESTATUS_NSFD is returned.
- */
 status_t lemessages_load(struct LeThread *lethread) {
 	FILE                    *lemessages_file     = get_le_file(lethread->id, "rb", FILENAME_LEMESSAGES, FALSE);
 
@@ -299,9 +251,6 @@ status_t lemessages_load(struct LeThread *lethread) {
 	return LESTATUS_OK;
 }
 
-/*
- * Loads the author of the lethread from the corresponding file
- */
 status_t leauthor_load(struct LeThread *lethread) {
 	struct LeAuthor         *leauthor;
 	FILE                    *leauthor_file  = get_le_file(lethread->id, "rb", FILENAME_LEAUTHOR, FALSE);
@@ -320,9 +269,6 @@ status_t leauthor_load(struct LeThread *lethread) {
 	return LESTATUS_OK;
 }
 
-/*
- * Saves author of the lethread to the corresponding file
- */
 status_t leauthor_save(struct LeThread *lethread) {
 	FILE                    *leauthor_file  = get_le_file(lethread->id, "wb", FILENAME_LEAUTHOR, TRUE);
 
@@ -339,9 +285,6 @@ status_t leauthor_save(struct LeThread *lethread) {
 	return LESTATUS_OK;
 }
 
-/*
- * Checks author token for a specific lethread
- */
 bool_t is_token_valid(struct LeThread *lethread, const char *token) {
 	if (strncmp(lethread->author->token, token, TOKEN_SIZE) != 0) {
 		return FALSE;

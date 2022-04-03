@@ -1,22 +1,16 @@
 #include "lib/queue.h"
 
-/*
- * Creates a new Queue object.
- */
 struct Queue * queue_create() {
 	struct Queue            *new_queue      = (struct Queue *)malloc(sizeof(struct Queue));
 
 
 	new_queue->size = 0;
-	new_queue->first = 0;
-	new_queue->last = 0;
+	new_queue->first = NULL;
+	new_queue->last = NULL;
 
 	return new_queue;
 };
 
-/*
- * Safely deletes the Queue and all the elements.
- */
 status_t queue_delete(struct Queue *queue, void (*delete_func)(void *)) {
 	struct QueueNode        *node           = queue->first;
 	struct QueueNode        *next;
@@ -34,16 +28,13 @@ status_t queue_delete(struct Queue *queue, void (*delete_func)(void *)) {
 	return LESTATUS_OK;
 };
 
-/*
- * Adds a new element to the end of the Queue.
- */
-status_t queue_push(struct Queue *queue, void *data, size_t length) {
+status_t queue_push(struct Queue *queue, void *data, size_t size) {
 	struct QueueNode        *new_node       = (struct QueueNode *)malloc(sizeof(struct QueueNode));
 
 
-	new_node->data = malloc(length);
-	memset(new_node->data, 0, length);
-	memcpy(new_node->data, data, length);
+	new_node->data = malloc(size);
+	memset(new_node->data, 0, size);
+	memcpy(new_node->data, data, size);
 
 	new_node->next = NULL;
 
@@ -61,9 +52,6 @@ status_t queue_push(struct Queue *queue, void *data, size_t length) {
 	return LESTATUS_OK;
 }
 
-/*
- * Retrieves the first element and deletes it from the Queue.
- */
 void * queue_pop(struct Queue *queue) {
 	struct QueueNode        *first          = queue->first;
 	void                    *data;
@@ -91,9 +79,6 @@ void * queue_pop(struct Queue *queue) {
 	return data;
 }
 
-/* 
- * Checks whether queue is empty or not
- */
 bool_t queue_is_empty(struct Queue *queue) {
 	return queue->size == 0;
 }
