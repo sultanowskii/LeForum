@@ -73,6 +73,7 @@ void * leauthor_query_manage() {
 
 void leclientinfo_delete(struct LeClientInfo *clinfo) {
 	free(clinfo);
+	clinfo = nullptr;
 }
 
 struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
@@ -83,24 +84,16 @@ struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
 	while (node != NULL) {
 		lethread = node->data;
 		if (lethread->id == lethread_id) {
-			goto LTHR_GET_BY_ID_SUCCESS;
+			break;
 		}
 		node = node->next;
 	}
 
-	lethread = malloc(sizeof(struct LeThread));
-
-	if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
-		free(lethread);
-		return LESTATUS_NFND;
-	}
-
-LTHR_GET_BY_ID_SUCCESS:
-	if (lethread->messages->first == NULL && lethread_message_count(lethread) != 0) {
+	if (lethread->messages->first == nullptr && lethread_message_count(lethread) != 0) {
 		lemessages_load(lethread);
 	}
 
-	if (lethread->author->token == NULL) {
+	if (lethread->author->token == nullptr) {
 		leauthor_load(lethread);
 	}
 
@@ -143,7 +136,7 @@ status_t s_leauthor_save(struct LeThread *lethread) {
 }
 
 struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
-	/* Here we fill lethread_id inddependently on the argument, 
+	/* Here we fill lethread_id independently on the argument, 
 	 * because we want to keep all the lethreads stay in the right order without collisions. 
 	 */
 	struct LeThread    *lethread            = lethread_create(topic, next_lethread_id());
@@ -152,6 +145,7 @@ struct LeThread * s_lethread_create(char *topic, uint64_t lethread_id) {
 	queue_push(lethread_queue, lethread, sizeof(struct LeThread));
 
 	free(lethread);
+	lethread = nullptr;
 
 	return lethread_queue->last->data; /* Is not very reliable because of multithreading */ 
 }
@@ -232,6 +226,7 @@ size_t startup() {
 
 	closedir(srcdir);
 	free(lethread);
+	lethread = nullptr;
 
 	lemeta_load();
 
@@ -251,15 +246,16 @@ void cleanup() {
 	if (!cleaned) {
 		cleaned = TRUE;
 
+		lemeta_save();
+
 		queue_delete(leclientinfo_queue, (void (*)(void *))leclientinfo_delete);
 		queue_delete(lethread_query_queue, (void (*)(void *))lethread_delete);
-		queue_delete(lemessage_query_queue, (void (*)(void *))lethread_delete);
+		queue_delete(lemessages_query_queue, (void (*)(void *))lethread_delete);
+		queue_delete(lemessage_query_queue, (void (*)(void *))lemessage_delete);
 		queue_delete(leauthor_query_queue, (void (*)(void *))lethread_delete);
 		queue_delete(lethread_queue, (void (*)(void *))lethread_delete);
 
 		pthread_mutex_destroy(&next_lethread_id_mutex);
-
-		lemeta_save();
 	}
 }
 
@@ -343,12 +339,14 @@ void * handle_client(void *arg) {
 
 		if (query_result.data != NULL) {
 			free(query_result.data);
+			query_result.data = nullptr;
 		}
 	}
 
 	close(client_info->fd);
 
 	free(cl_data);
+	cl_data = nullptr;
 
 	pthread_exit(0);
 }

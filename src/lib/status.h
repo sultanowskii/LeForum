@@ -9,5 +9,6 @@
 #define LESTATUS_NFND        -4 /* Not found */
 #define LESTATUS_ISYN        -5 /* Invalid Syntax */
 #define LESTATUS_IDAT        -6 /* Invalid Data */
+#define LESTATUS_NPTR        -7 /* Null pointer */
 
 typedef int8_t status_t;

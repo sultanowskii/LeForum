@@ -6,6 +6,9 @@ ssize_t sendf(int32_t fd, char *str, ...) {
 	int32_t                  result          = 0;
 
 
+	if (str == nullptr) {
+		return LESTATUS_NPTR;
+	}
 	va_start(args, str);
 
 	vsnprintf(buffer, (uint64_t)4095, str, args);

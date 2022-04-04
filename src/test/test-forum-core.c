@@ -7,7 +7,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "lib/forum.h"
+#include "server/forum.h"
+
 #include "lib/queue.h"
 
 struct LeThread * lethread_get_by_id(uint64_t lethread_id) {

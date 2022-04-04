@@ -3,8 +3,14 @@
 struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	struct LeThread         *new_lethread;
 	size_t                   topic_length;
-	FILE*                    lethread_file  = get_le_file(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
+	FILE*                    lethread_file;
 
+
+	if (topic == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
+	lethread_file = get_le_file(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
 
 	/* If the lethread file already exists, then nothing should be done */
 	if (lethread_file != LESTATUS_NSFD) {
@@ -19,7 +25,7 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	new_lethread->first_message_id = rand_uint64_t() % 0xffffffff;
 	new_lethread->next_message_id = new_lethread->first_message_id;
 	new_lethread->messages = queue_create();
-	new_lethread->author = NULL;
+	new_lethread->author = nullptr;
 
 	new_lethread->topic = malloc(topic_length + 1);
 	memset(new_lethread->topic, 0, topic_length + 1);
@@ -29,29 +35,50 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 }
 
 status_t lethread_delete(struct LeThread *lethread) {
-	struct QueueNode        *node           = lethread->messages->first;
-	struct LeMessage        *lemessage;
+	if (lethread == nullptr) {
+		return LESTATUS_NPTR;
+	}
 
+	if (lethread->messages != nullptr) {
+		queue_delete(lethread->messages, (void (*)(void *))lemessage_delete);
+		lethread->messages = nullptr;
+	}
 
-	queue_delete(lethread->messages, (void (*)(void *))lemessage_delete);
+	if (lethread->author != nullptr) {
+		leauthor_delete(lethread->author);
+		lethread->author = nullptr;
+	}
 
-	leauthor_delete(lethread->author);
+	if (lethread->topic != nullptr) {
+		free(lethread->topic);
+		lethread->topic = nullptr;
+	}
 
-	free(lethread->topic);
 	free(lethread);
+	lethread = nullptr;
 
 	return LESTATUS_OK;
 }
 
 uint64_t lethread_message_count(struct LeThread *lethread) {
+	if (lethread == NULL) {
+		return LESTATUS_NPTR;
+	}
+
 	return lethread->next_message_id - lethread->first_message_id;
 }
 
 struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_t by_lethread_author) {
-	struct LeMessage        *new_lemessage  = (struct LeMessage *)malloc(sizeof(struct LeMessage));
-	size_t                   length         = strlen(text);
+	struct LeMessage        *new_lemessage;
+	size_t                   length;
 
 
+	if (lethread == nullptr || lethread->messages == nullptr || text == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
+	new_lemessage = (struct LeMessage *)malloc(sizeof(struct LeMessage));
+	length = strlen(text);
 	new_lemessage->id = lethread->next_message_id++;
 	new_lemessage->by_lethread_author = by_lethread_author;
 
@@ -62,13 +89,22 @@ struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_
 
 	queue_push(lethread->messages, new_lemessage, sizeof(struct LeMessage));
 	free(new_lemessage);
+	new_lemessage = nullptr;
 
 	return lethread->messages->last->data;
 }
 
 status_t lemessage_delete(struct LeMessage *message) {
-	free(message->text);
+	if (message == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
+	if (message->text != nullptr) {
+		 free(message->text);
+		 message->text = nullptr;
+	}
 	free(message);
+	message = nullptr;
 
 	return LESTATUS_OK;
 }
@@ -76,10 +112,17 @@ status_t lemessage_delete(struct LeMessage *message) {
 struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token) {
 	struct LeAuthor         *new_leauthor   = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
 
+
 	new_leauthor->id = rand_uint64_t() % 0xffffffff;
 	new_leauthor->token = malloc(TOKEN_SIZE + 1);
-	memset(new_leauthor->token, 0, TOKEN_SIZE + 1);
-	if (create_token) rand_string(new_leauthor->token, TOKEN_SIZE);
+
+
+	if (create_token) {
+		rand_string(new_leauthor->token, TOKEN_SIZE);
+	}
+	else {
+		memset(new_leauthor->token, 0, TOKEN_SIZE + 1);
+	}
 
 	lethread->author = new_leauthor;
 
@@ -87,8 +130,16 @@ struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token
 }
 
 status_t leauthor_delete(struct LeAuthor *author) {
-	free(author->token);
+	if (author == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
+	if (author->token != nullptr) {
+		free(author->token);
+		author->token = nullptr;
+	}
 	free(author);
+	author = nullptr;
 
 	return LESTATUS_OK;
 }
@@ -100,6 +151,10 @@ FILE * get_le_file(uint64_t lethread_id, char *mode, char *filename, bool_t crea
 	FILE                    *file;
 	struct stat              st             = {0};
 
+
+	if (mode == nullptr || filename == nullptr) {
+		return LESTATUS_NPTR;
+	}
 
 	memset(id_str, 0, sizeof(id_str));
 	memset(path, 0, sizeof(path));
@@ -125,10 +180,15 @@ FILE * get_le_file(uint64_t lethread_id, char *mode, char *filename, bool_t crea
 }
 
 status_t lethread_save(struct LeThread *lethread) {
-	size_t                   topic_length   = strlen(lethread->topic);
+	size_t                   topic_length;
 	FILE                    *lethread_info_file;
 
 
+	if (lethread == nullptr || lethread->author == nullptr || lethread->topic == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
+	topic_length = strlen(lethread->topic);
 	/* This trick clears the file so we don't have to have a headache with all these overwriting file stuff */
 	lethread_info_file = get_le_file(lethread->id, "wb", FILENAME_LETHREAD, TRUE);
 	fclose(lethread_info_file);
@@ -148,17 +208,21 @@ status_t lethread_save(struct LeThread *lethread) {
 }
 
 status_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
-	FILE                    *lethread_info_file  = get_le_file(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
+	FILE                    *lethread_info_file;
 	size_t                   topic_length;
 	uint64_t                 leauthor_id;
 
 
-	if (lethread_info_file == LESTATUS_NSFD) {
-		return LESTATUS_NSFD;
+	lethread_info_file = get_le_file(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
+
+	if (lethread_info_file == LESTATUS_NSFD || lethread_info_file == LESTATUS_NPTR) {
+		return lethread_info_file;
 	}
 
+	lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
+
 	lethread->messages = queue_create();
-	lethread->author = NULL;
+	lethread->author = nullptr;
 
 	fread(&lethread->id, sizeof(lethread->id), 1, lethread_info_file);
 	fread(&leauthor_id, sizeof(lethread->author->id), 1, lethread_info_file);
@@ -179,12 +243,20 @@ status_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 status_t lemessages_save(struct LeThread *lethread) {
 	FILE                    *lemessages_file;
 
-	struct QueueNode        *node                = lethread->messages->first;
+	struct QueueNode        *node;
 
 	struct LeMessage        *lemessage;
 	size_t                   text_length;
+	status_t                 result;
 
 
+	if (lethread == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
+
+	result = LESTATUS_OK;
+	node = lethread->messages->first;
 	/* This trick clears the file so we don't have to have a headache with all these overwriting file stuff */
 	lemessages_file = get_le_file(lethread->id, "wb", FILENAME_LEMESSAGES, TRUE);
 	fclose(lemessages_file);
@@ -193,6 +265,11 @@ status_t lemessages_save(struct LeThread *lethread) {
 
 	while (node != NULL) {
 		lemessage = node->data;
+		if (lemessage == nullptr || lemessage->text == nullptr) {
+			result = LESTATUS_NPTR;
+			continue;
+		}
+
 		text_length = strlen(lemessage->text);
 		fwrite(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
 		fwrite(&lemessage->by_lethread_author, sizeof(lemessage->by_lethread_author), 1, lemessages_file);
@@ -203,14 +280,19 @@ status_t lemessages_save(struct LeThread *lethread) {
 
 	fclose(lemessages_file);
 
-	return LESTATUS_OK;
+	return result;
 }
 
 status_t lemessage_save(struct LeMessage *lemessage) {
-	size_t                   text_length         = strlen(lemessage->text);
+	size_t                   text_length;
 	FILE                    *lemessages_file;
 
 
+	if (lemessage == nullptr || lemessage->text == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
+	text_length = strlen(lemessage->text);
 	lemessages_file = get_le_file(lemessage->lethread->id, "ab", FILENAME_LEMESSAGES, TRUE);
 
 	fwrite(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
@@ -224,14 +306,19 @@ status_t lemessage_save(struct LeMessage *lemessage) {
 }
 
 status_t lemessages_load(struct LeThread *lethread) {
-	FILE                    *lemessages_file     = get_le_file(lethread->id, "rb", FILENAME_LEMESSAGES, FALSE);
+	FILE                    *lemessages_file;
 
 	struct LeMessage         lemessage           = {0};
 	size_t                   text_length;
 
 
-	if (lemessages_file == LESTATUS_NSFD) {
-		return LESTATUS_NSFD;
+	if (lethread == nullptr || lethread->messages == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
+	lemessages_file = get_le_file(lethread->id, "rb", FILENAME_LEMESSAGES, FALSE);
+	if (lemessages_file == LESTATUS_NSFD || lemessages_file == LESTATUS_NPTR) {
+		return lemessages_file;
 	}
 
 	for (size_t i = 0; i < lethread_message_count(lethread); ++i) {
@@ -253,8 +340,14 @@ status_t lemessages_load(struct LeThread *lethread) {
 
 status_t leauthor_load(struct LeThread *lethread) {
 	struct LeAuthor         *leauthor;
-	FILE                    *leauthor_file  = get_le_file(lethread->id, "rb", FILENAME_LEAUTHOR, FALSE);
+	FILE                    *leauthor_file;
 
+
+	if (lethread == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
+	leauthor_file = get_le_file(lethread->id, "rb", FILENAME_LEAUTHOR, FALSE);
 	if (leauthor_file == LESTATUS_NSFD) {
 		return LESTATUS_NSFD;
 	}
@@ -270,9 +363,14 @@ status_t leauthor_load(struct LeThread *lethread) {
 }
 
 status_t leauthor_save(struct LeThread *lethread) {
-	FILE                    *leauthor_file  = get_le_file(lethread->id, "wb", FILENAME_LEAUTHOR, TRUE);
+	FILE                    *leauthor_file;
 
 
+	if (lethread == nullptr || lethread->author == nullptr || lethread->author->token == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
+	leauthor_file = get_le_file(lethread->id, "wb", FILENAME_LEAUTHOR, TRUE);
 	fclose(leauthor_file);
 
 	leauthor_file = get_le_file(lethread->id, "ab", FILENAME_LEAUTHOR, TRUE);
@@ -286,6 +384,10 @@ status_t leauthor_save(struct LeThread *lethread) {
 }
 
 bool_t is_token_valid(struct LeThread *lethread, const char *token) {
+	if (lethread == nullptr || lethread->author == nullptr || lethread->author->token == nullptr ||token == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
 	if (strncmp(lethread->author->token, token, TOKEN_SIZE) != 0) {
 		return FALSE;
 	}

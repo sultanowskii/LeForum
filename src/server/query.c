@@ -114,6 +114,7 @@ struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	}
 
 	free(lethread);
+	lethread = nullptr;
 
 	result.data = answer_start;
 	result.size = answer - answer_start;
@@ -156,6 +157,7 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	data_ptr += sizeof("TPC") - 1;
 
 	new_lethread = s_lethread_create(data_ptr, rand_uint64_t() % 0xffffffff);
+
 	leauthor_create(new_lethread, TRUE);
 
 	s_lethread_save(new_lethread);
@@ -266,10 +268,13 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 		answer += topic_size;
 
 		answer_size = answer - answer_start;
+
+		node = node->next;
 	}
 
 FTHR_SUCCESS:
 	free(topic_part);
+	topic_part = nullptr;
 
 	result.data = answer_start;
 	result.size = answer - answer_start;
@@ -315,6 +320,7 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	if (strncmp(data_ptr, "TXTSZ", sizeof("TXTSZ") - 1) != 0) {
 		free(lethread);
+		lethread = nullptr;
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
@@ -325,6 +331,7 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	if (strncmp(data_ptr, "TXT", 3) != 0) {
 		free(lethread);
+		lethread = nullptr;
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
@@ -347,6 +354,7 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	s_lethread_save(lethread);
 
 	free(text);
+	text = nullptr;
 
 	result.data = NULL;
 	result.size = 0;

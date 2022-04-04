@@ -6,6 +6,9 @@
 #include <stdint.h>
 #include <sys/socket.h>
 
+#include "lib/constants.h"
+#include "lib/status.h"
+
 /**
  * @brief Does the same thing as printf() except it
  * prints the result to the socket.

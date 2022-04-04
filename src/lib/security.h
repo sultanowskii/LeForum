@@ -4,8 +4,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "lib/constants.h"
+#include "lib/status.h"
+
 /**
- * @brief Generates random string of given size, makes str point to it. 
+ * @brief Generates random string of given size and writes to the place where str points.
  * 
  * @param str Pointer, which will point to the resulting string 
  * @param size String size 

@@ -4,7 +4,6 @@
 #include <inttypes.h>
 
 #include "server/forum.h"
-
 #include "lib/constants.h"
 #include "lib/status.h"
 

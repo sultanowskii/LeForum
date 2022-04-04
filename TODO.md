@@ -21,6 +21,9 @@
 - [x] Safe ID generation in lethread creation (to prevent collisions)
 - [x] Safe multithread counter interface (using locks, idk)
 - [x] Metadata file interface (it has to contain number of lethreads at least) + loading next_lethread_id_value
+- [ ] shared_ptr for server/server.c and server/query.c to prevent double free on cleanup (now it happens because different pointers in different queues may point to one object)
+- [ ] Removing disconnected clients from corresponding queue
+
 #### Client
 
 

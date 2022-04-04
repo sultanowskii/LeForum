@@ -4,10 +4,15 @@
 #define MIN_SYMBOL           0x21
 
 void rand_string(char *str, size_t size) {
+	FILE *              f;
 	unsigned char       tmp;
 
 
-	FILE *f = fopen("/dev/urandom", "r");
+	if (str == nullptr) {
+		return LESTATUS_NPTR;
+	}
+
+	f = fopen("/dev/urandom", "r");
 	for (size_t i = 0; i < size; ++i) {
 		tmp = 0;
 		while (tmp < MIN_SYMBOL) {
