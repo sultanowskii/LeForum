@@ -15,12 +15,14 @@
 
 #include <dirent.h>
 
+#include "server/forum.h"
+#include "server/query.h"
+
 #include "lib/constants.h"
 #include "lib/status.h"
 #include "lib/communication.h"
 #include "lib/queue.h"
-#include "lib/forum.h"
-#include "lib/query.h"
+
 
 #define MAX_PACKET_SIZE      16 * 1024
 #define FILENAME_LEMETA      "lemeta"

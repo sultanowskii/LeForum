@@ -1,8 +1,8 @@
 CFLAGS = "-I."
 LIBS_SERVER = "-pthread"
 LIBS_CLIENT = "-pthread"
-LIB_FILES_SERVER = $(wildcard lib/*.c)
-LIB_FILES_CLIENT = $(wildcard lib/*.c)
+LIB_FILES_SERVER = $(wildcard lib/*.c server/*.c)
+LIB_FILES_CLIENT = $(wildcard lib/*.c client/*.c)
 
 server: server/server.c $(LIB_FILES_SERVER)
 	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -o server/LeForumServer

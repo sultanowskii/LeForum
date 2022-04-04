@@ -1,4 +1,4 @@
-#include "lib/forum.h"
+#include "server/forum.h"
 
 struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	struct LeThread         *new_lethread;

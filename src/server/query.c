@@ -1,4 +1,4 @@
-#include "lib/query.h"
+#include "server/query.h"
 
 struct LeCommand CMDS[CMD_COUNT] = {
 	{"GTHR", cmd_lethread_get},
