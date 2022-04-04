@@ -25,6 +25,10 @@
 #define MAX_PACKET_SIZE      16 * 1024
 #define FILENAME_LEMETA      "lemeta"
 
+#define MAX(x, y)            (((x) > (y)) ? (x) : (y))
+#define MIN(x, y)            (((x) < (y)) ? (x) : (y))
+
+
 /*
  * handle_client() argument 
  */

@@ -306,15 +306,16 @@ void * handle_client(void *arg) {
 
 	while (!program_on_finish) {
 		recv(client_info->fd, &cl_expected_data_size, sizeof(cl_expected_data_size), NULL);
-		cl_data_size = recv(client_info->fd, cl_data, cl_expected_data_size, NULL);
+		cl_data_size = recv(client_info->fd, cl_data, MIN(cl_expected_data_size, MAX_PACKET_SIZE - 1), NULL);
 
 		/* Timeout/connection closed */
 		if (cl_data_size <= 0) {
 			break;
 		}
 
+		cl_data[cl_data_size] = '\0';
 		query_result = query_process(cl_data, cl_data_size);
-		memset(cl_data, 0, cl_data_size);
+		memset(cl_data, 0, MIN(cl_data_size + 1, MAX_PACKET_SIZE));
 
 		if (query_result.size == 0) {
 			if (query_result.status == LESTATUS_OK) {
