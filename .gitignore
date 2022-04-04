@@ -11,3 +11,4 @@ core
 *.id2
 *.nam
 *.til
+__pycache__/
