@@ -203,9 +203,8 @@ size_t startup() {
 	signal(SIGTERM, cleanup);
 	signal(SIGINT, signal_handler);
 
-	/*
-	 * TODO: initialize next_lethread_id_value, next_lethread_id_mutex here
-	 */
+	/* Prevents process termination on SIGPIPE*/
+	signal(SIGPIPE, SIG_IGN);
 
 	lethread = malloc(sizeof(struct LeThread));
 
@@ -275,6 +274,7 @@ uint64_t next_lethread_id() {
 
 	pthread_mutex_lock(&next_lethread_id_mutex);
 	value = next_lethread_id_value++;
+	lemeta_save(); /* Not really sure if it is necessary or not */
 	pthread_mutex_unlock(&next_lethread_id_mutex);
 
 	return value;
@@ -284,12 +284,12 @@ void * handle_client(void *arg) {
 	struct LeClientInfo     *client_info              = (struct LeClientInfo *)arg;
 	struct LeCommandResult   query_result;
 
-	char                     cl_data[PACKET_SIZE];
-	char                     sv_data[PACKET_SIZE];
+	char                    *cl_data                  = malloc(MAX_PACKET_SIZE);
 
-	size_t                  cl_expected_data_size    = 0;
-	size_t                  cl_data_size             = 0;
-	size_t                  sv_data_size             = 0;
+	size_t                   cl_expected_data_size    = 0;
+	size_t                   cl_data_size             = 0;
+
+	char                     tmp[64];
 
 
 	/* =================================== Example ====================================== */
@@ -305,33 +305,37 @@ void * handle_client(void *arg) {
 	/* ================================= Example end ==================================== */
 
 	while (!program_on_finish) {
-		recv(client_info->fd, cl_expected_data_size, sizeof(cl_expected_data_size), NULL);
+		recv(client_info->fd, &cl_expected_data_size, sizeof(cl_expected_data_size), NULL);
 		cl_data_size = recv(client_info->fd, cl_data, cl_expected_data_size, NULL);
 
 		/* Timeout/connection closed */
-		if (cl_data_size < 0) {
+		if (cl_data_size <= 0) {
 			break;
 		}
 
 		query_result = query_process(cl_data, cl_data_size);
+		memset(cl_data, 0, cl_data_size);
 
 		if (query_result.size == 0) {
 			if (query_result.status == LESTATUS_OK) {
-				send(client_info->fd, (size_t)2, sizeof(size_t), NULL);
+				*(size_t *)tmp = 2;
+				send(client_info->fd, tmp, sizeof(size_t), NULL);
 				send(client_info->fd, "OK", 2, NULL); /* If query returned nothing, then sends OK */
 			}
 			else {
-				send(client_info->fd, (size_t)3, sizeof(size_t), NULL);
+				*(size_t *)tmp = 3;
+				send(client_info->fd, tmp, sizeof(size_t), NULL);
 				send(client_info->fd, "ERR", 3, NULL); /* Error without description */
 			}
 		}
 		else {
 			if (query_result.data != NULL) {
-				send(client_info->fd, query_result.size, sizeof(size_t), NULL);
+				send(client_info->fd, &query_result.size, sizeof(size_t), NULL);
 				send(client_info->fd, query_result.data, query_result.size, NULL); /* Sends the query result */
 			}
 			else {
-				send(client_info->fd, (size_t)3, sizeof(size_t), NULL);
+				*(size_t *)tmp = 3;
+				send(client_info->fd, tmp, sizeof(size_t), NULL);
 				send(client_info->fd, "ERR", 3, NULL); /* This case is not valid, sends error without description */
 			}
 		}
@@ -342,6 +346,8 @@ void * handle_client(void *arg) {
 	}
 
 	close(client_info->fd);
+
+	free(cl_data);
 
 	pthread_exit(0);
 }

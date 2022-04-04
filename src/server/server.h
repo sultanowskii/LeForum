@@ -22,7 +22,7 @@
 #include "lib/forum.h"
 #include "lib/query.h"
 
-#define PACKET_SIZE          16 * 1024
+#define MAX_PACKET_SIZE      16 * 1024
 #define FILENAME_LEMETA      "lemeta"
 
 /*
