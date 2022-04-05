@@ -4,8 +4,11 @@
 #include <inttypes.h>
 
 #include "server/forum.h"
+
 #include "lib/constants.h"
 #include "lib/status.h"
+#include "lib/queue.h"
+#include "lib/shared_ptr.h"
 
 #define CMD_COUNT 5
 
@@ -38,7 +41,7 @@ struct LeCommandResult {
  * @param lethread_id ID of LeThread to search for 
  * @return LeThread with the given ID. If not found, LESTATUS_NFND is returned 
  */
-struct LeThread *            lethread_get_by_id(uint64_t lethread_id);
+SharedPtr *                  lethread_get_by_id(uint64_t lethread_id);
 
 /**
  * @brief Finds a lethread with given parameters, empty data is returned. 
@@ -56,7 +59,7 @@ struct Queue *               lethread_find(char *topic_part, size_t topic_part_s
  * @param lethread LeThread to save information about 
  * @return LESTATUS_OK on success  
  */
-status_t                     s_lethread_save(struct LeThread *lethread);
+status_t                     s_lethread_save(SharedPtr *sharedptr_lethread);
 
 /**
  * @brief Multithread-safe lemessages_save() function. 
@@ -64,7 +67,7 @@ status_t                     s_lethread_save(struct LeThread *lethread);
  * @param lethread Pointer to LeThread message history of which will be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                     s_lemessages_save(struct LeThread *lethread);
+status_t                     s_lemessages_save(SharedPtr *sharedptr_lemessage);
 
 /**
  * @brief Multithread-safe lemessage_save() function. 
@@ -72,7 +75,7 @@ status_t                     s_lemessages_save(struct LeThread *lethread);
  * @param lemessage LeMessage to be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                     s_lemessage_save(struct LeMessage *lemessage);
+status_t                     s_lemessage_save(struct LeMessage * lemessage);
 
 /**
  * @brief Multithread-safe leauthor_save() function. 
@@ -80,7 +83,7 @@ status_t                     s_lemessage_save(struct LeMessage *lemessage);
  * @param lethread LeThread, author of which will be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                     s_leauthor_save(struct LeThread *lethread);
+status_t                     s_leauthor_save(SharedPtr *sharedptr_lethread);
 
 /**
  * @brief Multithread-safe lethread_create() function. 
@@ -89,7 +92,7 @@ status_t                     s_leauthor_save(struct LeThread *lethread);
  * @param lethread_id The ID of LeThread 
  * @return Pointer to the created LeThread 
  */
-struct LeThread *            s_lethread_create(char *topic, uint64_t lethread_id);
+SharedPtr *                  s_lethread_create(char *topic, uint64_t lethread_id);
 
 /* =============================================================================== */
 

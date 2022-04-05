@@ -13,6 +13,7 @@ struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 
 	struct LeThread         *lethread       = NULL;
 	uint64_t                 lethread_id;
+	SharedPtr               *sharedptr_lethread;
 	size_t                   topic_size;
 	size_t                   message_cnt;
 
@@ -42,12 +43,15 @@ struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	data_ptr += sizeof("THRID") - 1;
 
 	lethread_id = *(uint64_t *)data_ptr;
-	lethread = lethread_get_by_id(lethread_id);
 
-	if (lethread == LESTATUS_NFND) {
+	sharedptr_lethread = lethread_get_by_id(lethread_id);
+
+	if (sharedptr_lethread == LESTATUS_NFND) {
 		result.status = LESTATUS_NFND;
 		return result;
 	}
+
+	lethread = (struct LeThread *)sharedptr_lethread->data;
 
 	topic_size = strlen(lethread->topic);
 
@@ -113,8 +117,7 @@ struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 		answer_size = answer - answer_start;
 	}
 
-	free(lethread);
-	lethread = nullptr;
+	sharedptr_delete(sharedptr_lethread);
 
 	result.data = answer_start;
 	result.size = answer - answer_start;
@@ -128,13 +131,13 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 
 	struct LeThread         *new_lethread;
 	size_t                   topic_size;
+	SharedPtr               *sharedptr_lethread;
 
 	char                    *answer_start;
 	char                    *answer;
 	size_t                   answer_size           = sizeof("OKTHRID") - 1 + sizeof(uint64_t) + sizeof("TKN") - 1 + TOKEN_SIZE;
 
 	struct LeCommandResult   result                = {0, LESTATUS_OK, NULL};
-
 
 	if (size < sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1) {
 		result.status = LESTATUS_ISYN;
@@ -156,12 +159,13 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	}
 	data_ptr += sizeof("TPC") - 1;
 
-	new_lethread = s_lethread_create(data_ptr, rand_uint64_t() % 0xffffffff);
+	sharedptr_lethread = s_lethread_create(data_ptr, rand_uint64_t() % 0xffffffff);
+	new_lethread = (struct LeThread *)sharedptr_lethread->data;
 
 	leauthor_create(new_lethread, TRUE);
 
-	s_lethread_save(new_lethread);
-	s_leauthor_save(new_lethread);
+	s_lethread_save(sharedptr_lethread);
+	s_leauthor_save(sharedptr_lethread);
 
 	answer_start = malloc(answer_size);
 	answer = answer_start;
@@ -178,6 +182,8 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	strncpy(answer, new_lethread->author->token, TOKEN_SIZE);
 	answer += TOKEN_SIZE;
 
+	sharedptr_delete(sharedptr_lethread);
+
 	result.data = answer_start;
 	result.size = answer_size;
 	result.status = LESTATUS_OK;
@@ -191,6 +197,7 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	struct Queue            *lethreads;
 	struct LeThread         *lethread       = NULL;
 	uint64_t                 lethread_id;
+	SharedPtr               *sharedptr_lethread;
 	size_t                   topic_size;
 
 	struct QueueNode        *node;
@@ -248,7 +255,9 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 			answer = answer_start + answer_size;
 		}
 
-		lethread = node->data;
+		sharedptr_lethread = (SharedPtr *)node->data;
+		lethread = (struct LeThread *)sharedptr_lethread->data;
+
 		strncpy(answer, "THRID", sizeof("THRID") - 1);
 		answer += sizeof("THRID") - 1;
 
@@ -276,6 +285,8 @@ FTHR_SUCCESS:
 	free(topic_part);
 	topic_part = nullptr;
 
+	sharedptr_delete(sharedptr_lethread);
+
 	result.data = answer_start;
 	result.size = answer - answer_start;
 	result.status = LESTATUS_OK;
@@ -284,17 +295,18 @@ FTHR_SUCCESS:
 }
 
 struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
-	char                  *data_ptr       = raw_data;
+	char                    *data_ptr       = raw_data;
 
-	struct LeThread       *lethread;
-	uint64_t               lethread_id;
+	struct LeThread         *lethread;
+	uint64_t                 lethread_id;
+	SharedPtr               *sharedptr_lethread;
 
-	struct LeMessage      *lemessage;
-	char                  *text;
-	size_t                 text_size;
-	bool_t                 is_author;
+	struct LeMessage        *lemessage;
+	char                    *text;
+	size_t                   text_size;
+	bool_t                   is_author;
 
-	struct LeCommandResult result         = {0, LESTATUS_OK, NULL};
+	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
 
 
 	if (size < sizeof("THRID") - 1 + sizeof(lethread_id) + sizeof("TXTSZ") - 1 + sizeof(text_size) + sizeof("TXT") - 1) {
@@ -311,16 +323,18 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	lethread_id = *(uint64_t *)data_ptr;
 	data_ptr += sizeof(lethread_id);
 
-	lethread = lethread_get_by_id(lethread_id);
+	sharedptr_lethread = lethread_get_by_id(lethread_id);
 
-	if (lethread == LESTATUS_NFND) {
+	if (sharedptr_lethread == LESTATUS_NFND) {
+		sharedptr_delete(sharedptr_lethread);
 		result.status = LESTATUS_NFND;
 		return result;
 	}
 
+	lethread = (struct LeThread *)sharedptr_lethread->data;
+
 	if (strncmp(data_ptr, "TXTSZ", sizeof("TXTSZ") - 1) != 0) {
-		free(lethread);
-		lethread = nullptr;
+		sharedptr_delete(sharedptr_lethread);
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
@@ -330,8 +344,7 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	data_ptr += sizeof(text_size);
 
 	if (strncmp(data_ptr, "TXT", 3) != 0) {
-		free(lethread);
-		lethread = nullptr;
+		sharedptr_delete(sharedptr_lethread);
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
@@ -351,10 +364,12 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	lemessage = lemessage_create(lethread, text, is_author);
 	s_lemessage_save(lemessage);
-	s_lethread_save(lethread);
+	s_lethread_save(sharedptr_lethread);
 
 	free(text);
 	text = nullptr;
+
+	sharedptr_delete(sharedptr_lethread);
 
 	result.data = NULL;
 	result.size = 0;

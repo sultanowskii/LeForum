@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,6 +24,7 @@
 #include "lib/status.h"
 #include "lib/communication.h"
 #include "lib/queue.h"
+#include "lib/shared_ptr.h"
 
 
 #define MAX_PACKET_SIZE      16 * 1024
@@ -138,7 +141,7 @@ void *                  leauthor_query_manage();
  * @param lethread LeThread to save information about 
  * @return LESTATUS_OK on success  
  */
-status_t                s_lethread_save(struct LeThread *lethread);
+status_t                s_lethread_save(SharedPtr *sharedptr_lethread);
 
 /**
  * @brief Multithread-safe s_lemessages_save() function. 
@@ -146,7 +149,7 @@ status_t                s_lethread_save(struct LeThread *lethread);
  * @param lethread Pointer to LeThread message history of which will be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                s_lemessages_save(struct LeThread *lethread);
+status_t                s_lemessages_save(SharedPtr *sharedptr_lethread);
 
 /**
  * @brief Multithread-safe s_lemessage_save() function. 
@@ -154,7 +157,7 @@ status_t                s_lemessages_save(struct LeThread *lethread);
  * @param lemessage LeMessage to be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                s_lemessage_save(struct LeMessage *lemessage);
+status_t                s_lemessage_save(struct LeMessage * lemessage);
 
 /**
  * @brief Implementation of s_leauthour_save() required by query.h. 
@@ -162,7 +165,7 @@ status_t                s_lemessage_save(struct LeMessage *lemessage);
  * @param lethread LeThread, author of which will be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                s_leauthor_save(struct LeThread *lethread);
+status_t                s_leauthor_save(SharedPtr *sharedptr_lethread);
 
 /**
  * @brief Implementation of s_lethread_create() required by query.h. 
@@ -171,7 +174,7 @@ status_t                s_leauthor_save(struct LeThread *lethread);
  * @param lethread_id The ID of LeThread 
  * @return Pointer to the created LeThread 
  */
-struct LeThread *       s_lethread_create(char *topic, uint64_t lethread_id);
+SharedPtr *             s_lethread_create(char *topic, uint64_t lethread_id);
 
 
 /**
@@ -180,7 +183,7 @@ struct LeThread *       s_lethread_create(char *topic, uint64_t lethread_id);
  * @param lethread_id ID of LeThread to search for 
  * @return LeThread with the given ID. If not found, LESTATUS_NFND is returned 
  */
-struct LeThread *       lethread_get_by_id(uint64_t lethread_id);
+SharedPtr *             lethread_get_by_id(uint64_t lethread_id);
 
 /**
  * @brief Callback for queue_delete()
