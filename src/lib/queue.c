@@ -1,22 +1,23 @@
 #include "lib/queue.h"
 
-struct Queue * queue_create() {
+struct Queue * queue_create(void (*destruct)(void *)) {
 	struct Queue            *new_queue      = (struct Queue *)malloc(sizeof(struct Queue));
 
 
 	new_queue->size = 0;
 	new_queue->first = nullptr;
 	new_queue->last = nullptr;
+	new_queue->destruct = destruct;
 
 	return new_queue;
 };
 
-status_t queue_delete(struct Queue *queue, void (*delete_func)(void *)) {
+status_t queue_delete(struct Queue *queue) {
 	struct QueueNode        *node;
 	struct QueueNode        *next;
 
 
-	if (queue == nullptr || delete_func == nullptr) {
+	if (queue == nullptr) {
 		return LESTATUS_NPTR;
 	}
 
@@ -24,11 +25,13 @@ status_t queue_delete(struct Queue *queue, void (*delete_func)(void *)) {
 	while (node != nullptr) {
 		next = node->next;
 
-		delete_func(node->data);
+		queue->destruct(node->data);
 		node->data = nullptr;
 
 		free(node);
 		node = nullptr;
+
+		queue->size--;
 
 		node = next;
 	}
@@ -48,9 +51,7 @@ status_t queue_push(struct Queue *queue, void *data, size_t size) {
 	}
 
 	new_node = (struct QueueNode *)malloc(sizeof(struct QueueNode));
-	new_node->data = malloc(size);
-	memset(new_node->data, 0, size);
-	memcpy(new_node->data, data, size);
+	new_node->data = data;
 
 	new_node->next = nullptr;
 

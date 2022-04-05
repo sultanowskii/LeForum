@@ -11,17 +11,16 @@ void str_delete(void *s) {
 }
 
 status_t main() {
-	struct Queue            *queue          = queue_create();
+	struct Queue            *queue          = queue_create(str_delete);
 	char                    *data;
 
-	char                     tmp[1024];
+	char                    *tmp;
 	bool_t                   is_empty;
 	size_t                   cntr           = 0;
 
 
-	memset(tmp, 0, 1024);
-
 	for (size_t i = 0; i < 5; ++i) {
+		tmp = malloc(1024);
 		printf("Element #%llu:\n", i);
 		scanf("%s", tmp);
 		queue_push(queue, tmp, strlen(tmp) + 1);
@@ -41,7 +40,7 @@ status_t main() {
 
 	puts("Destroying queue...");
 
-	queue_delete(queue, str_delete);
+	queue_delete(queue);
 
 	return LESTATUS_OK;
 }

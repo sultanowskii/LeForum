@@ -22,8 +22,8 @@
 - [x] Safe multithread counter interface (using locks, idk)
 - [x] Metadata file interface (it has to contain number of lethreads at least) + loading next_lethread_id_value
 - [x] shared_ptr for server/server.c and server/query.c to prevent double free on cleanup (now it happens because different pointers in different queues may point to one object)
-- [ ] Destructor callback for Queue (for pop() and delete() operations)
-- [ ] sharedptr_add() in s_X_create() - to make sharedptrs work correctly
+- [x] Destructor callback for Queue (for pop() and delete() operations)
+- [x] sharedptr_add() in s_X_create() - to make sharedptrs work correctly
 - [ ] ptr == nullptr checks in server/server.c
 - [ ] Removing disconnected clients from corresponding queue
 

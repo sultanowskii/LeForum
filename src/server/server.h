@@ -17,8 +17,8 @@
 
 #include <dirent.h>
 
-#include "server/forum.h"
-#include "server/query.h"
+#include "server/core/forum.h"
+#include "server/core/query.h"
 
 #include "lib/constants.h"
 #include "lib/status.h"

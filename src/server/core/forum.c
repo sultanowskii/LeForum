@@ -1,4 +1,4 @@
-#include "server/forum.h"
+#include "server/core/forum.h"
 
 struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	struct LeThread         *new_lethread;
@@ -24,7 +24,7 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	new_lethread->id = lethread_id;
 	new_lethread->first_message_id = rand_uint64_t() % 0xffffffff;
 	new_lethread->next_message_id = new_lethread->first_message_id;
-	new_lethread->messages = queue_create();
+	new_lethread->messages = queue_create(lemessage_delete);
 	new_lethread->author = nullptr;
 
 	new_lethread->topic = malloc(topic_length + 1);
@@ -40,7 +40,7 @@ status_t lethread_delete(struct LeThread *lethread) {
 	}
 
 	if (lethread->messages != nullptr) {
-		queue_delete(lethread->messages, (void (*)(void *))lemessage_delete);
+		queue_delete(lethread->messages);
 		lethread->messages = nullptr;
 	}
 
@@ -88,7 +88,7 @@ struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_
 	new_lemessage->lethread = lethread;
 
 	queue_push(lethread->messages, new_lemessage, sizeof(struct LeMessage));
-	free(new_lemessage);
+
 	new_lemessage = nullptr;
 
 	return lethread->messages->last->data;
@@ -99,10 +99,12 @@ status_t lemessage_delete(struct LeMessage *message) {
 		return LESTATUS_NPTR;
 	}
 
+
 	if (message->text != nullptr) {
 		 free(message->text);
 		 message->text = nullptr;
 	}
+
 	free(message);
 	message = nullptr;
 
@@ -219,9 +221,7 @@ status_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 		return lethread_info_file;
 	}
 
-	lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
-
-	lethread->messages = queue_create();
+	lethread->messages = queue_create(lemessage_delete);
 	lethread->author = nullptr;
 
 	fread(&lethread->id, sizeof(lethread->id), 1, lethread_info_file);
@@ -308,7 +308,7 @@ status_t lemessage_save(struct LeMessage *lemessage) {
 status_t lemessages_load(struct LeThread *lethread) {
 	FILE                    *lemessages_file;
 
-	struct LeMessage         lemessage           = {0};
+	struct LeMessage        *lemessage;
 	size_t                   text_length;
 
 
@@ -322,15 +322,18 @@ status_t lemessages_load(struct LeThread *lethread) {
 	}
 
 	for (size_t i = 0; i < lethread_message_count(lethread); ++i) {
-		fread(&lemessage.id, sizeof(lemessage.id), 1, lemessages_file);
-		fread(&lemessage.by_lethread_author, sizeof(lemessage.by_lethread_author), 1, lemessages_file);
+		lemessage = (struct Lemessage *)malloc(sizeof(struct LeMessage));
+		fread(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
+		fread(&lemessage->by_lethread_author, sizeof(lemessage->by_lethread_author), 1, lemessages_file);
 		fread(&text_length, sizeof(text_length), 1, lemessages_file);
 
-		lemessage.text = malloc(text_length + 1);
-		memset(lemessage.text, 0, text_length + 1);
-		fread(lemessage.text, 1, text_length, lemessages_file);
+		lemessage->text = malloc(text_length + 1);
+		memset(lemessage->text, 0, text_length + 1);
+		fread(lemessage->text, 1, text_length, lemessages_file);
 
-		queue_push(lethread->messages, &lemessage, sizeof(struct LeMessage));
+		queue_push(lethread->messages, lemessage, sizeof(struct LeMessage));
+
+		lemessage = nullptr;
 	}
 
 	fclose(lemessages_file);

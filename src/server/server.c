@@ -40,22 +40,34 @@ struct Queue      *leclientinfo_queue;
 struct Queue      *lethread_queue;
 
 void * lethread_query_manage() {
+	SharedPtr               *sharedptr_lethread;
+
 	while (!program_on_finish) {
 		while (!queue_is_empty(lethread_query_queue) && !program_on_finish) {
-			lethread_save(((SharedPtr *)queue_pop(lethread_query_queue))->data);
+			sharedptr_lethread = (SharedPtr *)queue_pop(lethread_query_queue);
+			lethread_save(sharedptr_lethread->data);
+			sharedptr_delete(sharedptr_lethread);
+			sharedptr_lethread = nullptr;
 		}
 	}
 }
 
 void * lemessages_query_manage() {
+	SharedPtr               *sharedptr_lethread;
+
 	while (!program_on_finish) {
 		while (!queue_is_empty(lemessages_query_queue) && !program_on_finish) {
-			lemessages_save(((SharedPtr *)queue_pop(lemessages_query_queue))->data);
+			sharedptr_lethread = (SharedPtr *)queue_pop(lemessages_query_queue);
+			lemessages_save(sharedptr_lethread->data);
+			sharedptr_delete(sharedptr_lethread);
+			sharedptr_lethread = nullptr;
 		}
 	}
 }
 
 void * lemessage_query_manage() {
+	struct LeMessage        *lemessage;
+
 	while (!program_on_finish) {
 		while (!queue_is_empty(lemessage_query_queue) && !program_on_finish) {
 			lemessage_save(queue_pop(lemessage_query_queue));
@@ -64,9 +76,14 @@ void * lemessage_query_manage() {
 }
 
 void * leauthor_query_manage() {
+	SharedPtr               *sharedptr_lethread;
+
 	while (!program_on_finish) {
 		while (!queue_is_empty(leauthor_query_queue) && !program_on_finish) {
-			leauthor_save(((SharedPtr *)queue_pop(leauthor_query_queue))->data);
+			sharedptr_lethread = (SharedPtr *)queue_pop(leauthor_query_queue);
+			leauthor_save(sharedptr_lethread->data);
+			sharedptr_delete(sharedptr_lethread);
+			sharedptr_lethread = nullptr;
 		}
 	}
 }
@@ -111,7 +128,7 @@ struct Queue * lethread_find(char *topic_part, size_t topic_part_size) {
 	struct Queue            *lethreads_match;
 
 
-	lethreads_match = queue_create();
+	lethreads_match = queue_create(sharedptr_delete);
 
 	while (node != NULL) {
 		lethread = ((SharedPtr *)node->data)->data;
@@ -126,27 +143,29 @@ struct Queue * lethread_find(char *topic_part, size_t topic_part_size) {
 
 status_t s_lethread_save(SharedPtr *sharedptr_lethread) {
 	queue_push(lethread_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
+	return LESTATUS_OK;
 }
 
 status_t s_lemessages_save(SharedPtr *sharedptr_lethread) {
 	queue_push(lemessages_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
+	return LESTATUS_OK;
 }
 
 status_t s_lemessage_save(struct LeMessage * lemessage) {
 	queue_push(lemessage_query_queue, lemessage, sizeof(struct LeMessage));
+	return LESTATUS_OK;
 }
 
 status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
 	queue_push(leauthor_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
+	return LESTATUS_OK;
 }
 
 SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
 	/* Here we fill lethread_id independently on the argument, 
 	 * because we want to keep all the lethreads stay in the right order without collisions. 
 	 */
-
 	SharedPtr               *sharedptr_lethread  = sharedptr_create(lethread_create(topic, next_lethread_id()), lethread_delete);
-
 
 	queue_push(lethread_queue, sharedptr_lethread, sizeof(SharedPtr));
 
@@ -190,11 +209,12 @@ size_t startup() {
 		return LESTATUS_CLIB;
 	}
 
-	lethread_query_queue = queue_create();
-	lemessage_query_queue = queue_create();
-	leauthor_query_queue = queue_create();
-	leclientinfo_queue = queue_create();
-	lethread_queue = queue_create();
+	lethread_query_queue = queue_create(sharedptr_delete);
+	lemessages_query_queue = queue_create(sharedptr_delete);
+	lemessage_query_queue = queue_create(lemessage_delete);
+	leauthor_query_queue = queue_create(sharedptr_delete);
+	leclientinfo_queue = queue_create(leclientinfo_delete);
+	lethread_queue = queue_create(sharedptr_delete);
 
 	atexit(cleanup);
 	signal(SIGTERM, cleanup);
@@ -216,11 +236,14 @@ size_t startup() {
 		}
 
 		if (S_ISDIR(st.st_mode)) {
-			lethread = malloc(sizeof(struct LeThread));
+			lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
 
 			lethread_id = strtoull(dent->d_name, dent->d_name + strlen(dent->d_name), 10);
 
 			if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
+				if (lethread != nullptr) {
+					free(lethread);
+				}
 				continue;
 			}
 
@@ -254,12 +277,18 @@ void cleanup() {
 
 		lemeta_save();
 
-		queue_delete(leclientinfo_queue, (void (*)(void *))leclientinfo_delete);
-		queue_delete(lethread_query_queue, (void (*)(void *))sharedptr_delete);
-		queue_delete(lemessages_query_queue, (void (*)(void *))sharedptr_delete);
-		queue_delete(lemessage_query_queue, (void (*)(void *))sharedptr_delete);
-		queue_delete(leauthor_query_queue, (void (*)(void *))sharedptr_delete);
-		queue_delete(lethread_queue, (void (*)(void *))sharedptr_delete);
+		queue_delete(leclientinfo_queue);
+		leclientinfo_queue = nullptr;
+		queue_delete(lethread_query_queue);
+		lethread_query_queue = nullptr;
+		queue_delete(lemessages_query_queue);
+		lemessages_query_queue = nullptr;
+		queue_delete(lemessage_query_queue);
+		lemessage_query_queue = nullptr;
+		queue_delete(leauthor_query_queue);
+		leauthor_query_queue = nullptr;
+		queue_delete(lethread_queue);
+		lethread_queue = nullptr;
 
 		pthread_mutex_destroy(&next_lethread_id_mutex);
 	}

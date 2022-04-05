@@ -7,23 +7,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "server/forum.h"
+#include "server/core/forum.h"
 
 #include "lib/queue.h"
-
-struct LeThread * lethread_get_by_id(uint64_t lethread_id) {
-	struct LeThread         *lethread  = malloc(sizeof(struct LeThread));
-
-	if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
-		free(lethread);
-		return LESTATUS_NSFD;
-	}
-
-	lemessages_load(lethread);
-	leauthor_load(lethread);
-
-	return lethread;
-}
+#include "lib/shared_ptr.h"
+#include "lib/security.h"
 
 void lethread_info(struct LeThread *lethread) {
 	printf("LeThread: id=%llu author_id=%llu first_message_id=%llu next_message_id=%llu: %s\n", lethread->id, lethread->author->id, lethread->first_message_id, lethread->next_message_id, lethread->topic);
@@ -45,14 +33,6 @@ void lethread_message_history(struct LeThread *lethread) {
 	printf("=================\n");
 }
 
-status_t s_lemessage_save(struct LeMessage *lemessage) {
-	return lemessage_save(lemessage);
-}
-
-status_t s_lethread_save(struct LeThread *lethread) {
-	return lethread_save(lethread);
-}
- 
 status_t main() {
 	struct stat              st             = {0};
 
@@ -94,6 +74,8 @@ status_t main() {
 
 	puts("Done, saving to file, deleting object...");
 
+	lethread_save(lethread);
+	lemessages_save(lethread);
 	leauthor_save(lethread);
 	lethread_delete(lethread);
 
@@ -104,6 +86,7 @@ status_t main() {
 	lethread_load(lethread, lethread_id);
 	lemessages_load(lethread);
 	leauthor_load(lethread);
+
 
 	printf("LeAuthor: id=%llu, token=%s !!!\n", lethread->author->id, lethread->author->token);
 

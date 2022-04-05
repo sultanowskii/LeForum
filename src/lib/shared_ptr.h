@@ -6,7 +6,7 @@
 #include "lib/status.h"
 
 typedef struct {
-	uint64_t      *ref_count;
+	int64_t       *ref_count;
 	void          *data;
 	void         (*destruct)(void *);
 } SharedPtr;

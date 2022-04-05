@@ -6,6 +6,7 @@ QueueTest
 .data/
 .gdb*
 core
+!core/
 *.id0
 *.id1
 *.id2

@@ -11,6 +11,7 @@ struct Queue {
 	size_t              size;
 	struct QueueNode   *first;
 	struct QueueNode   *last;
+	void              (*destruct)(void *);
 };
 
 
@@ -22,18 +23,18 @@ struct QueueNode {
 /**
  * @brief Creates a new Queue object. 
  * 
+ * @param destruct Callback that safely deletes one object stored in a queue. Is called for each object stored in a queue 
  * @return Pointer to created Queue 
  */
-struct Queue *          queue_create();
+struct Queue *          queue_create(void (*destruct)(void *));
 
 /**
  * @brief Safely deletes the Queue and all the elements. 
  * 
  * @param queue Queue to delete 
- * @param delete_func Callback that safely deletes one object stored in a queue. Is called for each object stored in a queue 
  * @return LESTATUS_OK on success 
  */
-status_t                queue_delete(struct Queue *queue, void (*delete_func)(void *));
+status_t                queue_delete(struct Queue *queue);
 
 /**
  * @brief Adds a new element to the end of the Queue. 

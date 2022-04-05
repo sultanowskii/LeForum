@@ -1,4 +1,4 @@
-#include "server/query.h"
+#include "server/core/query.h"
 
 struct LeCommand CMDS[CMD_COUNT] = {
 	{"GTHR", cmd_lethread_get},
@@ -278,14 +278,14 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 
 		answer_size = answer - answer_start;
 
+		sharedptr_delete(sharedptr_lethread);
+
 		node = node->next;
 	}
 
 FTHR_SUCCESS:
 	free(topic_part);
 	topic_part = nullptr;
-
-	sharedptr_delete(sharedptr_lethread);
 
 	result.data = answer_start;
 	result.size = answer - answer_start;
@@ -326,7 +326,6 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	sharedptr_lethread = lethread_get_by_id(lethread_id);
 
 	if (sharedptr_lethread == LESTATUS_NFND) {
-		sharedptr_delete(sharedptr_lethread);
 		result.status = LESTATUS_NFND;
 		return result;
 	}

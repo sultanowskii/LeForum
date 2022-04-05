@@ -3,7 +3,7 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include "server/forum.h"
+#include "server/core/forum.h"
 
 #include "lib/constants.h"
 #include "lib/status.h"
@@ -67,7 +67,7 @@ status_t                     s_lethread_save(SharedPtr *sharedptr_lethread);
  * @param lethread Pointer to LeThread message history of which will be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                     s_lemessages_save(SharedPtr *sharedptr_lemessage);
+status_t                     s_lemessages_save(SharedPtr *sharedptr_lethread);
 
 /**
  * @brief Multithread-safe lemessage_save() function. 
