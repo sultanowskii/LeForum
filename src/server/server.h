@@ -17,6 +17,8 @@
 
 #include <dirent.h>
 
+#include "server/arg.h"
+
 #include "server/core/forum.h"
 #include "server/core/query.h"
 

@@ -1,10 +1,7 @@
 #include "server/server.h"
 
-int32_t            SERVER_PORT              = 7431;
-char               SERVER_ADDR[]            = "0.0.0.0";
-int32_t            MAX_CONNECTIONS          = 100;
-struct timeval     TIMEOUT                  = {3, 0};
 
+struct arguments arguments;
 
 /*
  * Flag for threads
@@ -416,10 +413,25 @@ status_t main(int32_t argc, char *argv[]) {
 	pthread_t                lemessage_query_manager_thread;
 	pthread_t                leauthor_query_manager_thread;
 
+	arguments.host = "0.0.0.0";
+	arguments.port = 7431;
+	arguments.timeout.tv_sec = 3;
+	arguments.timeout.tv_usec = 0;
+	arguments.max_connections = 100;
+	arguments.hello_message = "Have a great day!";
+
+	argp_parse(&le_argp, argc, argv, 0, 0, &arguments);
+
+	if (arguments.port < 0 || arguments.port > 0xffff) {
+		puts("invalid port provided");
+		return LESTATUS_IDAT;
+	}
 
 	startup();
 
-	puts("LeForum Server");
+	if (arguments.hello_message != nullptr && strlen(arguments.hello_message) > 0) {
+		puts(arguments.hello_message);
+	}
 
 	if (pthread_create(&lethread_query_manager_thread, NULL, lethread_query_manage, NULL) != 0) {
 		perror("failed to start lethread query manager");
@@ -443,19 +455,21 @@ status_t main(int32_t argc, char *argv[]) {
 		return LESTATUS_CLIB;
 	}
 
-	server_addr.sin_addr.s_addr = inet_addr(SERVER_ADDR);
+	server_addr.sin_addr.s_addr = inet_addr(arguments.host);
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(SERVER_PORT);
+	server_addr.sin_port = htons(arguments.port);
 
 	if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
 		perror("bind() failed");
 		return LESTATUS_CLIB;
 	}
 
-	if (listen(server_fd, MAX_CONNECTIONS) != 0) {
+	if (listen(server_fd, arguments.max_connections) != 0) {
 		perror("listen() failed");
 		return LESTATUS_CLIB;
 	}
+
+	printf("Server is listening on %s:%d\n", arguments.host, arguments.port);
 
 	while (TRUE) {
 		client_fd = accept(server_fd, &client_addr, &client_addr_len);
@@ -473,12 +487,12 @@ status_t main(int32_t argc, char *argv[]) {
 			return LESTATUS_CLIB;
 		}
 
-		if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&TIMEOUT, sizeof(TIMEOUT)) < 0) {
+		if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&arguments.timeout, sizeof(arguments.timeout)) < 0) {
 			perror("setsockopt() failed");
 			return LESTATUS_CLIB;
 		}
 
-		if (pthread_create(&client_handler_thread, NULL, handle_client, (void*)leclientinfo) != 0) {
+		if (pthread_create(&client_handler_thread, NULL, handle_client, (void *)leclientinfo) != 0) {
 			perror("failed to create client handle");
 			return LESTATUS_CLIB;
 		}
