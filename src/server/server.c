@@ -1,10 +1,10 @@
 #include "server/server.h"
 
-
 int32_t            SERVER_PORT              = 7431;
 char               SERVER_ADDR[]            = "0.0.0.0";
 int32_t            MAX_CONNECTIONS          = 100;
 struct timeval     TIMEOUT                  = {3, 0};
+
 
 /*
  * Flag for threads
