@@ -10,8 +10,8 @@
 #include "server/core/forum.h"
 
 #include "lib/queue.h"
-#include "lib/shared_ptr.h"
 #include "lib/security.h"
+#include "lib/shared_ptr.h"
 
 void lethread_info(struct LeThread *lethread) {
 	printf("LeThread: id=%llu author_id=%llu first_message_id=%llu next_message_id=%llu: %s\n", lethread->id, lethread->author->id, lethread->first_message_id, lethread->next_message_id, lethread->topic);

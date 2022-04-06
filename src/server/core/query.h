@@ -6,9 +6,10 @@
 #include "server/core/forum.h"
 
 #include "lib/constants.h"
-#include "lib/status.h"
 #include "lib/queue.h"
+#include "lib/security.h"
 #include "lib/shared_ptr.h"
+#include "lib/status.h"
 
 #define CMD_COUNT 5
 

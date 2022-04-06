@@ -139,6 +139,7 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 
 	struct LeCommandResult   result                = {0, LESTATUS_OK, NULL};
 
+
 	if (size < sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1) {
 		result.status = LESTATUS_ISYN;
 		return result;
@@ -389,6 +390,11 @@ struct LeCommandResult query_process(char *raw_data, size_t size) {
 	size_t                   cmd_name_size;
 
 
+	if (raw_data == nullptr) {
+		result.status = LESTATUS_NPTR;
+		return result;
+	}
+
 	for (size_t i = 0; i < CMD_COUNT; i++) {
 		if (strncmp(raw_data, CMDS[i].name, strlen(CMDS[i].name)) == 0) {
 			cmd = CMDS[i];
@@ -397,7 +403,7 @@ struct LeCommandResult query_process(char *raw_data, size_t size) {
 		}
 	}
 
-	if (cmd.name == NULL || cmd.process == NULL) {
+	if (cmd.name == nullptr || cmd.process == nullptr) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}

@@ -89,6 +89,8 @@ void * leauthor_query_manage() {
 }
 
 void leclientinfo_delete(struct LeClientInfo *clinfo) {
+	NULLPTR_PREVENT(clinfo, LESTATUS_NPTR)
+
 	free(clinfo);
 	clinfo = nullptr;
 }
@@ -107,9 +109,7 @@ SharedPtr * lethread_get_by_id(uint64_t lethread_id) {
 		node = node->next;
 	}
 
-	if (lethread_found == nullptr) {
-		return LESTATUS_NFND;
-	}
+	NULLPTR_PREVENT(lethread_found, LESTATUS_NFND)
 
 	if (lethread_found->messages->first == nullptr && lethread_message_count(lethread_found) != 0) {
 		lemessages_load(lethread_found);
@@ -128,6 +128,8 @@ struct Queue * lethread_find(char *topic_part, size_t topic_part_size) {
 	struct Queue            *lethreads_match;
 
 
+	NULLPTR_PREVENT(topic_part, LESTATUS_NPTR)
+
 	lethreads_match = queue_create(sharedptr_delete);
 
 	while (node != NULL) {
@@ -142,26 +144,36 @@ struct Queue * lethread_find(char *topic_part, size_t topic_part_size) {
 }
 
 status_t s_lethread_save(SharedPtr *sharedptr_lethread) {
+	NULLPTR_PREVENT(sharedptr_lethread, LESTATUS_NPTR)
+
 	queue_push(lethread_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
 	return LESTATUS_OK;
 }
 
 status_t s_lemessages_save(SharedPtr *sharedptr_lethread) {
+	NULLPTR_PREVENT(sharedptr_lethread, LESTATUS_NPTR)
+
 	queue_push(lemessages_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
 	return LESTATUS_OK;
 }
 
-status_t s_lemessage_save(struct LeMessage * lemessage) {
+status_t s_lemessage_save(struct LeMessage *lemessage) {
+	NULLPTR_PREVENT(lemessage, LESTATUS_NPTR)
+
 	queue_push(lemessage_query_queue, lemessage, sizeof(struct LeMessage));
 	return LESTATUS_OK;
 }
 
 status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
+	NULLPTR_PREVENT(sharedptr_lethread, LESTATUS_NPTR)
+
 	queue_push(leauthor_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
 	return LESTATUS_OK;
 }
 
 SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
+	NULLPTR_PREVENT(topic, LESTATUS_NPTR)
+	
 	/* Here we fill lethread_id independently on the argument, 
 	 * because we want to keep all the lethreads stay in the right order without collisions. 
 	 */
@@ -312,16 +324,21 @@ uint64_t next_lethread_id() {
 }
 
 void * handle_client(void *arg) {
-	struct LeClientInfo     *client_info              = (struct LeClientInfo *)arg;
+	struct LeClientInfo     *client_info;
 	struct LeCommandResult   query_result;
 
-	char                    *cl_data                  = malloc(MAX_PACKET_SIZE);
+	char                    *cl_data;
 
 	size_t                   cl_expected_data_size    = 0;
 	size_t                   cl_data_size             = 0;
 
 	char                     tmp[64];
 
+
+	NULLPTR_PREVENT(arg, LESTATUS_NPTR)
+
+	cl_data = malloc(MAX_PACKET_SIZE);
+	client_info = (struct LeClientInfo *)arg;
 
 	/* =================================== Example ====================================== */
 

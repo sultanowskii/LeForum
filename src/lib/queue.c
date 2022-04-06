@@ -4,6 +4,8 @@ struct Queue * queue_create(void (*destruct)(void *)) {
 	struct Queue            *new_queue      = (struct Queue *)malloc(sizeof(struct Queue));
 
 
+	NULLPTR_PREVENT(destruct, LESTATUS_NPTR)
+
 	new_queue->size = 0;
 	new_queue->first = nullptr;
 	new_queue->last = nullptr;
@@ -17,9 +19,7 @@ status_t queue_delete(struct Queue *queue) {
 	struct QueueNode        *next;
 
 
-	if (queue == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
 
 	node = queue->first;
 	while (node != nullptr) {
@@ -46,9 +46,8 @@ status_t queue_push(struct Queue *queue, void *data, size_t size) {
 	struct QueueNode        *new_node;
 
 
-	if (queue == nullptr || data == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
+	NULLPTR_PREVENT(data, LESTATUS_NPTR)
 
 	new_node = (struct QueueNode *)malloc(sizeof(struct QueueNode));
 	new_node->data = data;
@@ -74,9 +73,7 @@ void * queue_pop(struct Queue *queue) {
 	void                    *data;
 
 
-	if (queue == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
 
 	first = queue->first;
 
@@ -104,9 +101,7 @@ void * queue_pop(struct Queue *queue) {
 }
 
 bool_t queue_is_empty(struct Queue *queue) {
-	if (queue == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
 
 	return queue->size == 0;
 }

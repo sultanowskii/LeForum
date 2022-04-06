@@ -7,6 +7,8 @@
 #include "lib/constants.h"
 #include "lib/status.h"
 
+#define NULLPTR_PREVENT(ptr, LESTATUS) if (ptr == nullptr) {return LESTATUS;}
+
 /**
  * @brief Generates random string of given size and writes to the place where str points.
  * 

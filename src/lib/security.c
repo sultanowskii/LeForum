@@ -8,9 +8,7 @@ void rand_string(char *str, size_t size) {
 	unsigned char       tmp;
 
 
-	if (str == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(str, LESTATUS_NPTR)
 
 	f = fopen("/dev/urandom", "r");
 	for (size_t i = 0; i < size; ++i) {

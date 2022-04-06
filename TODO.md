@@ -24,8 +24,9 @@
 - [x] shared_ptr for server/server.c and server/query.c to prevent double free on cleanup (now it happens because different pointers in different queues may point to one object)
 - [x] Destructor callback for Queue (for pop() and delete() operations)
 - [x] sharedptr_add() in s_X_create() - to make sharedptrs work correctly
-- [ ] ptr == nullptr checks in server/server.c
+- [x] ptr == nullptr checks in server/server.c
 - [ ] Removing disconnected clients from corresponding queue
+- [ ] NULLing pointers on free(): Either by passing void** arguments to delete_X() functions or manually.
 
 #### Client
 

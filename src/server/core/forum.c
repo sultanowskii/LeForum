@@ -6,9 +6,7 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	FILE*                    lethread_file;
 
 
-	if (topic == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(topic, LESTATUS_NPTR)
 
 	lethread_file = get_le_file(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
 
@@ -35,9 +33,7 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 }
 
 status_t lethread_delete(struct LeThread *lethread) {
-	if (lethread == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 
 	if (lethread->messages != nullptr) {
 		queue_delete(lethread->messages);
@@ -61,9 +57,7 @@ status_t lethread_delete(struct LeThread *lethread) {
 }
 
 uint64_t lethread_message_count(struct LeThread *lethread) {
-	if (lethread == NULL) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 
 	return lethread->next_message_id - lethread->first_message_id;
 }
@@ -73,9 +67,9 @@ struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_
 	size_t                   length;
 
 
-	if (lethread == nullptr || lethread->messages == nullptr || text == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->messages, LESTATUS_NPTR)
+	NULLPTR_PREVENT(text, LESTATUS_NPTR)
 
 	new_lemessage = (struct LeMessage *)malloc(sizeof(struct LeMessage));
 	length = strlen(text);
@@ -95,10 +89,7 @@ struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_
 }
 
 status_t lemessage_delete(struct LeMessage *message) {
-	if (message == nullptr) {
-		return LESTATUS_NPTR;
-	}
-
+	NULLPTR_PREVENT(message, LESTATUS_NPTR)
 
 	if (message->text != nullptr) {
 		 free(message->text);
@@ -112,12 +103,14 @@ status_t lemessage_delete(struct LeMessage *message) {
 }
 
 struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token) {
-	struct LeAuthor         *new_leauthor   = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
+	struct LeAuthor         *new_leauthor;
 
 
+	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+
+	new_leauthor = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
 	new_leauthor->id = rand_uint64_t() % 0xffffffff;
 	new_leauthor->token = malloc(TOKEN_SIZE + 1);
-
 
 	if (create_token) {
 		rand_string(new_leauthor->token, TOKEN_SIZE);
@@ -132,9 +125,7 @@ struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token
 }
 
 status_t leauthor_delete(struct LeAuthor *author) {
-	if (author == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(author, LESTATUS_NPTR)
 
 	if (author->token != nullptr) {
 		free(author->token);
@@ -154,9 +145,8 @@ FILE * get_le_file(uint64_t lethread_id, char *mode, char *filename, bool_t crea
 	struct stat              st             = {0};
 
 
-	if (mode == nullptr || filename == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(mode, LESTATUS_NPTR)
+	NULLPTR_PREVENT(filename, LESTATUS_NPTR)
 
 	memset(id_str, 0, sizeof(id_str));
 	memset(path, 0, sizeof(path));
@@ -186,9 +176,9 @@ status_t lethread_save(struct LeThread *lethread) {
 	FILE                    *lethread_info_file;
 
 
-	if (lethread == nullptr || lethread->author == nullptr || lethread->topic == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->author, LESTATUS_IDAT)
+	NULLPTR_PREVENT(lethread->topic, LESTATUS_IDAT)
 
 	topic_length = strlen(lethread->topic);
 	/* This trick clears the file so we don't have to have a headache with all these overwriting file stuff */
@@ -214,6 +204,9 @@ status_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 	size_t                   topic_length;
 	uint64_t                 leauthor_id;
 
+
+
+	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 
 	lethread_info_file = get_le_file(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
 
@@ -250,10 +243,7 @@ status_t lemessages_save(struct LeThread *lethread) {
 	status_t                 result;
 
 
-	if (lethread == nullptr) {
-		return LESTATUS_NPTR;
-	}
-
+	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 
 	result = LESTATUS_OK;
 	node = lethread->messages->first;
@@ -288,9 +278,8 @@ status_t lemessage_save(struct LeMessage *lemessage) {
 	FILE                    *lemessages_file;
 
 
-	if (lemessage == nullptr || lemessage->text == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(lemessage, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lemessage->text, LESTATUS_NPTR)
 
 	text_length = strlen(lemessage->text);
 	lemessages_file = get_le_file(lemessage->lethread->id, "ab", FILENAME_LEMESSAGES, TRUE);
@@ -312,9 +301,8 @@ status_t lemessages_load(struct LeThread *lethread) {
 	size_t                   text_length;
 
 
-	if (lethread == nullptr || lethread->messages == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->messages, LESTATUS_NPTR)
 
 	lemessages_file = get_le_file(lethread->id, "rb", FILENAME_LEMESSAGES, FALSE);
 	if (lemessages_file == LESTATUS_NSFD || lemessages_file == LESTATUS_NPTR) {
@@ -346,9 +334,7 @@ status_t leauthor_load(struct LeThread *lethread) {
 	FILE                    *leauthor_file;
 
 
-	if (lethread == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 
 	leauthor_file = get_le_file(lethread->id, "rb", FILENAME_LEAUTHOR, FALSE);
 	if (leauthor_file == LESTATUS_NSFD) {
@@ -369,9 +355,9 @@ status_t leauthor_save(struct LeThread *lethread) {
 	FILE                    *leauthor_file;
 
 
-	if (lethread == nullptr || lethread->author == nullptr || lethread->author->token == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->author, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->author->token, LESTATUS_NPTR)
 
 	leauthor_file = get_le_file(lethread->id, "wb", FILENAME_LEAUTHOR, TRUE);
 	fclose(leauthor_file);
@@ -387,9 +373,10 @@ status_t leauthor_save(struct LeThread *lethread) {
 }
 
 bool_t is_token_valid(struct LeThread *lethread, const char *token) {
-	if (lethread == nullptr || lethread->author == nullptr || lethread->author->token == nullptr ||token == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->author, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->author->token, LESTATUS_NPTR)
+	NULLPTR_PREVENT(token, LESTATUS_NPTR)
 
 	if (strncmp(lethread->author->token, token, TOKEN_SIZE) != 0) {
 		return FALSE;

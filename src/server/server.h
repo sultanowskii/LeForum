@@ -20,11 +20,12 @@
 #include "server/core/forum.h"
 #include "server/core/query.h"
 
-#include "lib/constants.h"
-#include "lib/status.h"
 #include "lib/communication.h"
+#include "lib/constants.h"
 #include "lib/queue.h"
+#include "lib/security.h"
 #include "lib/shared_ptr.h"
+#include "lib/status.h"
 
 
 #define MAX_PACKET_SIZE      16 * 1024

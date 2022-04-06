@@ -3,9 +3,9 @@
 SharedPtr * sharedptr_create(void *data, void (*destruct)(void *)) {
 	SharedPtr     *new_sharedptr;
 
-	if (data == nullptr || destruct == nullptr) {
-		return LESTATUS_NPTR;
-	}
+
+	NULLPTR_PREVENT(data, LESTATUS_NPTR)
+	NULLPTR_PREVENT(destruct, LESTATUS_NPTR)
 
 	new_sharedptr = malloc(sizeof(SharedPtr));
 
@@ -23,9 +23,8 @@ SharedPtr * sharedptr_create(void *data, void (*destruct)(void *)) {
 SharedPtr * sharedptr_add(SharedPtr * sharedptr) {
 	SharedPtr     *new_sharedptr;
 
-	if (sharedptr == nullptr) {
-		return LESTATUS_NPTR;
-	}
+
+	NULLPTR_PREVENT(sharedptr, LESTATUS_NPTR)
 
 	new_sharedptr = malloc(sizeof(SharedPtr));
 	new_sharedptr->ref_count = sharedptr->ref_count;
@@ -37,9 +36,7 @@ SharedPtr * sharedptr_add(SharedPtr * sharedptr) {
 }
 
 status_t sharedptr_delete(SharedPtr * sharedptr) {
-	if (sharedptr == nullptr) {
-		return LESTATUS_NPTR;
-	}
+	NULLPTR_PREVENT(sharedptr, LESTATUS_NPTR)
 	
 	(*sharedptr->ref_count)--;
 

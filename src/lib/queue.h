@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "lib/constants.h"
+#include "lib/security.h"
 #include "lib/status.h"
 
 struct Queue {

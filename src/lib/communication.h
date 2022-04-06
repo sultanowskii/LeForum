@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 
 #include "lib/constants.h"
+#include "lib/security.h"
 #include "lib/status.h"
 
 /**
