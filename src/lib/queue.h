@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
 
 #include "lib/constants.h"
@@ -12,7 +11,7 @@ struct Queue {
 	size_t              size;
 	struct QueueNode   *first;
 	struct QueueNode   *last;
-	void              (*destruct)(void *);
+	status_t          (*destruct)(void *);
 };
 
 
@@ -27,7 +26,7 @@ struct QueueNode {
  * @param destruct Callback that safely deletes one object stored in a queue. Is called for each object stored in a queue 
  * @return Pointer to created Queue 
  */
-struct Queue *          queue_create(void (*destruct)(void *));
+struct Queue *          queue_create(status_t (*destruct)(void *));
 
 /**
  * @brief Safely deletes the Queue and all the elements. 

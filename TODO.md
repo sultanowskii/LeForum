@@ -33,6 +33,7 @@
 #### Server
 - [ ] Query processing
 - [x] Argument handling
+- [ ] Documentation
 #### Client
 - [ ] Query processing
 - [ ] Argument handling

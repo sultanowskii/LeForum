@@ -54,7 +54,7 @@ struct LeClientInfo {
  * @param argv Arguments 
  * @return Status of program termination 
  */
-status_t                main(int32_t argc, char *argv[]);
+status_t                main(int argc, char *argv[]);
 
 /**
  * @brief Communicates with a client, gets and sends queries and requests. 
@@ -193,7 +193,7 @@ SharedPtr *             lethread_get_by_id(uint64_t lethread_id);
  * 
  * @param clinfo Pointer to LeClientInfo structure
  */
-void                    leclientinfo_delete(struct LeClientInfo *clinfo);
+status_t                leclientinfo_delete(struct LeClientInfo *clinfo);
 
 /**
  * @brief Callback for signal(). Cleans up and exits if some signal occurs 

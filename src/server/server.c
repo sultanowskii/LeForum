@@ -80,7 +80,7 @@ void * leauthor_query_manage() {
 	}
 }
 
-void leclientinfo_delete(struct LeClientInfo *clinfo) {
+status_t leclientinfo_delete(struct LeClientInfo *clinfo) {
 	NULLPTR_PREVENT(clinfo, LESTATUS_NPTR)
 
 	free(clinfo);
@@ -395,11 +395,11 @@ void * handle_client(void *arg) {
 	pthread_exit(0);
 }
 
-status_t main(int32_t argc, char *argv[]) {
+status_t main(int argc, char *argv[]) {
 	struct LeClientInfo     *leclientinfo;
 
-	int32_t                  client_fd;
-	int32_t                  server_fd;
+	int                      client_fd;
+	int                      server_fd;
 
 	struct sockaddr_in       server_addr;
 

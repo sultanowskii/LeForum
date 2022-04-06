@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-#include <stdint.h>
 #include <sys/socket.h>
 
 #include "lib/constants.h"
@@ -19,4 +18,4 @@
  * @param ... Format arguments
  * @return The number of bytes sent
  */
-ssize_t sendf(int32_t fd, char *str, ...);
+ssize_t sendf(int fd, char *str, ...);

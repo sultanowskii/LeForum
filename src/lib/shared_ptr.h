@@ -9,7 +9,7 @@
 typedef struct {
 	int64_t       *ref_count;
 	void          *data;
-	void         (*destruct)(void *);
+	status_t     (*destruct)(void *);
 } SharedPtr;
 
 
@@ -20,7 +20,7 @@ typedef struct {
  * @param destruct Destructor callback 
  * @return Pointer to the SharedPtr object 
  */
-SharedPtr *        sharedptr_create(void *data, void (*destruct)(void *));
+SharedPtr *        sharedptr_create(void *data, status_t (*destruct)(void *));
 
 /**
  * @brief Creates another instance of SharedPtr. 

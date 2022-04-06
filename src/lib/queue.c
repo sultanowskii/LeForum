@@ -1,6 +1,6 @@
 #include "lib/queue.h"
 
-struct Queue * queue_create(void (*destruct)(void *)) {
+struct Queue * queue_create(status_t (*destruct)(void *)) {
 	struct Queue            *new_queue      = (struct Queue *)malloc(sizeof(struct Queue));
 
 
