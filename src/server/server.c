@@ -168,7 +168,7 @@ status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
 
 SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
 	NULLPTR_PREVENT(topic, LESTATUS_NPTR)
-	
+
 	/* Here we fill lethread_id independently on the argument, 
 	 * because we want to keep all the lethreads stay in the right order without collisions. 
 	 */
@@ -229,7 +229,6 @@ size_t startup() {
 	/* Prevents process termination on SIGPIPE*/
 	signal(SIGPIPE, SIG_IGN);
 
-	
 	while ((dent = readdir(srcdir)) != NULL) {
 		struct stat st;
 

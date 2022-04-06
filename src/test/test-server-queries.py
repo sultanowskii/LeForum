@@ -40,7 +40,7 @@ def test_lethread_basic():
 	data = b"CTHR" + b"TPCSZ" + p64(topic_size) + b"TPC" + topic.encode("ascii")
 
 	result, result_length = query(data)
-	
+
 	assert result[0:2] == b"OK"
 
 	assert result[2:7] == b"THRID"
@@ -60,7 +60,7 @@ def test_lethread_basic():
 		assert topic_size == u64(data[32:40])
 
 		assert topic == data[40:].decode("ascii")
-	
+
 	# build a GET THREAD query
 	data = b"GTHR" + b"THRID" + p64(lethread_id)
 

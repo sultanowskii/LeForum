@@ -37,17 +37,17 @@ SharedPtr * sharedptr_add(SharedPtr * sharedptr) {
 
 status_t sharedptr_delete(SharedPtr * sharedptr) {
 	NULLPTR_PREVENT(sharedptr, LESTATUS_NPTR)
-	
+
 	(*sharedptr->ref_count)--;
 
 
 	if (sharedptr->ref_count != nullptr && sharedptr->destruct != nullptr && *sharedptr->ref_count <= 0) {
 		sharedptr->destruct(sharedptr->data);
-		
+
 		sharedptr->data = nullptr;
-		
+
 		sharedptr->destruct = nullptr;
-		
+
 		free(sharedptr->ref_count);
 		sharedptr->ref_count = nullptr;
 	}
