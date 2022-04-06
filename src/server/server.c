@@ -427,6 +427,11 @@ status_t main(int argc, char *argv[]) {
 		return LESTATUS_IDAT;
 	}
 
+	if (arguments.max_connections <= 0) {
+		puts("invalid connection limit");
+		return LESTATUS_IDAT;
+	}
+
 	startup();
 
 	if (arguments.hello_message != nullptr && strlen(arguments.hello_message) > 0) {

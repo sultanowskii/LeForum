@@ -8,10 +8,10 @@ extern struct argp le_argp;
 
 struct arguments {
 	char          *host;
-	int32_t        port;
+	int            port;
 	char          *hello_message;
 	struct timeval timeout;
-	int32_t        max_connections;
+	int            max_connections;
 };
 
 /**
