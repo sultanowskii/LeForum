@@ -25,7 +25,7 @@
 - [x] Destructor callback for Queue (for pop() and delete() operations)
 - [x] sharedptr_add() in s_X_create() - to make sharedptrs work correctly
 - [x] ptr == nullptr checks in server/server.c
-- [ ] Removing disconnected clients from corresponding queue
+- [x] Removing disconnected clients from corresponding queue
 - [ ] NULLing pointers on free(): Either by passing void** arguments to delete_X() functions or manually.
 
 #### Client

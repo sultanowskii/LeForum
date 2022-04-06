@@ -30,11 +30,6 @@ struct Queue      *lemessage_query_queue;
 struct Queue      *leauthor_query_queue;
 
 /*
- * To free() all the LeClientInfo structs in the end.
- */
-struct Queue      *leclientinfo_queue;
-
-/*
  * Here we store SharedPtrs to all the LeThreads
  */
 struct Queue      *lethread_queue;
@@ -225,7 +220,6 @@ size_t startup() {
 	lemessages_query_queue = queue_create(sharedptr_delete);
 	lemessage_query_queue = queue_create(lemessage_delete);
 	leauthor_query_queue = queue_create(sharedptr_delete);
-	leclientinfo_queue = queue_create(leclientinfo_delete);
 	lethread_queue = queue_create(sharedptr_delete);
 
 	atexit(cleanup);
@@ -289,8 +283,6 @@ void cleanup() {
 
 		lemeta_save();
 
-		queue_delete(leclientinfo_queue);
-		leclientinfo_queue = nullptr;
 		queue_delete(lethread_query_queue);
 		lethread_query_queue = nullptr;
 		queue_delete(lemessages_query_queue);
@@ -400,6 +392,8 @@ void * handle_client(void *arg) {
 	free(cl_data);
 	cl_data = nullptr;
 
+	leclientinfo_delete(client_info);
+
 	pthread_exit(0);
 }
 
@@ -477,8 +471,6 @@ status_t main(int32_t argc, char *argv[]) {
 			perror("getpeername()");
 			return LESTATUS_CLIB;
 		}
-
-		queue_push(leclientinfo_queue, leclientinfo, sizeof(leclientinfo));
 
 		if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&TIMEOUT, sizeof(TIMEOUT)) < 0) {
 			perror("setsockopt() failed");
