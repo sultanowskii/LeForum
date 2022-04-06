@@ -118,6 +118,7 @@ struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	}
 
 	sharedptr_delete(sharedptr_lethread);
+	sharedptr_lethread = nullptr;
 
 	result.data = answer_start;
 	result.size = answer - answer_start;
@@ -184,6 +185,7 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	answer += TOKEN_SIZE;
 
 	sharedptr_delete(sharedptr_lethread);
+	sharedptr_lethread = nullptr;
 
 	result.data = answer_start;
 	result.size = answer_size;
@@ -280,6 +282,7 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 		answer_size = answer - answer_start;
 
 		sharedptr_delete(sharedptr_lethread);
+		sharedptr_lethread = nullptr;
 
 		node = node->next;
 	}
@@ -335,6 +338,7 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	if (strncmp(data_ptr, "TXTSZ", sizeof("TXTSZ") - 1) != 0) {
 		sharedptr_delete(sharedptr_lethread);
+		sharedptr_lethread = nullptr;
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
@@ -345,6 +349,7 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	if (strncmp(data_ptr, "TXT", 3) != 0) {
 		sharedptr_delete(sharedptr_lethread);
+		sharedptr_lethread = nullptr;
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
@@ -370,6 +375,7 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	text = nullptr;
 
 	sharedptr_delete(sharedptr_lethread);
+	sharedptr_lethread = nullptr;
 
 	result.data = NULL;
 	result.size = 0;

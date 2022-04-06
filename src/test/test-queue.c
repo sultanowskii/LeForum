@@ -34,6 +34,7 @@ status_t main() {
 		data = queue_pop(queue);
 		printf("queue_is_empty()=%d, pop(), cntr=%llu: %s\n", is_empty, cntr++, data);
 		free(data);
+		data = nullptr;
 	}
 
 	printf("Finished! queue_is_emtpy()=%llu\n", queue_is_empty(queue));
@@ -41,6 +42,7 @@ status_t main() {
 	puts("Destroying queue...");
 
 	queue_delete(queue);
+	queue = nullptr;
 
 	return LESTATUS_OK;
 }

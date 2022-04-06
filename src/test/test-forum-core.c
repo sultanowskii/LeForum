@@ -78,6 +78,7 @@ status_t main() {
 	lemessages_save(lethread);
 	leauthor_save(lethread);
 	lethread_delete(lethread);
+	lethread = nullptr;
 
 	puts("Trying to load the saved lethread...");
 
@@ -87,14 +88,15 @@ status_t main() {
 	lemessages_load(lethread);
 	leauthor_load(lethread);
 
-
 	printf("LeAuthor: id=%llu, token=%s !!!\n", lethread->author->id, lethread->author->token);
 
 	lethread_info(lethread);
 	lethread_message_history(lethread);
 
 	lethread_delete(lethread);
+	lethread = nullptr;
 	free(text);
+	text = nullptr;
 
 	puts("Done!");
 

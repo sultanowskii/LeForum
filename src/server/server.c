@@ -249,6 +249,7 @@ size_t startup() {
 			if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
 				if (lethread != nullptr) {
 					free(lethread);
+					lethread = nullptr;
 				}
 				continue;
 			}
@@ -393,6 +394,7 @@ void * handle_client(void *arg) {
 	cl_data = nullptr;
 
 	leclientinfo_delete(client_info);
+	client_info = nullptr;
 
 	pthread_exit(0);
 }
