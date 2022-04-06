@@ -26,7 +26,7 @@
 - [x] sharedptr_add() in s_X_create() - to make sharedptrs work correctly
 - [x] ptr == nullptr checks in server/server.c
 - [x] Removing disconnected clients from corresponding queue
-- [ ] NULLing pointers on free(): Either by passing void** arguments to delete_X() functions or manually.
+- [x] NULLing pointers on free(): Either by passing void** arguments to delete_X() functions or manually.
 
 #### Client
 
