@@ -5,6 +5,7 @@ struct LeCommand CMDS[CMD_COUNT] = {
 	{"CTHR", cmd_lethread_create},
 	{"FTHR", cmd_lethread_find},
 	{"CMSG", cmd_lemessage_create},
+	{"META", cmd_meta},
 	{"LIVE", cmd_alive}
 };
 
@@ -155,7 +156,7 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	topic_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(size_t);
 
-	if (topic_size > MAX_TOPIC_SIZE) {
+	if (topic_size > MAX_TOPIC_SIZE || topic_size < MIN_TOPIC_SIZE) {
 		result.status = LESTATUS_IDAT;
 		return result;
 	}
@@ -231,7 +232,7 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	topic_part_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(topic_part_size);
 
-	if (topic_part > MAX_TOPIC_SIZE) {
+	if (topic_part_size > MAX_TOPIC_SIZE || topic_part_size < MIN_TOPIC_SIZE) {
 		result.status = LESTATUS_IDAT;
 		return result;
 	}
@@ -248,7 +249,7 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	data_ptr += topic_part_size;
 
 	lethreads = lethread_find(topic_part, topic_part_size);
-	
+
 	node = lethreads->first;
 
 	chunk_size = 1024;
@@ -359,7 +360,9 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	text_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(text_size);
 
-	if (text_size > MAX_MESSAGE_SIZE) {
+	if (text_size > MAX_MESSAGE_SIZE || text_size < MIN_MESSAGE_SIZE) {
+		sharedptr_delete(sharedptr_lethread);
+		sharedptr_lethread = nullptr;
 		result.status = LESTATUS_IDAT;
 		return result;
 	}
@@ -396,6 +399,70 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	result.data = NULL;
 	result.size = 0;
+	result.status = LESTATUS_OK;
+
+	return result;
+}
+
+struct LeCommandResult cmd_meta(char *raw_data, size_t size) {
+	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
+
+	char                    *answer;
+	char                    *answer_start;
+
+	char                    *tmp;
+	size_t                   tmp_size;
+
+	answer = malloc(128);
+	answer_start = answer;
+
+	strncpy(answer, "MINTPCSZ", sizeof("MINTPCSZ") - 1);
+	answer += sizeof("MINTPCSZ") - 1;
+
+	*(size_t *)answer = MIN_TOPIC_SIZE;
+	answer += sizeof(size_t);
+
+	strncpy(answer, "MAXTPCSZ", sizeof("MAXTPCSZ") - 1);
+	answer += sizeof("MAXTPCSZ") - 1;
+
+	*(size_t *)answer = MAX_TOPIC_SIZE;
+	answer += sizeof(size_t);
+
+	strncpy(answer, "MINMSGSZ", sizeof("MINMSGSZ") - 1);
+	answer += sizeof("MINMSGSZ") - 1;
+
+	*(size_t *)answer = MIN_MESSAGE_SIZE;
+	answer += sizeof(size_t);
+
+	strncpy(answer, "MAXMSGSZ", sizeof("MAXMSGSZ") - 1);
+	answer += sizeof("MAXMSGSZ") - 1;
+
+	*(size_t *)answer = MAX_MESSAGE_SIZE;
+	answer += sizeof(size_t);
+
+	strncpy(answer, "THRN", sizeof("THRN") - 1);
+	answer += sizeof("THRN") - 1;
+
+	*(size_t *)answer = get_lethread_number();
+	answer += sizeof(size_t);
+
+	tmp = get_version();
+	tmp_size = strlen(tmp);
+
+	strncpy(answer, "VERSZ", sizeof("VERSZ") - 1);
+	answer += sizeof("VERSZ") - 1;
+
+	*(size_t *)answer = tmp_size;
+	answer += sizeof(size_t);
+
+	strncpy(answer, "VER", sizeof("VER") - 1);
+	answer += sizeof("VER") - 1;
+
+	strncpy(answer, tmp, tmp_size);
+	answer += tmp_size;
+
+	result.data = answer_start;
+	result.size = answer - answer_start;
 	result.status = LESTATUS_OK;
 
 	return result;

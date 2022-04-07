@@ -5,6 +5,8 @@
 #include <argp.h>
 
 extern struct argp le_argp;
+extern const char *argp_program_version;
+extern const char *argp_program_bug_address;
 
 struct arguments {
 	char          *host;

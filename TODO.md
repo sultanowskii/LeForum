@@ -15,8 +15,8 @@
 - [x] Thread creation query
 - [x] Find by topic query
 - [x] Test find by topic query
-- [ ] Meta-query (max topic size, max message size, number of lethreads)
-- [ ] Metadata: Max topic size, max message size, etc.
+- [x] Meta-query (max topic size, max message size, number of lethreads)
+- [x] Metadata: Max topic size, max message size, etc.
 - [x] Safe ID generation in lethread creation (to prevent collisions)
 - [x] Safe multithread counter interface (using locks, idk)
 - [x] Metadata file interface (it has to contain number of lethreads at least) + loading next_lethread_id_value
@@ -26,6 +26,7 @@
 - [x] ptr == nullptr checks in server/server.c
 - [x] Removing disconnected clients from corresponding queue
 - [x] NULLing pointers on free(): Either by passing void** arguments to delete_X() functions or manually.
+- [ ] Test for messages
 
 #### Client
 

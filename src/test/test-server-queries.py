@@ -25,8 +25,14 @@ def query(payload):
 	sleep(0.5)
 
 	io.send(payload)
+
+	result = b""
 	result_size = u64(io.recv(8))
-	result = io.recv(result_size)
+
+	# well, that is the solution to all socket chunk shitty problems.
+	while len(result) < result_size:
+		result += io.recv(result_size, 3)
+
 	io.close()
 
 	return result, result_size
@@ -85,15 +91,19 @@ def test_lethread_find(topic_part):
 	data = b"FTHRTPCPSZ" + p64(topic_part_size) + b"TPCP" + topic_part.encode("ascii")
 
 	result, result_size = query(data)
-	
+
 	x = 0
-	
+
 	print(f"Find ('{topic_part}'):")
 
 	if result[x:x+4] == b"NFND":
 		print("    Not found")
-		return
-	
+		return None
+
+	if result[x:x+4] == b"IDAT":
+		print("    Error: invalid request")
+		return False
+
 	while x + 1 < result_size:
 		assert result[x:x+5] == b"THRID"
 		x += 5
@@ -112,6 +122,57 @@ def test_lethread_find(topic_part):
 		print(f"    <thread id={lethread_id} {topic=}>")
 
 
+def test_meta():
+	data = b"META"
+
+	result, result_size = query(data)
+	
+	x = 0
+
+	assert result[x:x+8] == b"MINTPCSZ"
+	x += 8
+
+	min_topic_size = u64(result[x:x+8])
+	x += 8
+
+	assert result[x:x+8] == b"MAXTPCSZ"
+	x += 8
+
+	max_topic_size = u64(result[x:x+8])
+	x += 8
+
+	assert result[x:x+8] == b"MINMSGSZ"
+	x += 8
+
+	min_message_size = u64(result[x:x+8])
+	x += 8
+
+	assert result[x:x+8] == b"MAXMSGSZ"
+	x += 8
+
+	max_message_size = u64(result[x:x+8])
+	x += 8
+
+	assert result[x:x+4] == b"THRN"
+	x += 4
+
+	threads_number = u64(result[x:x+8])
+	x += 8
+
+	assert result[x:x+5] == b"VERSZ"
+	x += 5
+
+	version_size = u64(result[x:x+8])
+	x += 8
+
+	assert result[x:x+3] == b"VER"
+	x += 3
+
+	version = result[x:x+version_size].decode("ascii")
+
+	print(f"{version} {threads_number=} ({min_topic_size}<=topic_size<={max_topic_size}) ({min_message_size}<=message_size<={max_message_size})")
+
+
 def main():
 	with context.quiet:
 		if args.NOBASIC == "":
@@ -124,13 +185,20 @@ def main():
 		if args.NOFIND == "":
 			print("[.] Starting LeThread FTHR test...")
 			test_lethread_find("cool")
-			test_lethread_find("a")
+			assert test_lethread_find("a") == False
+			test_lethread_find("aaa")
 			print("[*] LeThread FTHR test passed successfully!")
-		
+
 		if args.FREEFIND != "":
 			print("[.] LeThread find free mode. Ctrl+C to exit")
 			while True:
 				test_lethread_find(input()[:-1])
+		
+		if args.NOMETA == "":
+			print("[.] Starting Meta Query test...")
+			test_meta()
+			print("[*] Meta Query passed successfully!")
+
 
 
 if __name__ == "__main__":

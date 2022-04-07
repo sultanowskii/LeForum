@@ -13,7 +13,7 @@
 #include "lib/shared_ptr.h"
 #include "lib/status.h"
 
-#define CMD_COUNT 5
+#define CMD_COUNT 6
 
 
 struct LeCommand {
@@ -97,6 +97,16 @@ status_t                     s_leauthor_save(SharedPtr *sharedptr_lethread);
  */
 SharedPtr *                  s_lethread_create(char *topic, uint64_t lethread_id);
 
+size_t                       get_min_message_size();
+size_t                       get_max_message_size();
+
+size_t                       get_min_topic_size();
+size_t                       get_max_topic_size();
+
+size_t                       get_lethread_number();
+
+const char *                 get_version();
+
 /* =============================================================================== */
 
 
@@ -147,6 +157,15 @@ struct LeCommandResult       cmd_lemessage_create(char *raw_data, size_t size);
  * @return LeCommandResult structure with status==LESATATUS_OK on success 
  */
 struct LeCommandResult       cmd_alive(char *raw_data, size_t size);
+
+/**
+ * @brief Returns a meta information about the server 
+ * 
+ * @param raw_data Unparsed data from a client 
+ * @param size raw_data size 
+ * @return struct LeCommandResult with meta information 
+ */
+struct LeCommandResult       cmd_meta(char *raw_data, size_t size);
 
 /**
  * @brief Tries to find specified command in the data. If command is found, executes its processor. 

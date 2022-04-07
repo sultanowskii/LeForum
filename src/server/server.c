@@ -176,6 +176,14 @@ SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
 	return sharedptr_add(sharedptr_lethread); 
 }
 
+size_t get_lethread_number() {
+	return lethread_queue->size;
+}
+
+inline const char * get_version() {
+	return argp_program_version;
+}
+
 void lemeta_load() {
 	FILE                    *metafile;
 	struct stat              st                  = {0};
@@ -361,7 +369,7 @@ void * handle_client(void *arg) {
 			lestatus_representation = get_lestatus_string_repr(query_result.status);
 			*(size_t *)tmp = strlen(lestatus_representation);
 			send(client_info->fd, &tmp, sizeof(size_t), NULL);
-			send(client_info->fd, lestatus_representation, tmp, NULL); /* Status without description */
+			send(client_info->fd, lestatus_representation, *(size_t *)tmp, NULL); /* Status without description */
 		}
 		else {
 			if (query_result.data != NULL) {
