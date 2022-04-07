@@ -14,8 +14,9 @@
 - [x] Already existing lethreads loader on a startup
 - [x] Thread creation query
 - [x] Find by topic query
-- [ ] Test find by topic query
-- [ ] Meta-query (to get lethreads)
+- [x] Test find by topic query
+- [ ] Meta-query (max topic size, max message size, number of lethreads)
+- [ ] Metadata: Max topic size, max message size, etc.
 - [x] Safe ID generation in lethread creation (to prevent collisions)
 - [x] Safe multithread counter interface (using locks, idk)
 - [x] Metadata file interface (it has to contain number of lethreads at least) + loading next_lethread_id_value
