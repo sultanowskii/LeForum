@@ -238,7 +238,7 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	data_ptr += topic_part_size;
 
 	lethreads = lethread_find(topic_part, topic_part_size);
-
+	
 	node = lethreads->first;
 
 	chunk_size = 1024;
@@ -246,20 +246,23 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	answer = answer_start;
 	answer_size = answer - answer_start;
 
-	if (node == NULL) {
+	if (queue_is_empty(lethreads) || node == NULL) {
 		strncpy(answer, "NFND", sizeof("NFND") - 1);
+		answer += sizeof("NFND") - 1;
 		goto FTHR_SUCCESS;
 	}
 
 	while (node != NULL) {
-		while (answer_size + sizeof("THRID") - 1 + sizeof(lethread->id) + sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1 + topic_size > chunk_size) {
+		sharedptr_lethread = (SharedPtr *)node->data;
+		lethread = (struct LeThread *)sharedptr_lethread->data;
+
+		topic_size = strlen(lethread->topic);
+
+		while (answer_size + sizeof("THRID") - 1 + sizeof(lethread->id) + sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1 + topic_size >= chunk_size) {
 			chunk_size *= 2;
 			answer_start = realloc(answer_start, chunk_size);
 			answer = answer_start + answer_size;
 		}
-
-		sharedptr_lethread = (SharedPtr *)node->data;
-		lethread = (struct LeThread *)sharedptr_lethread->data;
 
 		strncpy(answer, "THRID", sizeof("THRID") - 1);
 		answer += sizeof("THRID") - 1;
@@ -269,7 +272,6 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 
 		strncpy(answer, "TPCSZ", sizeof("TPCSZ") - 1);
 		answer += sizeof("TPCSZ") - 1;
-		topic_size = strlen(lethread->topic);
 		*(size_t *)answer = topic_size;
 		answer += sizeof(topic_size);
 
@@ -281,13 +283,13 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 
 		answer_size = answer - answer_start;
 
-		sharedptr_delete(sharedptr_lethread);
-		sharedptr_lethread = nullptr;
-
 		node = node->next;
 	}
 
 FTHR_SUCCESS:
+	queue_delete(lethreads);
+	lethreads = nullptr;
+
 	free(topic_part);
 	topic_part = nullptr;
 

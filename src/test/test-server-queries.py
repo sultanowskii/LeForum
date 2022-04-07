@@ -11,6 +11,8 @@ FILENAME_LETHREAD = "lethreadinfo"
 FILENAME_LEMESSAGES = "lemessages"
 FILENAME_LEAUTHOR = "leauthor"
 
+lethread_topic = []
+
 
 def query(payload):
 	io = remote("127.0.0.1", 7431)
@@ -23,23 +25,24 @@ def query(payload):
 	sleep(0.5)
 
 	io.send(payload)
-	result_length = io.recv(8)
-	result = io.recv(1024)
+	result_size = u64(io.recv(8))
+	result = io.recv(result_size)
 	io.close()
 
-	return result, result_length
+	return result, result_size
 
 
-def test_lethread_basic():
-	topic_size = 30
+def test_lethread_basic(topic):
+	global lethread_topic
 
-	# randomly generate topic
-	topic = cyclic(topic_size, alphabet=ALPH)
+	topic_size = len(topic)
+
+	lethread_topic.append(topic)
 
 	# build a CREATE THREAD query
 	data = b"CTHR" + b"TPCSZ" + p64(topic_size) + b"TPC" + topic.encode("ascii")
 
-	result, result_length = query(data)
+	result, result_size = query(data)
 
 	assert result[0:2] == b"OK"
 
@@ -64,7 +67,7 @@ def test_lethread_basic():
 	# build a GET THREAD query
 	data = b"GTHR" + b"THRID" + p64(lethread_id)
 
-	result, result_length = query(data)
+	result, result_size = query(data)
 
 	assert result[0:5] == b"THRID"
 	assert u64(result[5:13]) == lethread_id
@@ -76,12 +79,59 @@ def test_lethread_basic():
 	assert result[29:29+len(topic)].decode("ascii") == topic
 
 
+def test_lethread_find(topic_part):
+	topic_part_size = len(topic_part)
+
+	data = b"FTHRTPCPSZ" + p64(topic_part_size) + b"TPCP" + topic_part.encode("ascii")
+
+	result, result_size = query(data)
+	
+	x = 0
+	
+	print(f"Find ('{topic_part}'):")
+
+	if result[x:x+4] == b"NFND":
+		print("    Not found")
+		return
+	
+	while x + 1 < result_size:
+		assert result[x:x+5] == b"THRID"
+		x += 5
+		lethread_id = u64(result[x:x+8])
+		x += 8
+
+		assert result[x:x+5] == b"TPCSZ"
+		x += 5
+		topic_size = u64(result[x:x+8])
+		x += 8
+
+		assert result[x:x+3] == b"TPC"
+		x += 3
+		topic = result[x:x+topic_size].decode("ascii")
+		x += topic_size
+		print(f"    <thread id={lethread_id} {topic=}>")
+
+
 def main():
 	with context.quiet:
-		print("[.] Starting LeThread basic tests (CTHR, GTHR)...")
-		for i in range(5):
-			test_lethread_basic()
-		print("[*] LeThread basic tests (CTHR, GTHR) passed successfully!")
+		if args.NOBASIC == "":
+			print("[.] Starting LeThread basic tests (CTHR, GTHR)...")
+			for i in range(5):
+				test_lethread_basic(cyclic(24, alphabet=ALPH))
+			test_lethread_basic("veri cool topic!!!")
+			print("[*] LeThread basic tests (CTHR, GTHR) passed successfully!")
+
+		if args.NOFIND == "":
+			print("[.] Starting LeThread FTHR test...")
+			test_lethread_find("cool")
+			test_lethread_find("a")
+			print("[*] LeThread FTHR test passed successfully!")
+		
+		if args.FREEFIND != "":
+			print("[.] LeThread find free mode. Ctrl+C to exit")
+			while True:
+				test_lethread_find(input()[:-1])
+
 
 if __name__ == "__main__":
 	main()

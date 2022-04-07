@@ -22,11 +22,14 @@ status_t queue_delete(struct Queue *queue) {
 	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
 
 	node = queue->first;
+
 	while (node != nullptr) {
 		next = node->next;
 
-		queue->destruct(node->data);
-		node->data = nullptr;
+		if (node->data != nullptr) {
+			queue->destruct(node->data);
+			node->data = nullptr;
+		}
 
 		free(node);
 		node = nullptr;
