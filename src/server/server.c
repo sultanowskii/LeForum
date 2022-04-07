@@ -194,6 +194,7 @@ void lemeta_load() {
 void lemeta_save() {
 	FILE                    *metafile;
 
+
 	metafile = fopen(DATA_DIR "/" FILENAME_LEMETA, "wb");
 	fwrite(&next_lethread_id_value, sizeof(next_lethread_id_value), 1, metafile);
 	fclose(metafile);
@@ -323,6 +324,8 @@ void * handle_client(void *arg) {
 
 	char                     tmp[64];
 
+	char                    *lestatus_representation;
+
 
 	NULLPTR_PREVENT(arg, LESTATUS_NPTR)
 
@@ -355,16 +358,10 @@ void * handle_client(void *arg) {
 		memset(cl_data, 0, MIN(cl_data_size + 1, MAX_PACKET_SIZE));
 
 		if (query_result.size == 0) {
-			if (query_result.status == LESTATUS_OK) {
-				*(size_t *)tmp = 2;
-				send(client_info->fd, tmp, sizeof(size_t), NULL);
-				send(client_info->fd, "OK", 2, NULL); /* If query returned nothing, then sends OK */
-			}
-			else {
-				*(size_t *)tmp = 3;
-				send(client_info->fd, tmp, sizeof(size_t), NULL);
-				send(client_info->fd, "ERR", 3, NULL); /* Error without description */
-			}
+			lestatus_representation = get_lestatus_string_repr(query_result.status);
+			*(size_t *)tmp = strlen(lestatus_representation);
+			send(client_info->fd, &tmp, sizeof(size_t), NULL);
+			send(client_info->fd, lestatus_representation, tmp, NULL); /* Status without description */
 		}
 		else {
 			if (query_result.data != NULL) {
@@ -374,7 +371,7 @@ void * handle_client(void *arg) {
 			else {
 				*(size_t *)tmp = 3;
 				send(client_info->fd, tmp, sizeof(size_t), NULL);
-				send(client_info->fd, "ERR", 3, NULL); /* This case is not valid, sends error without description */
+				send(client_info->fd, "ERR", 3, NULL); /* Unexpected, sends error without description */
 			}
 		}
 

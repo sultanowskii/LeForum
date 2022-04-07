@@ -5,6 +5,8 @@
 
 #include "server/core/forum.h"
 
+#include "server/conf.h"
+
 #include "lib/constants.h"
 #include "lib/queue.h"
 #include "lib/security.h"

@@ -155,6 +155,11 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	topic_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(size_t);
 
+	if (topic_size > MAX_TOPIC_SIZE) {
+		result.status = LESTATUS_IDAT;
+		return result;
+	}
+
 	if (strncmp(data_ptr, "TPC", sizeof("TPC") - 1) != 0) {
 		result.status = LESTATUS_ISYN;
 		return result;
@@ -225,6 +230,11 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 
 	topic_part_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(topic_part_size);
+
+	if (topic_part > MAX_TOPIC_SIZE) {
+		result.status = LESTATUS_IDAT;
+		return result;
+	}
 
 	if (strncmp(data_ptr, "TPCP", sizeof("TPCP") - 1) != 0) {
 		result.status = LESTATUS_ISYN;
@@ -348,6 +358,11 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	text_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(text_size);
+
+	if (text_size > MAX_MESSAGE_SIZE) {
+		result.status = LESTATUS_IDAT;
+		return result;
+	}
 
 	if (strncmp(data_ptr, "TXT", 3) != 0) {
 		sharedptr_delete(sharedptr_lethread);
