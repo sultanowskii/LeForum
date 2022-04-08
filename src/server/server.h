@@ -42,8 +42,8 @@
  */
 struct LeClientInfo {
 	int32_t             fd;
-	socklen_t           addr_size;
 	struct sockaddr_in  addr;
+	socklen_t           addr_size;
 };
 
 /**
