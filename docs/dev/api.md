@@ -40,10 +40,10 @@ CNT{4}BYE
 ### List of API endpoints:
 - [GTHR](#GTHR) - get lethread by ID
 - [CTHR](#CTHR) - create lethread
-- [FTHR](#CTHR) - find lethread by topic part
-- [CMSG](#CTHR) - create lemessage in lethread with provided ID
-- [META](#CTHR) - get meta-information about the server
-- [LIVE](#CTHR) - alive (used to make sure the connection is still established)
+- [FTHR](#FTHR) - find lethread by topic part
+- [CMSG](#CMSG) - create lemessage in lethread with provided ID
+- [META](#META) - get meta-information about the server
+- [LIVE](#LIVE) - alive (used to make sure the connection is still established)
 
 ### GTHR
 **Description**: Get LeThread by ID
