@@ -104,6 +104,9 @@ struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 
 		*(uint8_t *)answer = lemessage->by_lethread_author;
 		answer += sizeof(lemessage->by_lethread_author);
+	
+		*(uint64_t *)answer = lemessage->id;
+		answer += sizeof(uint64_t);
 
 		*(size_t *)answer = text_size;
 		answer += sizeof(size_t);
@@ -137,7 +140,7 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 
 	char                    *answer_start;
 	char                    *answer;
-	size_t                   answer_size           = sizeof("OKTHRID") - 1 + sizeof(uint64_t) + sizeof("TKN") - 1 + TOKEN_SIZE;
+	size_t                   answer_size           = sizeof("THRID") - 1 + sizeof(uint64_t) + sizeof("TKN") - 1 + TOKEN_SIZE;
 
 	struct LeCommandResult   result                = {0, LESTATUS_OK, NULL};
 
@@ -178,8 +181,8 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	answer_start = malloc(answer_size);
 	answer = answer_start;
 
-	strncpy(answer, "OKTHRID", sizeof("OKTHRID") - 1);
-	answer += sizeof("OKTHRID") - 1;
+	strncpy(answer, "THRID", sizeof("THRID") - 1);
+	answer += sizeof("THRID") - 1;
 
 	*(uint64_t*)answer = new_lethread->id;
 	answer += sizeof(uint64_t);
