@@ -2,7 +2,7 @@
 ## List of contents
 - Gerenal
     - [API](api.md)
-    - [Inner Data Structures](structs.md)
+    - [Inner structures](structs.md)
 - [Server](server.md)
     - [Threads](server_threads.md)
-    - [Inner Data Structures](server_structs.md)
+    - [Server inner structures](server_structs.md)
