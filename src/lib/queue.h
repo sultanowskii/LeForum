@@ -30,8 +30,9 @@ struct Queue *          queue_create(status_t (*destruct)(void *));
 
 /**
  * @brief Safely deletes the Queue and all the elements. 
+ * Use this _only_ if you created queue by using `queue_create()`.
  * 
- * @param queue Queue to delete 
+ * @param queue Pointer to Queue to delete 
  * @return LESTATUS_OK on success 
  */
 status_t                queue_delete(struct Queue *queue);
@@ -39,9 +40,9 @@ status_t                queue_delete(struct Queue *queue);
 /**
  * @brief Adds a new element to the end of the Queue. 
  * 
- * @param queue Queue where a new element will be placed 
- * @param data Object to place 
- * @param size Size of the object 
+ * @param queue Pointer to Queue where a new element will be placed 
+ * @param data Pointer to data to place 
+ * @param size Size of the data 
  * @return LESTATUS_OK on success 
  */
 status_t                queue_push(struct Queue *queue, void *data, size_t size);
@@ -49,15 +50,15 @@ status_t                queue_push(struct Queue *queue, void *data, size_t size)
 /**
  * @brief Retrieves the first element and deletes it from the Queue. 
  * 
- * @param queue Queue to pop element from 
- * @return Pointer to the popped object 
+ * @param queue Pointer to Queue to pop element from 
+ * @return Pointer to the popped data 
  */
 void *                  queue_pop(struct Queue *queue);
 
 /**
- * @brief Checks whether queue is empty or not 
+ * @brief Checks whether queue is empty or not. 
  * 
- * @param queue Queue to check 
+ * @param queue Pointer to Queue to check 
  * @return TRUE if queue is empty, otherwise ELSE 
  */
 bool_t                  queue_is_empty(struct Queue *queue);
