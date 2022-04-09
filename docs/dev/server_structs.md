@@ -1,11 +1,10 @@
 # LeForum Developer Documentation
 ## Server inner structures
-Currently methods aren't included here, so please refer to header files for explanation.
-
 ### LeThread
 **Declared in**: [src/server/forum.h](/src/server/core/forum.h)
 
-**Description**: Contains information about a thing which widely known as Fourm Thread - discussion, tree of messages
+**Description**:
+Contains information about a thing which widely known as Fourm Thread - discussion, tree of messages
 
 **Fields**: 
 `id` - Unique ID
@@ -20,7 +19,8 @@ Currently methods aren't included here, so please refer to header files for expl
 ### LeMessage
 **Declared in**: [src/server/forum.h](/src/server/core/forum.h)
 
-**Description**: Contains information about message. Related with specific LeThread
+**Description**:
+Contains information about message. Related with specific LeThread
 
 **Fields**:
 `id` - Unique ID
@@ -33,7 +33,8 @@ Currently methods aren't included here, so please refer to header files for expl
 ### LeAuthor
 **Declared in**: [src/server/forum.h](/src/server/core/forum.h)
 
-**Description**: Contains information about author
+**Description**:
+Contains information about author
 
 **Fields**:
 `id` - Unique ID
@@ -44,7 +45,8 @@ Currently methods aren't included here, so please refer to header files for expl
 ### LeCommand
 **Declared in**: [src/server/query.h](/src/server/core/query.h)
 
-**Description**: Contains information about "command" - query processor and its trigger
+**Description**:
+Contains information about "command" - query processor and its trigger
 
 **Fields**:
 `name` - String that represents request name. When client sends a query, the first bytes are always a name (basically, "command trigger")
@@ -55,7 +57,8 @@ Currently methods aren't included here, so please refer to header files for expl
 ### LeCommandResult
 **Declared in**: [src/server/query.h](/src/server/core/query.h)
 
-**Description**: Contains result of the query processor
+**Description**:
+Contains result of the query processor
 
 **Fields**:
 `data` - Pointer to the data that has to be sent to client as a response.
@@ -67,7 +70,8 @@ Currently methods aren't included here, so please refer to header files for expl
 ### LeClientInfo
 **Declared in**: [src/sever/server.h](/src/server/server.h)
 
-**Description**: Contains information about connected client
+**Description**:
+Contains information about connected client
 
 **Fields**:
 `fd` - Socket FD used for communication with client
