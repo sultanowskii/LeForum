@@ -4,7 +4,7 @@
 **Declared in**: [src/server/forum.h](/src/server/core/forum.h)
 
 **Description**:
-Contains information about a thing which widely known as Fourm Thread - discussion, tree of messages
+Contains information about a thing which widely known as Fourm Thread - discussion, tree of messages.
 
 **Fields**: 
 `id` - Unique ID
@@ -20,7 +20,7 @@ Contains information about a thing which widely known as Fourm Thread - discussi
 **Declared in**: [src/server/forum.h](/src/server/core/forum.h)
 
 **Description**:
-Contains information about message. Related with specific LeThread
+Contains information about message. Related with specific LeThread.
 
 **Fields**:
 `id` - Unique ID
@@ -34,7 +34,7 @@ Contains information about message. Related with specific LeThread
 **Declared in**: [src/server/forum.h](/src/server/core/forum.h)
 
 **Description**:
-Contains information about author
+Contains information about author.
 
 **Fields**:
 `id` - Unique ID
@@ -46,7 +46,7 @@ Contains information about author
 **Declared in**: [src/server/query.h](/src/server/core/query.h)
 
 **Description**:
-Contains information about "command" - query processor and its trigger
+Contains information about "command" - query processor and its trigger.
 
 **Fields**:
 `name` - String that represents request name. When client sends a query, the first bytes are always a name (basically, "command trigger")
@@ -58,7 +58,7 @@ Contains information about "command" - query processor and its trigger
 **Declared in**: [src/server/query.h](/src/server/core/query.h)
 
 **Description**:
-Contains result of the query processor
+Contains result of the query processor.
 
 **Fields**:
 `data` - Pointer to the data that has to be sent to client as a response.
@@ -71,7 +71,7 @@ Contains result of the query processor
 **Declared in**: [src/sever/server.h](/src/server/server.h)
 
 **Description**:
-Contains information about connected client
+Contains information about connected client.
 
 **Fields**:
 `fd` - Socket FD used for communication with client

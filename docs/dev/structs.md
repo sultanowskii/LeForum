@@ -4,7 +4,7 @@
 **Declared in**: [src/lib/queue.h](/src/lib/queue.h)
 
 **Description**:
-Queue structure (widely known structure, you can find information in the Internet), implemeted as linked list. Supports to store only one kind of data in each node
+Queue structure (widely known structure, you can find information in the Internet), implemeted as linked list. Supports to store only one kind of data in each node.
 
 **Fields**:
 `size` - number of [nodes](#QueueNode) in the queue
@@ -18,7 +18,7 @@ Queue structure (widely known structure, you can find information in the Interne
 **Declared in**: [src/lib/queue.h](/src/lib/queue.h)
 
 **Description**:
-Queue node, is one "element" of the queue
+Queue node, is one "element" of the queue.
 
 **Fields**:
 `data` - pointer to the data itself
@@ -30,7 +30,7 @@ Queue node, is one "element" of the queue
 **Declared in**: [src/lib/shared_ptr.h](/src/lib/shared_ptr.h)
 
 **Description**:
-Shared pointer (widely known structure, you can find information in the Internet) implemetation
+Shared pointer (widely known structure, you can find information in the Internet) implemetation.
 
 **Fields**:
 `ref_count` - number of references to the `data`. In other words, number of sharedptr copies

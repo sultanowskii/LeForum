@@ -46,9 +46,11 @@ CNT{4}BYE
 - [LIVE](#LIVE) - alive (used to make sure the connection is still established)
 
 ### GTHR
-**Description**: Get LeThread by ID
+**Description**:
+Get LeThread by ID.
 
-**Returns**: LeThread information and message history. If no LeThread with given ID found, returns `NFND`
+**Returns**:
+LeThread information and message history. If no LeThread with given ID found, returns `NFND`
 
 **Request syntax**:
 ```
@@ -95,9 +97,11 @@ THRID{8}TPCSZ{8}TPC...MSGCNT{8}MSG{1}{8}{8}...MSGENDMSG{1}{8}{8}...MSGEND
 ---
 
 ## CTHR
-**Description**: Create LeThread
+**Description**:
+Create LeThread.
 
-**Returns**: LeThread ID and author token on success. Returns `IDAT` if topic size is not in allowed bounds (see [meta query](#META))
+**Returns**:
+LeThread ID and author token on success. Returns `IDAT` if topic size is not in allowed bounds (see [meta query](#META))
 
 **Request syntax**:
 ```
@@ -129,9 +133,11 @@ THRID{8}TKN{TOKEN_SIZE}
 ---
 
 ## FTHR
-**Description**: Find LeThreads by topic
+**Description**:
+Find LeThreads by topic.
 
-**Returns**: IDs of match LeThreads if found at least one. If no LeThread found, returns `NFND`. Return `IDAT` if topic part size is not in allowed bounds (refer to [meta query](#META))
+**Returns**:
+IDs of match LeThreads if found at least one. If no LeThread found, returns `NFND`. Return `IDAT` if topic part size is not in allowed bounds (refer to [meta query](#META))
 
 **Request syntax**:
 ```
@@ -172,9 +178,11 @@ THRID{8}TPCSZ{8}TPC...THRID{8}TPCSZ{8}TPC...
 ---
 
 ## CMSG
-**Description**: Create (post) LeMessage in the LeThread with given ID
+**Description**:
+Create (post) LeMessage in the LeThread with given ID.
 
-**Returns**: `OK` on success. Returns `NFND` if no LeThread with given ID was found. Returns `IDAT` if text size if out of bounds (refer to [meta query](#META))
+**Returns**:
+`OK` on success. Returns `NFND` if no LeThread with given ID was found. Returns `IDAT` if text size if out of bounds (refer to [meta query](#META))
 
 **Request syntax**:
 ```
@@ -206,9 +214,11 @@ OK
 ---
 
 ## META
-**Description**: Get meta information about server
+**Description**:
+Get meta information about server.
 
-**Returns**: Min&max LeThread topic size, min&max LeMessage text size, number of LeThreads, server version.
+**Returns**:
+Min&max LeThread topic size, min&max LeMessage text size, number of LeThreads, server version.
 
 **Request syntax**:
 ```
@@ -246,9 +256,11 @@ MINTPCSZ{8}MAXTPCSZ{8}MINMSGSZ{8}MAXMSGSZ{8}THRN{8}VERSZ{8}VER...
 ---
 
 ## LIVE
-**Description**: Assures the connection between client and server is established
+**Description**:
+Assures the connection between client and server is established.
 
-**Returns**: `OK` if server is ok
+**Returns**:
+`OK` if server is ok
 
 **Request syntax**:
 ```

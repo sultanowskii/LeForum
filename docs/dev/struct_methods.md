@@ -84,7 +84,7 @@ Pointer to the copy of SharedPtr
 
 #### `status_t sharedptr_delete(SharedPtr * sharedptr)`
 **Description**: 
-Safely deletes the SharedPtr instance. Decrements reference counter. If it is equal to 0, then deletes the data stored in it (by calling `destruct())` the user-made callback)
+Safely deletes the SharedPtr instance. Decrements reference counter. If it is equal to 0, then deletes the data stored in it (by calling `destruct())` the user-made callback).
 
 **Parameters**:
 `sharedptr` - Pointer to SharedPtr
