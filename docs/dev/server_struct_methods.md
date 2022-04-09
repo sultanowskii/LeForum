@@ -63,6 +63,17 @@ Saves LeMessage history to the corresponding file.
 **Return value**:
 LESTATUS_OK on success
 
+#### `bool_t is_token_valid(struct LeThread *lethread, const char *token)`
+**Description**: 
+Comapres author token for the given LeThread and the one to check.
+
+**Parameters**:
+`lethread` - Pointer to LeThread, origin token of which will be checked
+`token` - Token to check
+
+**Return value**:
+TRUE if the token is valid, FALSE if not
+
 ---
 
 ### LeMessage
@@ -97,17 +108,6 @@ Saves one LeMessage to the corresponding file (appending to the end of message h
 
 **Return value**:
 LESTATUS_OK on success
-
-#### `bool_t is_token_valid(struct LeThread *lethread, const char *token)`
-**Description**: 
-Comapres author token for the given LeThread and the one to check.
-
-**Parameters**:
-`lethread` - Pointer to LeThread, origin token of which will be checked
-`token` - Token to check
-
-**Return value**:
-TRUE if the token is valid, FALSE if not
 
 ---
 
