@@ -1,7 +1,7 @@
 # LeForum Developer Documentation
 ## Server inner structure methods
 ### LeThread
-##### `struct LeThread * lethread_create(char *topic, uint64_t lethread_id)`
+#### `struct LeThread * lethread_create(char *topic, uint64_t lethread_id)`
 **Description**:
 Creates new LeThread, if there is no information files with the same id. If there is, then returns LESTATUS_EXST.
 
@@ -12,7 +12,7 @@ Creates new LeThread, if there is no information files with the same id. If ther
 **Return value**:
 Pointer to the created LeThread
 
-##### `status_t lethread_delete(struct LeThread *lethread)`
+#### `status_t lethread_delete(struct LeThread *lethread)`
 **Description**:
 Safely deletes LeThread. Use this _only_ if you created it using `lethread_create()`.
 
@@ -22,7 +22,7 @@ Safely deletes LeThread. Use this _only_ if you created it using `lethread_creat
 **Return value**:
 LESTATUS_OK on success
 
-##### `uint64_t lethread_message_count(struct LeThread *lethread)`
+#### `uint64_t lethread_message_count(struct LeThread *lethread)`
 **Description**: 
 Returns number of LeMessages in lethread.
 
@@ -32,7 +32,7 @@ Returns number of LeMessages in lethread.
 **Return value**:
 Number of LeMessages in the given LeThread
 
-##### `status_t lethread_save(struct LeThread *lethread)`
+#### `status_t lethread_save(struct LeThread *lethread)`
 **Description**: 
 Saves LeThread to the corresponding file.
 
@@ -42,7 +42,7 @@ Saves LeThread to the corresponding file.
 **Return value**:
 LESTATUS_OK on success
 
-##### `status_t lethread_load(struct LeThread *lethread, uint64_t id)`
+#### `status_t lethread_load(struct LeThread *lethread, uint64_t id)`
 **Description**: 
 Loads LeThread from the corresponding file.
 
@@ -53,7 +53,7 @@ Loads LeThread from the corresponding file.
 **Return value**:
 LESTATUS_OK on success. If the corresponding file is not found, LESTATUS_NSFD is returned
 
-##### `status_t lemessages_save(struct LeThread *lethread)`
+#### `status_t lemessages_save(struct LeThread *lethread)`
 **Description**: 
 Saves LeMessage history to the corresponding file.
 
@@ -66,7 +66,7 @@ LESTATUS_OK on success
 ---
 
 ### LeMessage
-##### `struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_t by_lethread_author)`
+#### `struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_t by_lethread_author)`
 **Description**: 
 Creates a new LeMessage and adds it to the given LeThread.
 
@@ -78,7 +78,7 @@ Creates a new LeMessage and adds it to the given LeThread.
 **Return value**:
 Pointer to the created LeMessage
 
-##### `status_t lemessage_delete(struct LeMessage *message)`
+#### `status_t lemessage_delete(struct LeMessage *message)`
 **Description**: 
 Safely deletes LeMessage. Use this only if you created the LeMessage using lemessage_create().
 
@@ -88,7 +88,7 @@ Safely deletes LeMessage. Use this only if you created the LeMessage using lemes
 **Return value**:
 LESTATUS_OK on success
 
-##### `status_t lemessage_save(struct LeMessage *lemessage)`
+#### `status_t lemessage_save(struct LeMessage *lemessage)`
 **Description**: 
 Saves one LeMessage to the corresponding file (appending to the end of message history file).
 
@@ -98,7 +98,7 @@ Saves one LeMessage to the corresponding file (appending to the end of message h
 **Return value**:
 LESTATUS_OK on success
 
-##### `bool_t is_token_valid(struct LeThread *lethread, const char *token)`
+#### `bool_t is_token_valid(struct LeThread *lethread, const char *token)`
 **Description**: 
 Comapres author token for the given LeThread and the one to check.
 
@@ -112,7 +112,7 @@ TRUE if the token is valid, FALSE if not
 ---
 
 ### LeAuthor
-##### `struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token)`
+#### `struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token)`
 **Description**: 
 Creates a LeAuthor and adds it to the given LeThread.
 
@@ -123,7 +123,7 @@ Creates a LeAuthor and adds it to the given LeThread.
 **Return value**:
 Pointer to the created LeAuthor
 
-##### `status_t leauthor_delete(struct LeAuthor *author)`
+#### `status_t leauthor_delete(struct LeAuthor *author)`
 **Description**: 
 Safely deletes LeAuthor. Use this only if you created the LeMessage using `leauthor_create()`.
 
@@ -133,7 +133,7 @@ Safely deletes LeAuthor. Use this only if you created the LeMessage using `leaut
 **Return value**:
 LESTATUS_OK on success
 
-##### `status_t leauthor_load(struct LeThread *lethread)`
+#### `status_t leauthor_load(struct LeThread *lethread)`
 **Description**: 
 Loads the author of the lethread from the corresponding file.
 
@@ -144,7 +144,7 @@ Loads the author of the lethread from the corresponding file.
 LESTATUS_OK on success
 
 
-##### `status_t leauthor_save(struct LeThread *lethread)`
+#### `status_t leauthor_save(struct LeThread *lethread)`
 **Description**: 
 Saves author of the lethread to the corresponding file.
 
