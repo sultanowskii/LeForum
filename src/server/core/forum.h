@@ -118,7 +118,7 @@ uint64_t                lethread_message_count(struct LeThread *lethread);
  * @param create Should the file be created, if it doesn't exist? 
  * @return File descriptor on success. If file is not found and create==FALSE, LESTATUS_NSFD is returned 
  */
-FILE *                  get_le_file(uint64_t lethread_id, char *mode, char *filename, bool_t create);
+FILE *                  get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t create);
 
 
 /**
