@@ -21,18 +21,18 @@ pthread_mutex_t    next_lethread_id_mutex;
 /*
  * Save file query queues with the purpose of prevention data race. SharedPtr is stored here.
  */
-struct Queue      *lethread_query_queue;
-struct Queue      *lemessages_query_queue;
-struct Queue      *lemessage_query_queue;
-struct Queue      *leauthor_query_queue;
+Queue             *lethread_query_queue;
+Queue             *lemessages_query_queue;
+Queue             *lemessage_query_queue;
+Queue             *leauthor_query_queue;
 
 /*
  * Here we store SharedPtrs to all the LeThreads
  */
-struct Queue      *lethread_queue;
+Queue             *lethread_queue;
 
 void * lethread_query_manage() {
-	SharedPtr               *sharedptr_lethread;
+	SharedPtr          *sharedptr_lethread;
 
 	while (!program_on_finish) {
 		while (!queue_is_empty(lethread_query_queue) && !program_on_finish) {
@@ -45,7 +45,7 @@ void * lethread_query_manage() {
 }
 
 void * lemessages_query_manage() {
-	SharedPtr               *sharedptr_lethread;
+	SharedPtr          *sharedptr_lethread;
 
 	while (!program_on_finish) {
 		while (!queue_is_empty(lemessages_query_queue) && !program_on_finish) {
@@ -58,7 +58,7 @@ void * lemessages_query_manage() {
 }
 
 void * lemessage_query_manage() {
-	struct LeMessage        *lemessage;
+	LeMessage          *lemessage;
 
 	while (!program_on_finish) {
 		while (!queue_is_empty(lemessage_query_queue) && !program_on_finish) {
@@ -68,7 +68,7 @@ void * lemessage_query_manage() {
 }
 
 void * leauthor_query_manage() {
-	SharedPtr               *sharedptr_lethread;
+	SharedPtr          *sharedptr_lethread;
 
 	while (!program_on_finish) {
 		while (!queue_is_empty(leauthor_query_queue) && !program_on_finish) {
@@ -80,7 +80,7 @@ void * leauthor_query_manage() {
 	}
 }
 
-status_t leclientinfo_delete(struct LeClientInfo *clinfo) {
+status_t leclientinfo_delete(LeClientInfo *clinfo) {
 	NULLPTR_PREVENT(clinfo, LESTATUS_NPTR)
 
 	free(clinfo);
@@ -88,12 +88,12 @@ status_t leclientinfo_delete(struct LeClientInfo *clinfo) {
 }
 
 SharedPtr * lethread_get_by_id(uint64_t lethread_id) {
-	struct LeThread         *lethread       = nullptr;
-	struct LeThread         *lethread_found = nullptr;
-	struct QueueNode        *node           = lethread_queue->first;
+	LeThread           *lethread       = nullptr;
+	LeThread           *lethread_found = nullptr;
+	QueueNode          *node           = lethread_queue->first;
 
 	while (node != NULL) {
-		lethread = (struct LeThread *)((SharedPtr *)node->data)->data;
+		lethread = (LeThread *)((SharedPtr *)node->data)->data;
 		if (lethread->id == lethread_id) {
 			lethread_found = lethread;
 			break;
@@ -113,11 +113,11 @@ SharedPtr * lethread_get_by_id(uint64_t lethread_id) {
 	return sharedptr_add(node->data);
 }
 
-struct Queue * lethread_find(char *topic_part, size_t topic_part_size) {
-	struct LeThread         *lethread;
-	struct QueueNode        *node           = lethread_queue->first;
+Queue * lethread_find(char *topic_part, size_t topic_part_size) {
+	LeThread           *lethread;
+	QueueNode          *node           = lethread_queue->first;
 
-	struct Queue            *lethreads_match;
+	Queue              *lethreads_match;
 
 
 	NULLPTR_PREVENT(topic_part, LESTATUS_NPTR)
@@ -149,10 +149,10 @@ status_t s_lemessages_save(SharedPtr *sharedptr_lethread) {
 	return LESTATUS_OK;
 }
 
-status_t s_lemessage_save(struct LeMessage *lemessage) {
+status_t s_lemessage_save(LeMessage *lemessage) {
 	NULLPTR_PREVENT(lemessage, LESTATUS_NPTR)
 
-	queue_push(lemessage_query_queue, lemessage, sizeof(struct LeMessage));
+	queue_push(lemessage_query_queue, lemessage, sizeof(LeMessage));
 	return LESTATUS_OK;
 }
 
@@ -164,12 +164,15 @@ status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
 }
 
 SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
+	SharedPtr          *sharedptr_lethread;
+
+
 	NULLPTR_PREVENT(topic, LESTATUS_NPTR)
 
 	/* Here we fill lethread_id independently on the argument, 
 	 * because we want to keep all the lethreads stay in the right order without collisions. 
 	 */
-	SharedPtr               *sharedptr_lethread  = sharedptr_create(lethread_create(topic, next_lethread_id()), lethread_delete);
+	sharedptr_lethread  = sharedptr_create(lethread_create(topic, next_lethread_id()), lethread_delete);
 
 	queue_push(lethread_queue, sharedptr_lethread, sizeof(SharedPtr));
 
@@ -185,8 +188,8 @@ inline const char * get_version() {
 }
 
 void lemeta_load() {
-	FILE                    *metafile;
-	struct stat              st                  = {0};
+	FILE               *metafile;
+	struct stat         st                  = {0};
 
 
 	if (stat(DATA_DIR "/" FILENAME_LEMETA, &st) == -1) {
@@ -200,7 +203,7 @@ void lemeta_load() {
 }
 
 void lemeta_save() {
-	FILE                    *metafile;
+	FILE               *metafile;
 
 
 	metafile = fopen(DATA_DIR "/" FILENAME_LEMETA, "wb");
@@ -209,12 +212,12 @@ void lemeta_save() {
 }
 
 size_t startup() {
-	struct LeThread         *lethread;
-	uint64_t                 lethread_id;
+	LeThread           *lethread;
+	uint64_t            lethread_id;
 
-	DIR                     *srcdir              = opendir(DATA_DIR);
-	struct dirent           *dent;
-	size_t                   dir_cnt             = 0;
+	DIR                *srcdir              = opendir(DATA_DIR);
+	struct dirent      *dent;
+	size_t              dir_cnt             = 0;
 
 
 	if (srcdir == NULL) {
@@ -247,7 +250,7 @@ size_t startup() {
 		}
 
 		if (S_ISDIR(st.st_mode)) {
-			lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
+			lethread = (LeThread *)malloc(sizeof(LeThread));
 
 			lethread_id = strtoull(dent->d_name, dent->d_name + strlen(dent->d_name), 10);
 
@@ -279,7 +282,7 @@ size_t startup() {
 void cleanup() {
 	static bool_t       cleaned        = FALSE;
 
-	FILE                    *metafile;
+	FILE               *metafile;
 
 
 	program_on_finish = TRUE;
@@ -322,23 +325,23 @@ uint64_t next_lethread_id() {
 }
 
 void * handle_client(void *arg) {
-	struct LeClientInfo     *client_info;
-	struct LeCommandResult   query_result;
+	LeClientInfo       *client_info;
+	LeCommandResult     query_result;
 
-	char                    *cl_data;
+	char               *cl_data;
 
-	size_t                   cl_expected_data_size    = 0;
-	size_t                   cl_data_size             = 0;
+	size_t              cl_expected_data_size    = 0;
+	size_t              cl_data_size             = 0;
 
-	char                     tmp[64];
+	char                tmp[64];
 
-	char                    *lestatus_representation;
+	char               *lestatus_representation;
 
 
 	NULLPTR_PREVENT(arg, LESTATUS_NPTR)
 
 	cl_data = malloc(MAX_PACKET_SIZE);
-	client_info = (struct LeClientInfo *)arg;
+	client_info = (LeClientInfo *)arg;
 
 	/* =================================== Example ====================================== */
 
@@ -401,22 +404,23 @@ void * handle_client(void *arg) {
 }
 
 status_t main(int argc, char *argv[]) {
-	struct LeClientInfo     *leclientinfo;
+	LeClientInfo       *leclientinfo;
 
-	int                      client_fd;
-	int                      server_fd;
+	int                 client_fd;
+	int                 server_fd;
 
-	struct sockaddr_in       server_addr;
+	struct sockaddr_in  server_addr;
 
-	struct sockaddr          client_addr;
-	socklen_t                client_addr_len;
+	struct sockaddr     client_addr;
+	socklen_t           client_addr_len;
 
-	socklen_t                socakddr_in_len     = sizeof(struct sockaddr_in);
+	socklen_t           socakddr_in_len     = sizeof(struct sockaddr_in);
 
-	pthread_t                client_handler_thread;
-	pthread_t                lethread_query_manager_thread;
-	pthread_t                lemessage_query_manager_thread;
-	pthread_t                leauthor_query_manager_thread;
+	pthread_t           client_handler_thread;
+	pthread_t           lethread_query_manager_thread;
+	pthread_t           lemessage_query_manager_thread;
+	pthread_t           leauthor_query_manager_thread;
+
 
 	arguments.host = "0.0.0.0";
 	arguments.port = 7431;
@@ -489,7 +493,7 @@ status_t main(int argc, char *argv[]) {
 			return LESTATUS_CLIB;
 		}
 
-		leclientinfo = malloc(sizeof(struct LeClientInfo));
+		leclientinfo = malloc(sizeof(LeClientInfo));
 		leclientinfo->fd = client_fd;
 
 		if (getpeername(client_fd, &leclientinfo->addr, &socakddr_in_len) < 0) {

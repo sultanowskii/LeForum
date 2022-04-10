@@ -26,11 +26,13 @@ struct LeMessage {
 	bool_t              by_lethread_author;
 	struct LeThread    *lethread;
 };
+typedef struct LeMessage LeMessage;
 
 struct LeAuthor {
 	uint64_t            id;
 	char               *token;
 };
+typedef struct LeAuthor LeAuthor;
 
 struct LeThread {
 	uint64_t            id;
@@ -40,6 +42,7 @@ struct LeThread {
 	struct Queue       *messages;
 	struct LeAuthor    *author;
 };
+typedef struct LeThread LeThread;
 
 /**
  * @brief Creates new LeThread, if there is no information files with the same id. 
@@ -49,7 +52,7 @@ struct LeThread {
  * @param lethread_id ID of LeThread 
  * @return Pointer to the created LeThread 
  */
-struct LeThread *       lethread_create(char *topic, uint64_t lethread_id);
+LeThread *              lethread_create(char *topic, uint64_t lethread_id);
 
 /**
  * @brief Safely deletes the LeThread. 
@@ -58,7 +61,7 @@ struct LeThread *       lethread_create(char *topic, uint64_t lethread_id);
  * @param lethread Pointer to LeThread to delete 
  * @return LESTATUS_OK on success 
  */
-status_t                lethread_delete(struct LeThread *lethread);
+status_t                lethread_delete(LeThread *lethread);
 
 
 /**
@@ -69,7 +72,7 @@ status_t                lethread_delete(struct LeThread *lethread);
  * @param by_lethread_author Is it posted by LeThread author? 
  * @return Pointer to the created LeMessage 
  */
-struct LeMessage *      lemessage_create(struct LeThread *lethread, char *text, bool_t by_lethread_author);
+LeMessage *             lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_author);
 
 /**
  * @brief Safely deletes LeMessage. 
@@ -78,7 +81,7 @@ struct LeMessage *      lemessage_create(struct LeThread *lethread, char *text, 
  * @param message Pointer to LeMessage to delete 
  * @return LESTATUS_OK on success 
  */
-status_t                lemessage_delete(struct LeMessage *message);
+status_t                lemessage_delete(LeMessage *message);
 
 
 /**
@@ -88,7 +91,7 @@ status_t                lemessage_delete(struct LeMessage *message);
  * @param create_token Should token be generated for the LeAuthor? 
  * @return Pointer to the created LeAuthor 
  */
-struct LeAuthor *       leauthor_create(struct LeThread *lethread, bool_t create_token);
+LeAuthor *              leauthor_create(LeThread *lethread, bool_t create_token);
 
 /**
  * @brief Safely deletes LeAuthor. 
@@ -97,7 +100,7 @@ struct LeAuthor *       leauthor_create(struct LeThread *lethread, bool_t create
  * @param message Pointer to LeAuthor to delete 
  * @return LESTATUS_OK on success 
  */
-status_t                leauthor_delete(struct LeAuthor *author);
+status_t                leauthor_delete(LeAuthor *author);
 
 
 /**
@@ -106,7 +109,7 @@ status_t                leauthor_delete(struct LeAuthor *author);
  * @param lethread Pointer to LeThread to get the number of lemessages
  * @return Number of lemessages in the given lethread 
  */
-uint64_t                lethread_message_count(struct LeThread *lethread);
+uint64_t                lethread_message_count(LeThread *lethread);
 
 
 /**
@@ -118,7 +121,7 @@ uint64_t                lethread_message_count(struct LeThread *lethread);
  * @param create Should the file be created, if it doesn't exist? 
  * @return File descriptor on success. If file is not found and create==FALSE, LESTATUS_NSFD is returned 
  */
-FILE *                  get_le_file(uint64_t lethread_id, char *mode, char *filename, bool_t create);
+FILE *                  get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t create);
 
 
 /**
@@ -127,7 +130,7 @@ FILE *                  get_le_file(uint64_t lethread_id, char *mode, char *file
  * @param lethread Pointer to LeThread to save information about 
  * @return LESTATUS_OK on success 
  */
-status_t                lethread_save(struct LeThread *lethread);
+status_t                lethread_save(LeThread *lethread);
 
 /**
  * @brief Loads LeThread from the corresponding file. 
@@ -136,7 +139,7 @@ status_t                lethread_save(struct LeThread *lethread);
  * @param lethread_id ID of the LeThread that is expected to be loaded 
  * @return LESTATUS_OK on success. If the corresponding file is not found, LESTATUS_NSFD is returned 
  */
-status_t                lethread_load(struct LeThread *lethread, uint64_t id);
+status_t                lethread_load(LeThread *lethread, uint64_t id);
 
 
 /**
@@ -145,7 +148,7 @@ status_t                lethread_load(struct LeThread *lethread, uint64_t id);
  * @param lethread Pointer to LeThread message history of which will be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                lemessages_save(struct LeThread *lethread);
+status_t                lemessages_save(LeThread *lethread);
 
 /**
  * @brief Saves one LeMessage to the corresponding file (appending to the end of message history file). 
@@ -153,7 +156,7 @@ status_t                lemessages_save(struct LeThread *lethread);
  * @param lemessage Pointer to LeMessage to be saved 
  * @return LESTATUS_OK on success  
  */
-status_t                lemessage_save(struct LeMessage *lemessage);
+status_t                lemessage_save(LeMessage *lemessage);
 
 /**
  * @brief Loads LeMessage history from the corresponding file. 
@@ -161,7 +164,7 @@ status_t                lemessage_save(struct LeMessage *lemessage);
  * @param lethread Pointer to LeThread to load message history of which 
  * @return LESTATUS_OK on success. If the corresponding file is not found, LESTATUS_NSFD is returned 
  */
-status_t                lemessages_load(struct LeThread *lethread);
+status_t                lemessages_load(LeThread *lethread);
 
 /**
  * @brief Loads the author of the lethread from the corresponding file.
@@ -169,7 +172,7 @@ status_t                lemessages_load(struct LeThread *lethread);
  * @param lethread Pointer to LeThread, information about author of which will be loaded (lethread->author has to be a valid pointer to LeAuthor object)
  * @return LESTATUS_OK on success  
  */
-status_t                leauthor_load(struct LeThread *lethread);
+status_t                leauthor_load(LeThread *lethread);
 
 /**
  * @brief Saves author of the lethread to the corresponding file. 
@@ -177,8 +180,7 @@ status_t                leauthor_load(struct LeThread *lethread);
  * @param lethread Pointer to LeThread, author of which will be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                leauthor_save(struct LeThread *lethread);
-
+status_t                leauthor_save(LeThread *lethread);
 
 /**
  * @brief Comapres author token for the given LeThread and the one to check. 
@@ -187,4 +189,4 @@ status_t                leauthor_save(struct LeThread *lethread);
  * @param token Token to check 
  * @return TRUE if the token is valid, FALSE if not 
  */
-bool_t                  is_token_valid(struct LeThread *lethread, const char *token);
+bool_t                  is_token_valid(LeThread *lethread, const char *token);

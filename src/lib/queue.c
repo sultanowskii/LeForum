@@ -1,10 +1,12 @@
 #include "lib/queue.h"
 
-struct Queue * queue_create(status_t (*destruct)(void *)) {
-	struct Queue            *new_queue      = (struct Queue *)malloc(sizeof(struct Queue));
+Queue * queue_create(status_t (*destruct)(void *)) {
+	Queue         *new_queue;
 
 
 	NULLPTR_PREVENT(destruct, LESTATUS_NPTR)
+
+	new_queue = (Queue *)malloc(sizeof(Queue));
 
 	new_queue->size = 0;
 	new_queue->first = nullptr;
@@ -14,9 +16,9 @@ struct Queue * queue_create(status_t (*destruct)(void *)) {
 	return new_queue;
 };
 
-status_t queue_delete(struct Queue *queue) {
-	struct QueueNode        *node;
-	struct QueueNode        *next;
+status_t queue_delete(Queue *queue) {
+	QueueNode     *node;
+	QueueNode     *next;
 
 
 	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
@@ -45,14 +47,14 @@ status_t queue_delete(struct Queue *queue) {
 	return LESTATUS_OK;
 };
 
-status_t queue_push(struct Queue *queue, void *data, size_t size) {
-	struct QueueNode        *new_node;
+status_t queue_push(Queue *queue, void *data, size_t size) {
+	QueueNode     *new_node;
 
 
 	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
 	NULLPTR_PREVENT(data, LESTATUS_NPTR)
 
-	new_node = (struct QueueNode *)malloc(sizeof(struct QueueNode));
+	new_node = (QueueNode *)malloc(sizeof(QueueNode));
 	new_node->data = data;
 
 	new_node->next = nullptr;
@@ -71,9 +73,9 @@ status_t queue_push(struct Queue *queue, void *data, size_t size) {
 	return LESTATUS_OK;
 }
 
-void * queue_pop(struct Queue *queue) {
-	struct QueueNode        *first;
-	void                    *data;
+void * queue_pop(Queue *queue) {
+	QueueNode     *first;
+	void          *data;
 
 
 	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
@@ -103,7 +105,7 @@ void * queue_pop(struct Queue *queue) {
 	return data;
 }
 
-bool_t queue_is_empty(struct Queue *queue) {
+bool_t queue_is_empty(Queue *queue) {
 	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
 
 	return queue->size == 0;
