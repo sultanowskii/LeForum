@@ -215,11 +215,19 @@ size_t startup() {
 	LeThread           *lethread;
 	uint64_t            lethread_id;
 
-	DIR                *srcdir              = opendir(DATA_DIR);
+	DIR                *srcdir;
 	struct dirent      *dent;
 	size_t              dir_cnt             = 0;
 
+	struct stat         st                  = {0};
 
+
+	/* Check if the directory exists, creates if not */
+	if (stat(DATA_DIR, &st) == -1) {
+		mkdir(DATA_DIR, 0700);
+	}
+
+	srcdir = opendir(DATA_DIR);
 	if (srcdir == NULL) {
 		perror("opendir() failed");
 		return LESTATUS_CLIB;

@@ -11,8 +11,6 @@ FILENAME_LETHREAD = "lethreadinfo"
 FILENAME_LEMESSAGES = "lemessages"
 FILENAME_LEAUTHOR = "leauthor"
 
-lethread_topic = []
-
 
 def query(payload):
 	io = remote("127.0.0.1", 7431)
@@ -38,12 +36,8 @@ def query(payload):
 	return result, result_size
 
 
-def test_lethread_basic(topic):
-	global lethread_topic
-
+def test_lethread_create(topic):
 	topic_size = len(topic)
-
-	lethread_topic.append(topic)
 
 	# build a CREATE THREAD query
 	data = b"CTHR" + b"TPCSZ" + p64(topic_size) + b"TPC" + topic.encode("ascii")
@@ -63,6 +57,82 @@ def test_lethread_basic(topic):
 	x += TOKEN_SIZE
 	assert len(token) == TOKEN_SIZE
 
+	print("OK")
+
+	return lethread_id
+
+
+def test_lethread_get(lethread_id):
+	# build a GET THREAD query
+	data = b"GTHR" + b"THRID" + p64(lethread_id)
+
+	result, result_size = query(data)
+
+	x = 0
+
+	if result[x:x+4] == b"NFND":
+		print("Not found")
+		return None, None, []
+
+	assert result[x:x+5] == b"THRID"
+	x += 5
+	assert u64(result[x:x+8]) == lethread_id
+	x += 8
+
+	assert result[x:x+5] == b"TPCSZ"
+	x += 5
+	topic_size = u64(result[x:x+8])
+	x += 8
+
+	assert result[x:x+3] == b"TPC"
+	x += 3
+
+	topic = result[29:29+topic_size].decode("ascii")
+	x += topic_size
+
+	print(f"Lethread id={lethread_id} topic='{topic}'")
+
+	if x + 1 < result_size:
+		print(result)
+		assert result[x:x+6] == b"MSGCNT"
+		x += 6
+
+		msgcnt = u64(result[x:x+8])
+		x += 8
+	
+		messages = []
+
+		print(f"Message history:")
+		for i in range(msgcnt):
+			assert result[x:x+3] == b"MSG"
+			x += 3
+	
+			by_author = bool(u8(result[x:x+1]))
+			x += 1
+
+			msgid = u64(result[x:x+8])
+			x += 8
+
+			msgtxtsz = u64(result[x:x+8])
+			x += 8
+
+			msgtxt = result[x:x+msgtxtsz].decode("ascii")
+			x += msgtxtsz
+
+			assert result[x:x+6] == b"MSGEND"
+			x += 6
+
+			print(f"    id={msgid} by_author={by_author} text: {msgtxt}")
+		return topic, topic_size, messages
+	
+
+	return topic, topic_size, []
+
+
+def test_lethread_basic(topic):
+	topic_size = len(topic)
+	lethread_id = test_lethread_create(topic)
+
 	# giving server some time to save files
 	sleep(0.5)
 
@@ -74,19 +144,10 @@ def test_lethread_basic(topic):
 
 		assert topic == data[40:].decode("ascii")
 
-	# build a GET THREAD query
-	data = b"GTHR" + b"THRID" + p64(lethread_id)
+	got_topic, got_topic_size = test_lethread_get(lethread_id)
 
-	result, result_size = query(data)
-
-	assert result[0:5] == b"THRID"
-	assert u64(result[5:13]) == lethread_id
-
-	assert result[13:18] == b"TPCSZ"
-	assert u64(result[18:26]) == len(topic)
-
-	assert result[26:29] == b"TPC"
-	assert result[29:29+len(topic)].decode("ascii") == topic
+	assert got_topic_size == topic_size
+	assert got_topic == topic
 
 
 def test_lethread_find(topic_part):
@@ -98,14 +159,12 @@ def test_lethread_find(topic_part):
 
 	x = 0
 
-	print(f"Find ('{topic_part}'):")
-
 	if result[x:x+4] == b"NFND":
-		print("    Not found")
+		print("Not found")
 		return None
 
 	if result[x:x+4] == b"IDAT":
-		print("    Error: invalid request")
+		print("Error: invalid request")
 		return False
 
 	while x + 1 < result_size:
@@ -123,7 +182,8 @@ def test_lethread_find(topic_part):
 		x += 3
 		topic = result[x:x+topic_size].decode("ascii")
 		x += topic_size
-		print(f"    <thread id={lethread_id} {topic=}>")
+
+		print(f"LeThread id={lethread_id} {topic=}>")
 
 
 def test_meta():
@@ -177,6 +237,24 @@ def test_meta():
 	print(f"{version} {threads_number=} ({min_topic_size}<=topic_size<={max_topic_size}) ({min_message_size}<=message_size<={max_message_size})")
 
 
+def test_lethread_message(lethread_id, text):
+	data = b"CMSGTHRID" + p64(lethread_id) + b"TXTSZ" + p64(len(text)) + b"TXT" + text.encode("ascii")
+
+	result, result_size = query(data)
+
+	if result[0:4] == b"NFND":
+		print("Not found")
+		return
+
+
+	if result[0:4] == b"IDAT":
+		print("Invalid message size")
+		return
+
+	assert result[0:2] == b"OK"
+	print("OK")
+
+
 def main():
 	with context.quiet:
 		if args.NOBASIC == "":
@@ -193,16 +271,25 @@ def main():
 			test_lethread_find("aaa")
 			print("[*] LeThread FTHR test passed successfully!")
 
-		if args.FREEFIND != "":
-			print("[.] LeThread find free mode. Ctrl+C to exit")
-			while True:
-				test_lethread_find(input()[:-1])
-		
 		if args.NOMETA == "":
 			print("[.] Starting Meta Query test...")
 			test_meta()
 			print("[*] Meta Query passed successfully!")
 
+		if args.INTERACTIVE != "":
+			print("[.] Interactive mode. Ctrl+C to exit")
+			while True:
+				cmd, *arg = input()[:-1].split()
+				if cmd == "CTHR":
+					test_lethread_create("".join(arg))
+				if cmd == "GTHR":
+					topic, topic_size, messages = test_lethread_get(int(arg[0]))
+				if cmd == "FTHR":
+					test_lethread_find("".join(arg))
+				if cmd == "CMSG":
+					test_lethread_message(int(arg[0]), arg[1])
+				if cmd == "META":
+					test_meta()
 
 
 if __name__ == "__main__":
