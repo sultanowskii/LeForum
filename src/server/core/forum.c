@@ -205,7 +205,6 @@ status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
 	uint64_t            leauthor_id;
 
 
-
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 
 	lethread_info_file = get_lefile(lethread_id, "rb", FILENAME_LETHREAD, FALSE);

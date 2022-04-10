@@ -106,7 +106,7 @@ SharedPtr * lethread_get_by_id(uint64_t lethread_id) {
 	if (lethread_found->messages->first == nullptr && lethread_message_count(lethread_found) != 0) {
 		lemessages_load(lethread_found);
 	}
-	if (lethread_found->author->token == nullptr) {
+	if (lethread_found->author == nullptr || lethread_found->author->token == nullptr) {
 		leauthor_load(lethread_found);
 	}
 

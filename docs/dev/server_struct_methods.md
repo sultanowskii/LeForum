@@ -135,7 +135,7 @@ LESTATUS_OK on success
 
 #### `status_t leauthor_load(LeThread *lethread)`
 **Description**: 
-Loads the author of the lethread from the corresponding file.
+Loads the author of the lethread from the corresponding file. LeThread has to be normally created, and author has to be NULL.
 
 **Parameters**:
 `lethread` - Pointer to LeThread, information about author of which will be loaded (lethread->author has to be a valid pointer to LeAuthor object on the heap)
