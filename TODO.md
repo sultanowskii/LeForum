@@ -26,19 +26,21 @@
 - [x] ptr == nullptr checks in server/server.c
 - [x] Removing disconnected clients from corresponding queue
 - [x] NULLing pointers on free(): Either by passing void** arguments to delete_X() functions or manually.
-- [ ] Test for messages
+- [x] Test for messages
 
 #### Client
 
 
 ### Global features
 #### Server
-- [ ] Query processing
-- [x] Argument handling
-- [ ] Documentation
+- [x] Query processing
+- [x] Arguments
+- [x] Documentation
 #### Client
 - [ ] Query processing
-- [ ] Argument handling
+- [ ] Arguments
 - [ ] TUI
 - [ ] Tokens logic
 - [ ] Customisation
+- [ ] Documentation
+- [ ] Tests
