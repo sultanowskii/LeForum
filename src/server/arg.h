@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <argp.h>
+#include <sys/time.h>
 
 extern struct argp le_argp;
 extern const char *argp_program_version;
