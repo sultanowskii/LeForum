@@ -154,7 +154,6 @@ Saves author of the lethread to the corresponding file.
 **Return value**:
 LESTATUS_OK on success
 
-
 ---
 
 ### LeCommand

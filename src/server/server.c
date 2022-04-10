@@ -357,10 +357,15 @@ void * handle_client(void *arg) {
 
 	while (!program_on_finish) {
 		recv(client_info->fd, &cl_expected_data_size, sizeof(cl_expected_data_size), NULL);
-		cl_data_size = recv(client_info->fd, cl_data, MIN(cl_expected_data_size, MAX_PACKET_SIZE - 1), NULL);
+		/* Explicitly prevent overflowing and */
+		if (cl_expected_data_size > MAX_PACKET_SIZE) {
+			goto CLIENT_HANDLER_ERR;
+		}
+		cl_data_size = recv(client_info->fd, cl_data, cl_expected_data_size, NULL);
 
 		/* Timeout/connection closed */
 		if (cl_data_size <= 0) {
+			query_result.data = NULL;
 			break;
 		}
 
@@ -380,6 +385,7 @@ void * handle_client(void *arg) {
 				send(client_info->fd, query_result.data, query_result.size, NULL); /* Sends the query result */
 			}
 			else {
+CLIENT_HANDLER_ERR:
 				*(size_t *)tmp = 3;
 				send(client_info->fd, tmp, sizeof(size_t), NULL);
 				send(client_info->fd, "ERR", 3, NULL); /* Unexpected, sends error without description */
