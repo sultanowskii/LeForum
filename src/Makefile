@@ -9,10 +9,10 @@ LIB_FILES_TEST_FORUM_CORE = $(wildcard server/core/forum.c lib/queue.c lib/share
 LIB_FILES_TEST_QUEUE = $(wildcard lib/*.c)
 
 server: server/server.c $(LIB_FILES_SERVER)
-	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -o server/LeForumServer
+	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -o LeForumServer
 
 client: client/client.c $(LIB_FILES)
-	$(CC) $(CFLAGS) $(LIBS_CLIENT) $^ -o server/LeForumClient
+	$(CC) $(CFLAGS) $(LIBS_CLIENT) $^ -o LeForumClient
 
 test-forum-core: test/test-forum-core.c $(LIB_FILES_TEST_FORUM_CORE)
 	$(CC) $(CFLAGS) $(LIBS_SERVER) $^ -g -o test/LeForumCoreTest

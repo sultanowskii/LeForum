@@ -50,13 +50,17 @@ def test_lethread_basic(topic):
 
 	result, result_size = query(data)
 
-	assert result[0:2] == b"OK"
+	x = 0
 
-	assert result[2:7] == b"THRID"
-	lethread_id = u64(result[7:15])
+	assert result[x:x+5] == b"THRID"
+	x += 5
+	lethread_id = u64(result[x:x+8])
+	x += 8
 
-	assert result[15:18] == b"TKN"
-	token = result[18:18+TOKEN_SIZE]
+	assert result[x:x+3] == b"TKN"
+	x += 3
+	token = result[x:x+TOKEN_SIZE]
+	x += TOKEN_SIZE
 	assert len(token) == TOKEN_SIZE
 
 	# giving server some time to save files

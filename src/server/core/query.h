@@ -23,9 +23,9 @@ struct LeCommand {
 typedef struct LeCommand LeCommand;
 
 struct LeCommandResult {
+	void                    *data;
 	size_t                   size;
 	status_t                 status;
-	void                    *data;
 };
 typedef struct LeCommandResult LeCommandResult;
 
