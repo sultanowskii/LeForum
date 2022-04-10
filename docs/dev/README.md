@@ -8,3 +8,4 @@
     - [Threads](server_threads.md)
     - [Inner structures](server_structs.md)
         - [Methods](server_struct_methods.md)
+  - [Tests](tests.md)
