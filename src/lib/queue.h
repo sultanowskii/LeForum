@@ -13,12 +13,14 @@ struct Queue {
 	struct QueueNode   *last;
 	status_t          (*destruct)(void *);
 };
+typedef struct Queue Queue;
 
 
 struct QueueNode {
 	void               *data;
 	struct QueueNode   *next;
 };
+typedef struct QueueNode QueueNode;
 
 /**
  * @brief Creates a new Queue object. 
@@ -26,7 +28,7 @@ struct QueueNode {
  * @param destruct Callback that safely deletes one object stored in a queue. Is called for each object stored in a queue 
  * @return Pointer to created Queue 
  */
-struct Queue *          queue_create(status_t (*destruct)(void *));
+Queue *            queue_create(status_t (*destruct)(void *));
 
 /**
  * @brief Safely deletes the Queue and all the elements. 
@@ -34,7 +36,7 @@ struct Queue *          queue_create(status_t (*destruct)(void *));
  * @param queue Queue to delete 
  * @return LESTATUS_OK on success 
  */
-status_t                queue_delete(struct Queue *queue);
+status_t           queue_delete(Queue *queue);
 
 /**
  * @brief Adds a new element to the end of the Queue. 
@@ -44,7 +46,7 @@ status_t                queue_delete(struct Queue *queue);
  * @param size Size of the object 
  * @return LESTATUS_OK on success 
  */
-status_t                queue_push(struct Queue *queue, void *data, size_t size);
+status_t           queue_push(Queue *queue, void *data, size_t size);
 
 /**
  * @brief Retrieves the first element and deletes it from the Queue. 
@@ -52,7 +54,7 @@ status_t                queue_push(struct Queue *queue, void *data, size_t size)
  * @param queue Queue to pop element from 
  * @return Pointer to the popped object 
  */
-void *                  queue_pop(struct Queue *queue);
+void *             queue_pop(Queue *queue);
 
 /**
  * @brief Checks whether queue is empty or not 
@@ -60,4 +62,4 @@ void *                  queue_pop(struct Queue *queue);
  * @param queue Queue to check 
  * @return TRUE if queue is empty, otherwise ELSE 
  */
-bool_t                  queue_is_empty(struct Queue *queue);
+bool_t             queue_is_empty(Queue *queue);

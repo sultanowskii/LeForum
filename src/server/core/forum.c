@@ -1,9 +1,9 @@
 #include "server/core/forum.h"
 
-struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
-	struct LeThread         *new_lethread;
-	size_t                   topic_length;
-	FILE*                    lethread_file;
+LeThread * lethread_create(char *topic, uint64_t lethread_id) {
+	LeThread           *new_lethread;
+	size_t              topic_length;
+	FILE*               lethread_file;
 
 
 	NULLPTR_PREVENT(topic, LESTATUS_NPTR)
@@ -16,7 +16,7 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 		return LESTATUS_EXST;
 	}
 
-	new_lethread = (struct LeThread *)malloc(sizeof(struct LeThread));
+	new_lethread = (LeThread *)malloc(sizeof(LeThread));
 	topic_length = strlen(topic);
 
 	new_lethread->id = lethread_id;
@@ -32,7 +32,7 @@ struct LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	return new_lethread;
 }
 
-status_t lethread_delete(struct LeThread *lethread) {
+status_t lethread_delete(LeThread *lethread) {
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 
 	if (lethread->messages != nullptr) {
@@ -56,22 +56,22 @@ status_t lethread_delete(struct LeThread *lethread) {
 	return LESTATUS_OK;
 }
 
-uint64_t lethread_message_count(struct LeThread *lethread) {
+uint64_t lethread_message_count(LeThread *lethread) {
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 
 	return lethread->next_message_id - lethread->first_message_id;
 }
 
-struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_t by_lethread_author) {
-	struct LeMessage        *new_lemessage;
-	size_t                   length;
+LeMessage * lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_author) {
+	LeMessage          *new_lemessage;
+	size_t              length;
 
 
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 	NULLPTR_PREVENT(lethread->messages, LESTATUS_NPTR)
 	NULLPTR_PREVENT(text, LESTATUS_NPTR)
 
-	new_lemessage = (struct LeMessage *)malloc(sizeof(struct LeMessage));
+	new_lemessage = (LeMessage *)malloc(sizeof(LeMessage));
 	length = strlen(text);
 	new_lemessage->id = lethread->next_message_id++;
 	new_lemessage->by_lethread_author = by_lethread_author;
@@ -81,14 +81,14 @@ struct LeMessage * lemessage_create(struct LeThread *lethread, char *text, bool_
 	new_lemessage->text[length] = '\0';
 	new_lemessage->lethread = lethread;
 
-	queue_push(lethread->messages, new_lemessage, sizeof(struct LeMessage));
+	queue_push(lethread->messages, new_lemessage, sizeof(LeMessage));
 
 	new_lemessage = nullptr;
 
 	return lethread->messages->last->data;
 }
 
-status_t lemessage_delete(struct LeMessage *message) {
+status_t lemessage_delete(LeMessage *message) {
 	NULLPTR_PREVENT(message, LESTATUS_NPTR)
 
 	if (message->text != nullptr) {
@@ -102,13 +102,13 @@ status_t lemessage_delete(struct LeMessage *message) {
 	return LESTATUS_OK;
 }
 
-struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token) {
-	struct LeAuthor         *new_leauthor;
+LeAuthor * leauthor_create(LeThread *lethread, bool_t create_token) {
+	LeAuthor           *new_leauthor;
 
 
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 
-	new_leauthor = (struct LeAuthor *)malloc(sizeof(struct LeAuthor));
+	new_leauthor = (LeAuthor *)malloc(sizeof(LeAuthor));
 	new_leauthor->id = rand_uint64_t() % 0xffffffff;
 	new_leauthor->token = malloc(TOKEN_SIZE + 1);
 
@@ -124,7 +124,7 @@ struct LeAuthor * leauthor_create(struct LeThread *lethread, bool_t create_token
 	return new_leauthor;
 }
 
-status_t leauthor_delete(struct LeAuthor *author) {
+status_t leauthor_delete(LeAuthor *author) {
 	NULLPTR_PREVENT(author, LESTATUS_NPTR)
 
 	if (author->token != nullptr) {
@@ -138,11 +138,11 @@ status_t leauthor_delete(struct LeAuthor *author) {
 }
 
 FILE * get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t create) {
-	char                     path[256];
-	char                     id_str[32];
+	char                path[256];
+	char                id_str[32];
 
-	FILE                    *file;
-	struct stat              st             = {0};
+	FILE               *file;
+	struct stat         st             = {0};
 
 
 	NULLPTR_PREVENT(mode, LESTATUS_NPTR)
@@ -171,9 +171,9 @@ FILE * get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t creat
 	return file;
 }
 
-status_t lethread_save(struct LeThread *lethread) {
-	size_t                   topic_length;
-	FILE                    *lethread_info_file;
+status_t lethread_save(LeThread *lethread) {
+	size_t              topic_length;
+	FILE               *lethread_info_file;
 
 
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
@@ -199,10 +199,10 @@ status_t lethread_save(struct LeThread *lethread) {
 	return LESTATUS_OK;
 }
 
-status_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
-	FILE                    *lethread_info_file;
-	size_t                   topic_length;
-	uint64_t                 leauthor_id;
+status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
+	FILE               *lethread_info_file;
+	size_t              topic_length;
+	uint64_t            leauthor_id;
 
 
 
@@ -233,14 +233,14 @@ status_t lethread_load(struct LeThread *lethread, uint64_t lethread_id) {
 	return LESTATUS_OK;
 }
 
-status_t lemessages_save(struct LeThread *lethread) {
-	FILE                    *lemessages_file;
+status_t lemessages_save(LeThread *lethread) {
+	FILE               *lemessages_file;
 
-	struct QueueNode        *node;
+	QueueNode          *node;
 
-	struct LeMessage        *lemessage;
-	size_t                   text_length;
-	status_t                 result;
+	LeMessage          *lemessage;
+	size_t              text_length;
+	status_t            result;
 
 
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
@@ -273,9 +273,9 @@ status_t lemessages_save(struct LeThread *lethread) {
 	return result;
 }
 
-status_t lemessage_save(struct LeMessage *lemessage) {
-	size_t                   text_length;
-	FILE                    *lemessages_file;
+status_t lemessage_save(LeMessage *lemessage) {
+	size_t              text_length;
+	FILE               *lemessages_file;
 
 
 	NULLPTR_PREVENT(lemessage, LESTATUS_NPTR)
@@ -294,11 +294,11 @@ status_t lemessage_save(struct LeMessage *lemessage) {
 	return LESTATUS_OK;
 }
 
-status_t lemessages_load(struct LeThread *lethread) {
-	FILE                    *lemessages_file;
+status_t lemessages_load(LeThread *lethread) {
+	FILE               *lemessages_file;
 
-	struct LeMessage        *lemessage;
-	size_t                   text_length;
+	LeMessage          *lemessage;
+	size_t             text_length;
 
 
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
@@ -310,7 +310,7 @@ status_t lemessages_load(struct LeThread *lethread) {
 	}
 
 	for (size_t i = 0; i < lethread_message_count(lethread); ++i) {
-		lemessage = (struct Lemessage *)malloc(sizeof(struct LeMessage));
+		lemessage = (LeMessage *)malloc(sizeof(LeMessage));
 		fread(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
 		fread(&lemessage->by_lethread_author, sizeof(lemessage->by_lethread_author), 1, lemessages_file);
 		fread(&text_length, sizeof(text_length), 1, lemessages_file);
@@ -319,7 +319,7 @@ status_t lemessages_load(struct LeThread *lethread) {
 		memset(lemessage->text, 0, text_length + 1);
 		fread(lemessage->text, 1, text_length, lemessages_file);
 
-		queue_push(lethread->messages, lemessage, sizeof(struct LeMessage));
+		queue_push(lethread->messages, lemessage, sizeof(LeMessage));
 
 		lemessage = nullptr;
 	}
@@ -329,9 +329,9 @@ status_t lemessages_load(struct LeThread *lethread) {
 	return LESTATUS_OK;
 }
 
-status_t leauthor_load(struct LeThread *lethread) {
-	struct LeAuthor         *leauthor;
-	FILE                    *leauthor_file;
+status_t leauthor_load(LeThread *lethread) {
+	LeAuthor           *leauthor;
+	FILE               *leauthor_file;
 
 
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
@@ -351,8 +351,8 @@ status_t leauthor_load(struct LeThread *lethread) {
 	return LESTATUS_OK;
 }
 
-status_t leauthor_save(struct LeThread *lethread) {
-	FILE                    *leauthor_file;
+status_t leauthor_save(LeThread *lethread) {
+	FILE               *leauthor_file;
 
 
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
@@ -372,7 +372,7 @@ status_t leauthor_save(struct LeThread *lethread) {
 	return LESTATUS_OK;
 }
 
-bool_t is_token_valid(struct LeThread *lethread, const char *token) {
+bool_t is_token_valid(LeThread *lethread, const char *token) {
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 	NULLPTR_PREVENT(lethread->author, LESTATUS_NPTR)
 	NULLPTR_PREVENT(lethread->author->token, LESTATUS_NPTR)

@@ -45,6 +45,7 @@ struct LeClientInfo {
 	socklen_t           addr_size;
 	struct sockaddr_in  addr;
 };
+typedef struct LeClientInfo LeClientInfo;
 
 /**
  * @brief Main program logic, initialises all the threads, sets callbacks, binds a socket,

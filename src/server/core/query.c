@@ -1,6 +1,6 @@
 #include "server/core/query.h"
 
-struct LeCommand CMDS[CMD_COUNT] = {
+LeCommand CMDS[CMD_COUNT] = {
 	{"GTHR", cmd_lethread_get},
 	{"CTHR", cmd_lethread_create},
 	{"FTHR", cmd_lethread_find},
@@ -9,27 +9,27 @@ struct LeCommand CMDS[CMD_COUNT] = {
 	{"LIVE", cmd_alive}
 };
 
-struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
-	char                    *data_ptr       = raw_data;
+LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
+	char               *data_ptr       = raw_data;
 
-	struct LeThread         *lethread       = NULL;
-	uint64_t                 lethread_id;
-	SharedPtr               *sharedptr_lethread;
-	size_t                   topic_size;
-	size_t                   message_cnt;
+	LeThread           *lethread       = NULL;
+	uint64_t            lethread_id;
+	SharedPtr          *sharedptr_lethread;
+	size_t              topic_size;
+	size_t              message_cnt;
 
-	struct QueueNode        *node;
+	QueueNode          *node;
 
-	struct LeMessage        *lemessage;
-	size_t                   text_size;
+	LeMessage          *lemessage;
+	size_t              text_size;
 
-	size_t                   chunk_size;
+	size_t              chunk_size;
 
-	char                    *answer;
-	char                    *answer_start;
-	size_t                   answer_size;
+	char               *answer;
+	char               *answer_start;
+	size_t              answer_size;
 
-	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
+	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
 
 
 	if (size < sizeof("THRID") - 1 + sizeof(lethread_id)) {
@@ -52,7 +52,7 @@ struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 		return result;
 	}
 
-	lethread = (struct LeThread *)sharedptr_lethread->data;
+	lethread = (LeThread *)sharedptr_lethread->data;
 
 	topic_size = strlen(lethread->topic);
 
@@ -89,7 +89,7 @@ struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	node = lethread->messages->first;
 
 	while (node != NULL) {
-		lemessage = (struct LeMessage *)node->data;
+		lemessage = (LeMessage *)node->data;
 
 		text_size = strlen(lemessage->text);
 
@@ -128,18 +128,18 @@ struct LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	return result;
 }
 
-struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
-	char                    *data_ptr              = raw_data;
+LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
+	char               *data_ptr              = raw_data;
 
-	struct LeThread         *new_lethread;
-	size_t                   topic_size;
-	SharedPtr               *sharedptr_lethread;
+	LeThread           *new_lethread;
+	size_t              topic_size;
+	SharedPtr          *sharedptr_lethread;
 
-	char                    *answer_start;
-	char                    *answer;
-	size_t                   answer_size           = sizeof("OKTHRID") - 1 + sizeof(uint64_t) + sizeof("TKN") - 1 + TOKEN_SIZE;
+	char               *answer_start;
+	char               *answer;
+	size_t              answer_size           = sizeof("OKTHRID") - 1 + sizeof(uint64_t) + sizeof("TKN") - 1 + TOKEN_SIZE;
 
-	struct LeCommandResult   result                = {0, LESTATUS_OK, NULL};
+	LeCommandResult     result                = {0, LESTATUS_OK, NULL};
 
 
 	if (size < sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1) {
@@ -168,7 +168,7 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	data_ptr += sizeof("TPC") - 1;
 
 	sharedptr_lethread = s_lethread_create(data_ptr, rand_uint64_t() % 0xffffffff);
-	new_lethread = (struct LeThread *)sharedptr_lethread->data;
+	new_lethread = (LeThread *)sharedptr_lethread->data;
 
 	leauthor_create(new_lethread, TRUE);
 
@@ -200,27 +200,27 @@ struct LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	return result;
 }
 
-struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
-	char                    *data_ptr       = raw_data;
+LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
+	char               *data_ptr       = raw_data;
 
-	struct Queue            *lethreads;
-	struct LeThread         *lethread       = NULL;
-	uint64_t                 lethread_id;
-	SharedPtr               *sharedptr_lethread;
-	size_t                   topic_size;
+	Queue              *lethreads;
+	LeThread           *lethread       = NULL;
+	uint64_t            lethread_id;
+	SharedPtr          *sharedptr_lethread;
+	size_t              topic_size;
 
-	struct QueueNode        *node;
+	QueueNode          *node;
 
-	char                    *topic_part;
-	size_t                   topic_part_size;
+	char               *topic_part;
+	size_t              topic_part_size;
 
-	size_t                   chunk_size;
+	size_t              chunk_size;
 
-	char                    *answer;
-	char                    *answer_start;
-	size_t                   answer_size;
+	char               *answer;
+	char               *answer_start;
+	size_t              answer_size;
 
-	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
+	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
 
 
 	if (strncmp(data_ptr, "TPCPSZ", sizeof("TPCPSZ") - 1) != 0) {
@@ -265,7 +265,7 @@ struct LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 
 	while (node != NULL) {
 		sharedptr_lethread = (SharedPtr *)node->data;
-		lethread = (struct LeThread *)sharedptr_lethread->data;
+		lethread = (LeThread *)sharedptr_lethread->data;
 
 		topic_size = strlen(lethread->topic);
 
@@ -311,19 +311,19 @@ FTHR_SUCCESS:
 	return result;
 }
 
-struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
-	char                    *data_ptr       = raw_data;
+LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
+	char               *data_ptr       = raw_data;
 
-	struct LeThread         *lethread;
-	uint64_t                 lethread_id;
-	SharedPtr               *sharedptr_lethread;
+	LeThread           *lethread;
+	uint64_t            lethread_id;
+	SharedPtr          *sharedptr_lethread;
 
-	struct LeMessage        *lemessage;
-	char                    *text;
-	size_t                   text_size;
-	bool_t                   is_author;
+	LeMessage          *lemessage;
+	char               *text;
+	size_t              text_size;
+	bool_t              is_author;
 
-	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
+	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
 
 
 	if (size < sizeof("THRID") - 1 + sizeof(lethread_id) + sizeof("TXTSZ") - 1 + sizeof(text_size) + sizeof("TXT") - 1) {
@@ -347,7 +347,7 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 		return result;
 	}
 
-	lethread = (struct LeThread *)sharedptr_lethread->data;
+	lethread = (LeThread *)sharedptr_lethread->data;
 
 	if (strncmp(data_ptr, "TXTSZ", sizeof("TXTSZ") - 1) != 0) {
 		sharedptr_delete(sharedptr_lethread);
@@ -404,14 +404,15 @@ struct LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	return result;
 }
 
-struct LeCommandResult cmd_meta(char *raw_data, size_t size) {
-	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
+LeCommandResult cmd_meta(char *raw_data, size_t size) {
+	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
 
-	char                    *answer;
-	char                    *answer_start;
+	char               *answer;
+	char               *answer_start;
 
-	char                    *tmp;
-	size_t                   tmp_size;
+	char               *tmp;
+	size_t              tmp_size;
+
 
 	answer = malloc(128);
 	answer_start = answer;
@@ -468,16 +469,16 @@ struct LeCommandResult cmd_meta(char *raw_data, size_t size) {
 	return result;
 }
 
-struct LeCommandResult cmd_alive(char *raw_data, size_t size) {
-	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
+LeCommandResult cmd_alive(char *raw_data, size_t size) {
+	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
 
 	return result;
 }
 
-struct LeCommandResult query_process(char *raw_data, size_t size) {
-	struct LeCommand         cmd            = {NULL, NULL};
-	struct LeCommandResult   result         = {0, LESTATUS_OK, NULL};
-	size_t                   cmd_name_size;
+LeCommandResult query_process(char *raw_data, size_t size) {
+	LeCommand           cmd            = {NULL, NULL};
+	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
+	size_t              cmd_name_size;
 
 
 	if (raw_data == nullptr) {
