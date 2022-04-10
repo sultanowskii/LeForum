@@ -1,7 +1,7 @@
 # LeForum Developer Documentation
 ## General inner structure methods
 ### Queue
-#### `struct Queue * queue_create(status_t (*destruct)(void *))`
+#### `Queue * queue_create(status_t (*destruct)(void *))`
 **Description**: 
 Creates a new Queue object.
 
@@ -11,7 +11,7 @@ Creates a new Queue object.
 **Return value**:
 Pointer to created Queue
 
-#### `status_t queue_delete(struct Queue *queue)`
+#### `status_t queue_delete(Queue *queue)`
 **Description**: 
 Safely deletes the Queue and all the elements. Use this _only_ if you created queue by using `queue_create()`.
 
@@ -21,7 +21,7 @@ Safely deletes the Queue and all the elements. Use this _only_ if you created qu
 **Return value**:
 LESTATUS_OK on success
 
-#### `status_t queue_push(struct Queue *queue, void *data, size_t size)`
+#### `status_t queue_push(Queue *queue, void *data, size_t size)`
 **Description**: 
 Adds a new element to the end of the Queue.
 
@@ -33,7 +33,7 @@ Adds a new element to the end of the Queue.
 **Return value**:
 LESTATUS_OK on success
 
-#### `void * queue_pop(struct Queue *queue)`
+#### `void * queue_pop(Queue *queue)`
 **Description**: 
 Retrieves the first element and deletes it from the Queue.
 
@@ -43,7 +43,7 @@ Retrieves the first element and deletes it from the Queue.
 **Return value**:
 Pointer to the popped data
 
-#### `bool_t queue_is_empty(struct Queue *queue)`
+#### `bool_t queue_is_empty(Queue *queue)`
 **Description**: 
 Checks whether queue is empty or not.
 
