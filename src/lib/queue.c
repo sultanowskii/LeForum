@@ -1,10 +1,12 @@
 #include "lib/queue.h"
 
 Queue * queue_create(status_t (*destruct)(void *)) {
-	Queue         *new_queue      = (Queue *)malloc(sizeof(Queue));
+	Queue         *new_queue;
 
 
 	NULLPTR_PREVENT(destruct, LESTATUS_NPTR)
+
+	new_queue = (Queue *)malloc(sizeof(Queue));
 
 	new_queue->size = 0;
 	new_queue->first = nullptr;
