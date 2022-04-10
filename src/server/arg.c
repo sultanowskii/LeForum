@@ -1,6 +1,6 @@
 #include "server/arg.h"
 
-const char *argp_program_version = "LeForum Server v0.0";
+const char *argp_program_version = "LeForum Server v0.1";
 const char *argp_program_bug_address = "github.com/sultanowskii";
 
 char doc[] = "LeForum Server - multithread forum server that handles structures (such as threads, messages) and provides an API via TCP.";
