@@ -1,6 +1,7 @@
 .vscode/
 .obsidian/
 LeForumServer
+LeForumClient
 LeForumCoreTest
 QueueTest
 .data/
