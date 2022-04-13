@@ -28,13 +28,11 @@
 #include "lib/security.h"
 #include "lib/shared_ptr.h"
 #include "lib/status.h"
+#include "lib/util.h"
 
 
 #define MAX_PACKET_SIZE      16 * 1024
 #define FILENAME_LEMETA      "lemeta"
-
-#define MAX(x, y)            (((x) > (y)) ? (x) : (y))
-#define MIN(x, y)            (((x) < (y)) ? (x) : (y))
 
 
 /*

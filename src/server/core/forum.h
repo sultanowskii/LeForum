@@ -11,7 +11,9 @@
 #include "lib/queue.h"
 #include "lib/security.h"
 #include "lib/status.h"
+#include "lib/util.h"
 
+#include "server/conf.h"
 
 #define TOKEN_SIZE           24
 

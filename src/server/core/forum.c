@@ -2,7 +2,7 @@
 
 LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	LeThread           *new_lethread;
-	size_t              topic_length;
+	size_t              topic_size;
 	FILE*               lethread_file;
 
 
@@ -17,7 +17,7 @@ LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	}
 
 	new_lethread = (LeThread *)malloc(sizeof(LeThread));
-	topic_length = strlen(topic);
+	topic_size = strlen(topic);
 
 	new_lethread->id = lethread_id;
 	new_lethread->first_message_id = rand_uint64_t() % 0xffffffff;
@@ -25,9 +25,9 @@ LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	new_lethread->messages = queue_create(lemessage_delete);
 	new_lethread->author = nullptr;
 
-	new_lethread->topic = malloc(topic_length + 1);
-	memset(new_lethread->topic, 0, topic_length + 1);
-	strncpy(new_lethread->topic, topic, topic_length);
+	new_lethread->topic = malloc(topic_size + 1);
+	memset(new_lethread->topic, 0, topic_size + 1);
+	strncpy(new_lethread->topic, topic, topic_size);
 
 	return new_lethread;
 }
@@ -71,8 +71,14 @@ LeMessage * lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_
 	NULLPTR_PREVENT(lethread->messages, LESTATUS_NPTR)
 	NULLPTR_PREVENT(text, LESTATUS_NPTR)
 
-	new_lemessage = (LeMessage *)malloc(sizeof(LeMessage));
 	length = strlen(text);
+
+	if (length < MIN_MESSAGE_SIZE || length > MAX_MESSAGE_SIZE) {
+		return LESTATUS_IDAT;
+	}
+
+	new_lemessage = (LeMessage *)malloc(sizeof(LeMessage));
+
 	new_lemessage->id = lethread->next_message_id++;
 	new_lemessage->by_lethread_author = by_lethread_author;
 
@@ -172,7 +178,7 @@ FILE * get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t creat
 }
 
 status_t lethread_save(LeThread *lethread) {
-	size_t              topic_length;
+	size_t              topic_size;
 	FILE               *lethread_info_file;
 
 
@@ -180,7 +186,7 @@ status_t lethread_save(LeThread *lethread) {
 	NULLPTR_PREVENT(lethread->author, LESTATUS_IDAT)
 	NULLPTR_PREVENT(lethread->topic, LESTATUS_IDAT)
 
-	topic_length = strlen(lethread->topic);
+	topic_size = strlen(lethread->topic);
 	/* This trick clears the file so we don't have to have a headache with all these overwriting file stuff */
 	lethread_info_file = get_lefile(lethread->id, "wb", FILENAME_LETHREAD, TRUE);
 	fclose(lethread_info_file);
@@ -191,8 +197,8 @@ status_t lethread_save(LeThread *lethread) {
 	fwrite(&lethread->author->id, sizeof(lethread->author->id), 1, lethread_info_file);
 	fwrite(&lethread->first_message_id, sizeof(lethread->first_message_id), 1, lethread_info_file);
 	fwrite(&lethread->next_message_id, sizeof(lethread->next_message_id), 1, lethread_info_file);
-	fwrite(&topic_length, sizeof(topic_length), 1, lethread_info_file);
-	fwrite(lethread->topic, 1, topic_length, lethread_info_file);
+	fwrite(&topic_size, sizeof(topic_size), 1, lethread_info_file);
+	fwrite(lethread->topic, 1, topic_size, lethread_info_file);
 
 	fclose(lethread_info_file);
 
@@ -201,7 +207,7 @@ status_t lethread_save(LeThread *lethread) {
 
 status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
 	FILE               *lethread_info_file;
-	size_t              topic_length;
+	size_t              topic_size;
 	uint64_t            leauthor_id;
 
 
@@ -220,12 +226,14 @@ status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
 	fread(&leauthor_id, sizeof(lethread->author->id), 1, lethread_info_file);
 	fread(&lethread->first_message_id, sizeof(lethread->first_message_id), 1, lethread_info_file);
 	fread(&lethread->next_message_id, sizeof(lethread->next_message_id), 1, lethread_info_file);
-	fread(&topic_length, sizeof(topic_length), 1, lethread_info_file);
+	fread(&topic_size, sizeof(topic_size), 1, lethread_info_file);
 
-	lethread->topic = malloc(topic_length + 1);
-	memset(lethread->topic, 0, topic_length + 1);
+	topic_size = MIN(topic_size, MAX_TOPIC_SIZE);
 
-	fread(lethread->topic, 1, topic_length, lethread_info_file);
+	lethread->topic = malloc(topic_size + 1);
+	memset(lethread->topic, 0, topic_size + 1);
+
+	fread(lethread->topic, 1, topic_size, lethread_info_file);
 
 	fclose(lethread_info_file);
 
@@ -238,7 +246,7 @@ status_t lemessages_save(LeThread *lethread) {
 	QueueNode          *node;
 
 	LeMessage          *lemessage;
-	size_t              text_length;
+	size_t              text_size;
 	status_t            result;
 
 
@@ -259,11 +267,11 @@ status_t lemessages_save(LeThread *lethread) {
 			continue;
 		}
 
-		text_length = strlen(lemessage->text);
+		text_size = strlen(lemessage->text);
 		fwrite(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
 		fwrite(&lemessage->by_lethread_author, sizeof(lemessage->by_lethread_author), 1, lemessages_file);
-		fwrite(&text_length, sizeof(text_length), 1, lemessages_file);
-		fwrite(lemessage->text, 1, text_length, lemessages_file);
+		fwrite(&text_size, sizeof(text_size), 1, lemessages_file);
+		fwrite(lemessage->text, 1, text_size, lemessages_file);
 		node = node->next;
 	}
 
@@ -273,20 +281,20 @@ status_t lemessages_save(LeThread *lethread) {
 }
 
 status_t lemessage_save(LeMessage *lemessage) {
-	size_t              text_length;
+	size_t              text_size;
 	FILE               *lemessages_file;
 
 
 	NULLPTR_PREVENT(lemessage, LESTATUS_NPTR)
 	NULLPTR_PREVENT(lemessage->text, LESTATUS_NPTR)
 
-	text_length = strlen(lemessage->text);
+	text_size = strlen(lemessage->text);
 	lemessages_file = get_lefile(lemessage->lethread->id, "ab", FILENAME_LEMESSAGES, TRUE);
 
 	fwrite(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
 	fwrite(&lemessage->by_lethread_author, sizeof(lemessage->by_lethread_author), 1, lemessages_file);
-	fwrite(&text_length, sizeof(text_length), 1, lemessages_file);
-	fwrite(lemessage->text, 1, text_length, lemessages_file);
+	fwrite(&text_size, sizeof(text_size), 1, lemessages_file);
+	fwrite(lemessage->text, 1, text_size, lemessages_file);
 
 	fclose(lemessages_file);
 
@@ -297,7 +305,7 @@ status_t lemessages_load(LeThread *lethread) {
 	FILE               *lemessages_file;
 
 	LeMessage          *lemessage;
-	size_t             text_length;
+	size_t             text_size;
 
 
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
@@ -312,11 +320,12 @@ status_t lemessages_load(LeThread *lethread) {
 		lemessage = (LeMessage *)malloc(sizeof(LeMessage));
 		fread(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
 		fread(&lemessage->by_lethread_author, sizeof(lemessage->by_lethread_author), 1, lemessages_file);
-		fread(&text_length, sizeof(text_length), 1, lemessages_file);
+		fread(&text_size, sizeof(text_size), 1, lemessages_file);
+		text_size = MIN(text_size, MAX_MESSAGE_SIZE);
 
-		lemessage->text = malloc(text_length + 1);
-		memset(lemessage->text, 0, text_length + 1);
-		fread(lemessage->text, 1, text_length, lemessages_file);
+		lemessage->text = malloc(text_size + 1);
+		memset(lemessage->text, 0, text_size + 1);
+		fread(lemessage->text, 1, text_size, lemessages_file);
 
 		queue_push(lethread->messages, lemessage, sizeof(LeMessage));
 

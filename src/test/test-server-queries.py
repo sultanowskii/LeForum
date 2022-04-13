@@ -144,7 +144,7 @@ def test_lethread_basic(topic):
 
 		assert topic == data[40:].decode("ascii")
 
-	got_topic, got_topic_size = test_lethread_get(lethread_id)
+	got_topic, got_topic_size, messages = test_lethread_get(lethread_id)
 
 	assert got_topic_size == topic_size
 	assert got_topic == topic
