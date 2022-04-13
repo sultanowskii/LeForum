@@ -1,9 +1,13 @@
 #pragma once
 
-#include <stdbool.h>
+#ifndef FALSE
+#define FALSE   0
+#endif
 
-#define FALSE   false
-#define TRUE    true
+#ifndef TRUE
+#define TRUE    1
+#endif
+
 #define nullptr NULL
 
-typedef bool bool_t;
+typedef int8_t bool_t;

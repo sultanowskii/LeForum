@@ -6,11 +6,12 @@
 #include "lib/security.h"
 #include "lib/status.h"
 
-typedef struct {
+struct SharedPtr{
 	int64_t       *ref_count;
 	void          *data;
 	status_t     (*destruct)(void *);
-} SharedPtr;
+};
+typedef struct SharedPtr SharedPtr;
 
 
 /**
