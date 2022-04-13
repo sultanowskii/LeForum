@@ -1,54 +1,122 @@
 #include "client/client.h"
 
-void update_win_example(LeContainer *container) {
-	getmaxyx(stdscr, container->size_y, container->size_x);
+WINDOW *win_example;
+WINDOW *win_sidebar;
 
-	werase(container->win);
+double sidebar_y_ratio = 1;
+double sidebar_x_ratio = 0.3;
 
-	wresize(container->win, container->size_y, container->size_x);
-	box(container->win, 0, 0);
-	wmove(container->win, container->size_y / 2, container->size_x / 2 - 6);
-	wprintw(container->win, "Hello world!");
+double content_y_ratio = 1;
+double content_x_ratio = 0.7;
 
-	wmove(container->win, 0, 0);
-	wrefresh(container->win);
-} 
+
+void win_example_update(char *text) {
+	static int     size_y, size_x;
+	static int     max_size_y, max_size_x;
+	size_t         n;
+
+
+	getmaxyx(stdscr, max_size_y, max_size_x);
+
+	werase(win_example);
+
+	size_y = max_size_y;
+	size_x = max_size_x * content_x_ratio;
+
+	wresize(win_example, size_y, size_x);
+
+	mvwin(win_example, 0, max_size_x - size_x);
+
+	wattron(win_example,COLOR_PAIR(1));
+	box(win_example, 0, 0);
+	wattroff(win_example,COLOR_PAIR(1));
+	
+	if (text != nullptr) {
+		n = strlen(text);
+		wmove(win_example, size_y / 2, size_x / 2 - n / 2);
+		wprintw(win_example, text);
+	}
+	else {
+		wmove(win_example, size_y / 2, size_x / 2 - 6);
+		wprintw(win_example, "Hello world!");
+	}
+
+	wmove(win_example, 0, 0);
+	wrefresh(win_example);
+}
+
+void win_example_handle_input(int ch) {
+	static char        *tmp_text = nullptr;
+
+
+	switch(ch) {
+		case KEY_RESIZE: {
+			win_example_update(tmp_text);
+			break;
+		}
+		case '+': {
+			if (tmp_text != nullptr) {
+				free(tmp_text);
+				tmp_text = nullptr;
+			}
+
+			tmp_text = malloc(256);
+			memset(tmp_text, 0, 256);
+
+			getnstr(tmp_text, 255);
+
+			win_example_update(tmp_text);
+			break;
+		}
+		case '-': {
+			if (tmp_text != nullptr) {
+				free(tmp_text);
+				tmp_text = nullptr;
+			}
+
+			win_example_update(tmp_text);
+			break;
+		}
+	}
+}
+
 
 status_t main(size_t argc, char **argv) {
 	int          ch;
-	LeContainer *container_example;
-
+	int          tmp_y, tmp_x;
+	
 
 	if (!initscr()) {
 		perror("initscr() failed:");
 		return LESTATUS_CLIB;
 	}
 
+	/* anti-raw() */
 	cbreak();
+	/* input is not printed */
 	noecho();
+	/* hides cursor */
 	curs_set(0);
 
-	container_example = (LeContainer *)malloc(sizeof(LeContainer));
-	getmaxyx(stdscr, container_example->size_y, container_example->size_x);
-	container_example->win = newwin(container_example->size_y, container_example->size_x, 0, 0);
-	container_example->update = update_win_example;
+	/* starts using colors, helpful for --no-color implementation :) */
+	start_color();
 
 	refresh();
-	container_example->update(container_example);
+
+	getmaxyx(stdscr, tmp_y, tmp_x);
+	win_example = newwin(tmp_y, tmp_x, 0, 0);
+
+	init_pair(1, COLOR_RED, COLOR_BLACK);
+	win_example_update(NULL);
 
 	while (TRUE) {
 		ch = getch();
-		refresh();
 
-		if (ch == KEY_RESIZE) {
-			container_example->update(container_example);
-		}
+		win_example_handle_input(ch);
 	}
 
-	delwin(container_example->win);
+	delwin(win_example);
 	endwin();
-
-	free(container_example);
 
 	return LESTATUS_OK;
 }

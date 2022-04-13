@@ -10,12 +10,5 @@
 
 #include <ncurses.h>
 
+#include "lib/constants.h"
 #include "lib/status.h"
-
-struct LeContainer {
-	WINDOW        *win;
-	int            size_y;
-	int            size_x;
-	void         (*update)(struct LeContainer *);
-};
-typedef struct LeContainer LeContainer;
