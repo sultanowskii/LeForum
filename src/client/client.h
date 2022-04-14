@@ -12,3 +12,14 @@
 
 #include "lib/constants.h"
 #include "lib/status.h"
+
+struct LeLayoutPart {
+	WINDOW   *win;
+	double    y_size_ratio;
+	double    x_size_ratio;
+	int       y_size;
+	int       x_size;
+	int       y_coord;
+	int       x_coord;
+};
+typedef struct LeLayoutPart LeLayoutPart;

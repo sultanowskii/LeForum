@@ -1,90 +1,148 @@
 #include "client/client.h"
 
-WINDOW *win_example;
-WINDOW *win_sidebar;
+LeLayoutPart  sidebar;
+LeLayoutPart  content;
 
-double sidebar_y_ratio = 1;
-double sidebar_x_ratio = 0.3;
-
-double content_y_ratio = 1;
-double content_x_ratio = 0.7;
+bool_t        sidebar_on_right;
+char         *text                = nullptr;
 
 
-void win_example_update(char *text) {
-	static int     size_y, size_x;
-	static int     max_size_y, max_size_x;
-	size_t         n;
+void layout_update() {
+	int            size_y, size_x;
 
 
-	getmaxyx(stdscr, max_size_y, max_size_x);
+	getmaxyx(stdscr, size_y, size_x);
 
-	werase(win_example);
+	sidebar.y_size = size_y * sidebar.y_size_ratio;
+	sidebar.x_size = size_x * sidebar.x_size_ratio;
 
-	size_y = max_size_y;
-	size_x = max_size_x * content_x_ratio;
+	content.y_size = size_y * content.y_size_ratio;
+	content.x_size = size_x * content.x_size_ratio;
 
-	wresize(win_example, size_y, size_x);
+	if (sidebar.x_size + content.x_size > size_x) {
+		sidebar.x_size--;
+	}
 
-	mvwin(win_example, 0, max_size_x - size_x);
+	if (sidebar.x_size + content.x_size < size_x) {
+		content.x_size++;
+	}
 
-	wattron(win_example,COLOR_PAIR(1));
-	box(win_example, 0, 0);
-	wattroff(win_example,COLOR_PAIR(1));
-	
-	if (text != nullptr) {
-		n = strlen(text);
-		wmove(win_example, size_y / 2, size_x / 2 - n / 2);
-		wprintw(win_example, text);
+	sidebar.y_coord = 0;
+
+	content.y_coord = 0;
+
+	if (sidebar_on_right) {
+		sidebar.x_coord = 0;
+		content.x_coord = sidebar.x_size;
 	}
 	else {
-		wmove(win_example, size_y / 2, size_x / 2 - 6);
-		wprintw(win_example, "Hello world!");
+		sidebar.x_coord = content.x_size;
+		content.x_coord = 0;
 	}
-
-	wmove(win_example, 0, 0);
-	wrefresh(win_example);
 }
 
-void win_example_handle_input(int ch) {
-	static char        *tmp_text = nullptr;
+void sidebar_update() {
+	werase(sidebar.win);
+
+	wresize(sidebar.win, sidebar.y_size, sidebar.x_size);
+
+	mvwin(sidebar.win, sidebar.y_coord, sidebar.x_coord);
+
+	box(sidebar.win, 0, 0);
+
+	wmove(sidebar.win, 0, 0);
+	wrefresh(sidebar.win);
+}
+
+void content_update() {
+	size_t         text_size;
 
 
+	werase(content.win);
+
+	wresize(content.win, content.y_size, content.x_size);
+
+	mvwin(content.win, content.y_coord, content.x_coord);
+
+	wattron(content.win,COLOR_PAIR(1));
+	box(content.win, 0, 0);
+	wattroff(content.win,COLOR_PAIR(1));
+	
+	if (text != nullptr) {
+		text_size = strlen(text);
+		wmove(content.win, content.y_size / 2, content.x_size / 2 - text_size / 2);
+		wprintw(content.win, text);
+	}
+	else {
+		wmove(content.win, content.y_size / 2, content.x_size / 2 - 6);
+		wprintw(content.win, "Hello world!");
+	}
+
+	wmove(content.win, 0, 0);
+	wrefresh(content.win);
+}
+
+void content_win_handle_input(int ch) {
 	switch(ch) {
 		case KEY_RESIZE: {
-			win_example_update(tmp_text);
+			content_update();
 			break;
 		}
 		case '+': {
-			if (tmp_text != nullptr) {
-				free(tmp_text);
-				tmp_text = nullptr;
+			if (text != nullptr) {
+				free(text);
+				text = nullptr;
 			}
 
-			tmp_text = malloc(256);
-			memset(tmp_text, 0, 256);
+			text = malloc(256);
+			memset(text, 0, 256);
 
-			getnstr(tmp_text, 255);
+			getnstr(text, 255);
 
-			win_example_update(tmp_text);
+			content_update();
 			break;
 		}
 		case '-': {
-			if (tmp_text != nullptr) {
-				free(tmp_text);
-				tmp_text = nullptr;
+			if (text != nullptr) {
+				free(text);
+				text = nullptr;
 			}
 
-			win_example_update(tmp_text);
+			content_update();
 			break;
 		}
 	}
 }
 
+status_t startup() {
+	sidebar.y_size_ratio = 1;
+	sidebar.x_size_ratio = 0.3;
+	sidebar.y_size  = 0;
+	sidebar.x_size  = 0;
+	sidebar.win = newwin(0, 0, 0, 0);
+
+	content.y_size_ratio = 1;
+	content.x_size_ratio = 0.7;
+	content.y_size  = 0;
+	content.x_size  = 0;
+	content.win = newwin(0, 0, 0, 0);
+
+	sidebar_on_right = TRUE;
+
+	init_pair(1, COLOR_RED, COLOR_BLACK);
+
+	refresh();
+
+	layout_update();
+
+	content_update(NULL);
+	sidebar_update();
+}
 
 status_t main(size_t argc, char **argv) {
 	int          ch;
 	int          tmp_y, tmp_x;
-	
+
 
 	if (!initscr()) {
 		perror("initscr() failed:");
@@ -101,21 +159,33 @@ status_t main(size_t argc, char **argv) {
 	/* starts using colors, helpful for --no-color implementation :) */
 	start_color();
 
-	refresh();
+	startup();
 
-	getmaxyx(stdscr, tmp_y, tmp_x);
-	win_example = newwin(tmp_y, tmp_x, 0, 0);
-
-	init_pair(1, COLOR_RED, COLOR_BLACK);
-	win_example_update(NULL);
 
 	while (TRUE) {
 		ch = getch();
+		
+		layout_update();
 
-		win_example_handle_input(ch);
+
+		switch (ch) {
+			case ' ': {
+				sidebar_on_right = !sidebar_on_right;
+				layout_update();
+				content_update();
+				sidebar_update();
+				break;
+			}
+			default: {
+				content_win_handle_input(ch);
+				break;
+			}
+
+		}
+		// sidebar_update();
 	}
 
-	delwin(win_example);
+	delwin(content.win);
 	endwin();
 
 	return LESTATUS_OK;
