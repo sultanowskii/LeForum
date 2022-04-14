@@ -11,7 +11,7 @@ LIB_FILES_TEST_QUEUE = $(wildcard lib/*.c)
 server: server/server.c $(LIB_FILES_SERVER)
 	$(CC) $(CFLAGS) $^ $(LIBS_SERVER) -o LeForumServer
 
-client: client/client.c $(LIB_FILES)
+client: client/client.c $(LIB_FILES_CLIENT)
 	$(CC) $(CFLAGS) $^ $(LIBS_CLIENT) -o LeForumClient
 
 test-forum-core: test/test-forum-core.c $(LIB_FILES_TEST_FORUM_CORE)

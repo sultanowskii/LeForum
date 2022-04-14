@@ -1,3 +1,5 @@
+#pragma ocnce
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,15 +13,18 @@
 #include <ncurses.h>
 
 #include "lib/constants.h"
+#include "lib/queue.h"
 #include "lib/status.h"
+#include "lib/util.h"
 
-struct LeLayoutPart {
-	WINDOW   *win;
-	double    y_size_ratio;
-	double    x_size_ratio;
-	int       y_size;
-	int       x_size;
-	int       y_coord;
-	int       x_coord;
+#include "client/state.h"
+#include "client/layout.h"
+
+/**
+ * @brief LeLayoutBlock IDs
+ * 
+ */
+enum LeLayoutBlockEnum {
+	SIDEBAR,
+	MAINCONTENT,
 };
-typedef struct LeLayoutPart LeLayoutPart;
