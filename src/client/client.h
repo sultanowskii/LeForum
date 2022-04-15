@@ -21,6 +21,9 @@
 #include "client/state.h"
 #include "client/layout.h"
 
+#define s_inc(x, min, max) x = ((x + 1) <= (max)) ? (x + 1) : (min)
+#define s_dec(x, min, max) x = ((x - 1) >= (min)) ? (x - 1) : (max)
+
 /**
  * @brief LeLayoutBlock IDs
  * 
@@ -57,12 +60,12 @@ void sidebar_update();
 void main_content_example_update();
 
 /**
- * @brief Handles user input for main content block 
+ * @brief Handles user input for main content block (example state) 
  * 
  * @param main_content Pointer to main content block 
  * @param ch Input key (from getch()) 
  */
-void main_content_handle(int ch);
+void main_content_example_handle(int ch);
 
 /**
  * @brief Initalises sidebar block. 

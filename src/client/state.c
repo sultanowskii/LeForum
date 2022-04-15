@@ -2,8 +2,12 @@
 
 inline const char * MainContentStateIDs_REPR(enum MainContentStateIDs id) {
 	switch (id) {
-		case mcsid_EXAMPLE:  return "Example";
-		default:             return nullptr;
+		case mcsid_EXAMPLE:       return "Example";
+		case mcsid_SERVER:        return "Servers";
+		case mcsid_THREADS:       return "Threads";
+		case mcsid_THREAD:        return "Thread view";
+		case mcsid_SETTINGS:      return "Settings";
+		default:                  return nullptr;
 	}
 }
 

@@ -25,6 +25,10 @@ const char * SidebarStateIDs_REPR(enum SidebarStateIDs id);
 enum MainContentStateIDs {
 	_mcsid_BEGIN,
 	mcsid_EXAMPLE,
+	mcsid_SERVER,
+	mcsid_THREADS,
+	mcsid_THREAD,
+	mcsid_SETTINGS,
 	_mcsid_END,
 };
 const char * MainContentStateIDs_REPR(enum MainContentStateIDs id);
@@ -34,11 +38,12 @@ const char * MainContentStateIDs_REPR(enum MainContentStateIDs id);
  * 
  */
 struct LeState {
-	int       id;
-	void    (*update)();
-	void    (*handle)(int ch);
-	void     *data;
-	void    (*data_destruct)(void *);
+	int            id;
+	const char    *name;
+	void         (*update)();
+	void         (*handle)(int ch);
+	void          *data;
+	void         (*data_destruct)(void *);
 };
 typedef struct LeState LeState;
 

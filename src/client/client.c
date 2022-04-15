@@ -1,5 +1,7 @@
 #include "client/client.h"
 
+#define ctrl(ch) ((ch) & 0x1f)
+
 LeLayoutBlock     *sidebar;
 LeLayoutBlock     *main_content;
 
@@ -68,12 +70,37 @@ void sidebar_update() {
 		else {
 			wprintw(sidebar->win, MainContentStateIDs_REPR(id));
 		}
-		wmove(sidebar->win, y, x);
 		y++;
+		wmove(sidebar->win, y, x);
 	}
 
 	wmove(sidebar->win, 0, 0);
 	wrefresh(sidebar->win);
+}
+
+void sidebar_handle(int ch) {
+	SidebarData   *data;
+
+
+	data = (SidebarData *)sidebar->current_state->data;
+
+
+	switch (ch) {
+		case KEY_RESIZE: {
+			sidebar->current_state->update();
+			break;
+		}
+		case KEY_UP: {
+			// s_dec(tmp, _mcsid_BEGIN + 1, _mcsid_END - 1);
+			sidebar->current_state->update();
+			break;
+		}
+		case KEY_DOWN: {
+			// s_inc(tmp, _mcsid_BEGIN + 1, _mcsid_END - 1);
+			sidebar->current_state->update();
+			break;
+		}
+	}
 }
 
 void main_content_example_update() {
@@ -107,12 +134,13 @@ void main_content_example_update() {
 	wrefresh(main_content->win);
 }
 
-void main_content_handle(int ch) {
+void main_content_example_handle(int ch) {
 	MainContentExampleData  *data;
 
 
 	data = (MainContentExampleData *)main_content->current_state->data;
-	switch(ch) {
+
+	switch (ch) {
 		case KEY_RESIZE: {
 			main_content_example_update();
 			break;
@@ -161,8 +189,9 @@ status_t sidebar_init() {
 	lestate = (LeState *)malloc(sizeof(LeState));
 	lestate->id = ssid_DEFAULT;
 	lestate->update = sidebar_update;
-	lestate->handle = NULL;
+	lestate->handle = sidebar_handle;
 	lestate->data = data;
+	lestate->name = SidebarStateIDs_REPR(lestate->id);
 	lestate->data_destruct = sidebardata_delete;
 	queue_push(sidebar->states, lestate, sizeof(LeState));
 
@@ -190,11 +219,12 @@ status_t main_content_init() {
 	lestate = (LeState *)malloc(sizeof(LeState));
 	lestate->id = mcsid_EXAMPLE;
 	lestate->update = main_content_example_update;
-	lestate->handle = main_content_handle;
+	lestate->handle = main_content_example_handle;
 	lestate->data = data;
 	{
 		data->text = nullptr;
 	}
+	lestate->name = MainContentStateIDs_REPR(lestate->id);
 	lestate->data_destruct = maincontentexampledata_delete;
 	queue_push(main_content->states, lestate, sizeof(LeState));
 
@@ -231,6 +261,8 @@ status_t startup() {
 	start_color();
 	/* Prevents getch() blocking */
 	nodelay(stdscr, TRUE);
+	/* For CTRL+KEY */
+    keypad(stdscr, TRUE);
 
 	g_sidebar_on_right = TRUE;
 	g_working = TRUE;
@@ -296,6 +328,7 @@ status_t main(size_t argc, char **argv) {
 				break;
 			}
 			default: {
+				sidebar->current_state->handle(ch);
 				main_content->current_state->handle(ch);
 				break;
 			}
