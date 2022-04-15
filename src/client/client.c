@@ -1,10 +1,12 @@
 #include "client/client.h"
 
-bool_t g_working = TRUE;
+bool_t             g_working           = TRUE;
+bool_t             g_sidebar_on_right    = TRUE;
+LeLayoutBlock      *sidebar;
+LeLayoutBlock      *main_content;
 
-void layout_update(LeLayoutBlock *sidebar, LeLayoutBlock *main_content) {
+void layout_update() {
 	int            size_y, size_x;
-	bool_t         sidebar_on_right;
 
 
 	getmaxyx(stdscr, size_y, size_x);
@@ -27,9 +29,7 @@ void layout_update(LeLayoutBlock *sidebar, LeLayoutBlock *main_content) {
 
 	main_content->y_coord = 0;
 
-	sidebar_on_right = ((SidebarData *)sidebar->current_state->data)->sidebar_on_right;
-
-	if (sidebar_on_right) {
+	if (g_sidebar_on_right) {
 		sidebar->x_coord = 0;
 		main_content->x_coord = sidebar->x_size;
 	}
@@ -39,7 +39,10 @@ void layout_update(LeLayoutBlock *sidebar, LeLayoutBlock *main_content) {
 	}
 }
 
-void sidebar_update(LeLayoutBlock *sidebar) {
+void sidebar_update() {
+	int            x, y;
+
+
 	werase(sidebar->win);
 
 	wresize(sidebar->win, sidebar->y_size, sidebar->x_size);
@@ -48,16 +51,35 @@ void sidebar_update(LeLayoutBlock *sidebar) {
 
 	box(sidebar->win, 0, 0);
 
+	/* Filling sidebar with tabs (main content states) */
+	x = 2;
+	y = 1;
+
+	wmove(sidebar->win, y, x);
+
+	for (enum MainContentStateIDs id = _mcsid_BEGIN + 1; id < _mcsid_END; id++) {
+		if (id == main_content->current_state->id) {
+			wattron(sidebar->win, A_REVERSE);
+			wprintw(sidebar->win, MainContentStateIDs_REPR(id));
+			wattroff(sidebar->win, A_REVERSE);
+		}
+		else {
+			wprintw(sidebar->win, MainContentStateIDs_REPR(id));
+		}
+		wmove(sidebar->win, y, x);
+		y++;
+	}
+
 	wmove(sidebar->win, 0, 0);
 	wrefresh(sidebar->win);
 }
 
-void main_content_example_update(LeLayoutBlock *main_content) {
-	MainContentExampleData  *context;
+void main_content_example_update() {
+	MainContentExampleData  *data;
 	size_t                   text_size;
 
 
-	context = (MainContentExampleData *)main_content->current_state->data;
+	data = (MainContentExampleData *)main_content->current_state->data;
 
 	werase(main_content->win);
 
@@ -69,10 +91,10 @@ void main_content_example_update(LeLayoutBlock *main_content) {
 	box(main_content->win, 0, 0);
 	wattroff(main_content->win, COLOR_PAIR(PAIR_RED_BLACK));
 
-	if (context->text != nullptr) {
-		text_size = strlen(context->text);
+	if (data->text != nullptr) {
+		text_size = strlen(data->text);
 		wmove(main_content->win, main_content->y_size / 2, main_content->x_size / 2 - text_size / 2);
-		wprintw(main_content->win, context->text);
+		wprintw(main_content->win, data->text);
 	}
 	else {
 		wmove(main_content->win, main_content->y_size / 2, main_content->x_size / 2 - 6);
@@ -83,54 +105,54 @@ void main_content_example_update(LeLayoutBlock *main_content) {
 	wrefresh(main_content->win);
 }
 
-void main_content_handle(LeLayoutBlock *main_content, int ch) {
-	MainContentExampleData  *context;
+void main_content_handle(int ch) {
+	MainContentExampleData  *data;
 
 
-	context = (MainContentExampleData *)main_content->current_state->data;
+	data = (MainContentExampleData *)main_content->current_state->data;
 	switch(ch) {
 		case KEY_RESIZE: {
-			main_content_example_update(main_content);
+			main_content_example_update();
 			break;
 		}
 		case '+': {
-			if (context->text != nullptr) {
-				free(context->text);
-				context->text = nullptr;
+			if (data->text != nullptr) {
+				free(data->text);
+				data->text = nullptr;
 			}
 
-			context->text = malloc(256);
-			memset(context->text, 0, 256);
+			data->text = malloc(256);
+			memset(data->text, 0, 256);
 
-			wgetnstr(main_content->win, context->text, 255);
+			wgetnstr(main_content->win, data->text, 255);
 
-			main_content_example_update(main_content);
+			main_content_example_update();
 			break;
 		}
 		case '-': {
-			if (context->text != nullptr) {
-				free(context->text);
-				context->text = nullptr;
+			if (data->text != nullptr) {
+				free(data->text);
+				data->text = nullptr;
 			}
 
-			main_content_example_update(main_content);
+			main_content_example_update();
 			break;
 		}
 	}
 }
 
-status_t sidebar_init(LeLayoutBlock **sidebar) {
+status_t sidebar_init() {
 	LeState                 *lestate;
 	SidebarData             *data;
 
 
-	*sidebar = (LeLayoutBlock *)malloc(sizeof(LeLayoutBlock));
-	(*sidebar)->win = newwin(0, 0, 0, 0);
-	(*sidebar)->y_size_ratio = 1;
-	(*sidebar)->x_size_ratio = 0.3;
-	(*sidebar)->y_size  = 0;
-	(*sidebar)->x_size  = 0;
-	(*sidebar)->states = queue_create(lestate_delete);
+	sidebar = (LeLayoutBlock *)malloc(sizeof(LeLayoutBlock));
+	sidebar->win = newwin(0, 0, 0, 0);
+	sidebar->y_size_ratio = 1;
+	sidebar->x_size_ratio = 0.3;
+	sidebar->y_size  = 0;
+	sidebar->x_size  = 0;
+	sidebar->states = queue_create(lestate_delete);
 
 	/* Default state init */
 	data = (SidebarData *)malloc(sizeof(SidebarData));
@@ -139,30 +161,27 @@ status_t sidebar_init(LeLayoutBlock **sidebar) {
 	lestate->update = sidebar_update;
 	lestate->handle = NULL;
 	lestate->data = data;
-	{
-		data->sidebar_on_right = TRUE;
-	}
 	lestate->data_destruct = sidebardata_delete;
-	queue_push((*sidebar)->states, lestate, sizeof(LeState));
+	queue_push(sidebar->states, lestate, sizeof(LeState));
 
 	/* It will be changed in the future. */
-	(*sidebar)->current_state = (*sidebar)->states->last->data;
+	sidebar->current_state = sidebar->states->last->data;
 
 	return LESTATUS_OK;
 }
 
-status_t main_content_init(LeLayoutBlock **main_content) {
+status_t main_content_init() {
 	LeState                 *lestate;
 	MainContentExampleData  *data;
 
 
-	*main_content = (LeLayoutBlock *)malloc(sizeof(LeLayoutBlock));
-	(*main_content)->win = newwin(0, 0, 0, 0);
-	(*main_content)->y_size_ratio = 1;
-	(*main_content)->x_size_ratio = 0.7;
-	(*main_content)->y_size  = 0;
-	(*main_content)->x_size  = 0;
-	(*main_content)->states = queue_create(lestate_delete);
+	main_content = (LeLayoutBlock *)malloc(sizeof(LeLayoutBlock));
+	main_content->win = newwin(0, 0, 0, 0);
+	main_content->y_size_ratio = 1;
+	main_content->x_size_ratio = 0.7;
+	main_content->y_size  = 0;
+	main_content->x_size  = 0;
+	main_content->states = queue_create(lestate_delete);
 
 	/* Init example state */
 	data = (MainContentExampleData *)malloc(sizeof(MainContentExampleData));
@@ -174,21 +193,21 @@ status_t main_content_init(LeLayoutBlock **main_content) {
 	{
 		data->text = nullptr;
 	}
-	lestate->data_destruct = maincontextexampledata_delete;
-	queue_push((*main_content)->states, lestate, sizeof(LeState));
+	lestate->data_destruct = maincontentexampledata_delete;
+	queue_push(main_content->states, lestate, sizeof(LeState));
 
 	/* It will be changed in the future. */
-	(*main_content)->current_state = (*main_content)->states->last->data;
+	main_content->current_state = main_content->states->last->data;
 
 	return LESTATUS_OK;
 }
 
-status_t lelayoutblocks_init(LeLayoutBlock **sidebar, LeLayoutBlock **main_content) {
-	sidebar_init(sidebar);
-	main_content_init(main_content);
+status_t lelayoutblocks_init() {
+	sidebar_init();
+	main_content_init();
 }
 
-status_t startup(LeLayoutBlock **sidebar, LeLayoutBlock **main_content) {
+status_t startup() {
 	signal(SIGTERM, stop_program_handle);
 	signal(SIGINT, stop_program_handle);
 
@@ -211,28 +230,31 @@ status_t startup(LeLayoutBlock **sidebar, LeLayoutBlock **main_content) {
 	/* Prevents getch() blocking */
 	nodelay(stdscr, TRUE);
 
+	g_sidebar_on_right = TRUE;
+	g_working = TRUE;
+
 	init_pair(PAIR_RED_BLACK, COLOR_RED, COLOR_BLACK);
 
-	lelayoutblocks_init(sidebar, main_content);
+	lelayoutblocks_init();
 
 	refresh();
 
-	layout_update(*sidebar, *main_content);
+	layout_update();
 
 	/* updating blocks, showing windows */
-	(*main_content)->current_state->update(*main_content);
-	(*sidebar)->current_state->update(*sidebar);
+	main_content->current_state->update();
+	sidebar->current_state->update();
 }
 
-status_t cleanup(LeLayoutBlock **sidebar, LeLayoutBlock **main_content) {
-	if (sidebar != nullptr && *sidebar != nullptr) {
-		lelayoutblock_delete(*sidebar);
-		*sidebar = nullptr;
+status_t cleanup() {
+	if (sidebar != nullptr) {
+		lelayoutblock_delete(sidebar);
+		sidebar = nullptr;
 	}
 
-	if (main_content != nullptr && *main_content != nullptr) {
-		lelayoutblock_delete(*main_content);
-		*main_content = nullptr;
+	if (main_content != nullptr) {
+		lelayoutblock_delete(main_content);
+		main_content = nullptr;
 	}
 
 	endwin();
@@ -247,11 +269,12 @@ void stop_program_handle(const int signum) {
 status_t main(size_t argc, char **argv) {
 	int                 ch;
 	int                 tmp_y, tmp_x;
-	LeLayoutBlock      *sidebar;
-	LeLayoutBlock      *main_content;
 
 
-	startup(&sidebar, &main_content);
+	startup();
+
+	main_content = main_content;
+	sidebar = sidebar;
 
 	while (g_working) {
 		ch = getch();
@@ -260,25 +283,25 @@ status_t main(size_t argc, char **argv) {
 			continue;
 		}
 
-		layout_update(sidebar, main_content);
+		layout_update();
 
 		switch (ch) {
 			case ' ': {
-				((SidebarData *)sidebar->current_state->data)->sidebar_on_right = !((SidebarData *)sidebar->current_state->data)->sidebar_on_right;
-				layout_update(sidebar, main_content);
-				main_content->current_state->update(main_content);
-				sidebar->current_state->update(sidebar);
+				g_sidebar_on_right = !g_sidebar_on_right;
+				layout_update();
+				main_content->current_state->update();
+				sidebar->current_state->update();
 				break;
 			}
 			default: {
-				main_content->current_state->handle(main_content, ch);
+				main_content->current_state->handle(ch);
 				break;
 			}
 
 		}
 	}
 
-	cleanup(&sidebar, &main_content);
+	cleanup();
 
 	return LESTATUS_OK;
 }

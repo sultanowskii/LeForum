@@ -41,24 +41,20 @@ enum ColorPairs {
 /**
  * @brief Updates layout block information. 
  * 
- * @param sidebar Pointer to sidebar block
- * @param main_content Pointer to main content block
  */
-void layout_update(LeLayoutBlock *sidebar, LeLayoutBlock *main_content);
+void layout_update();
 
 /**
  * @brief Updates sidebar.
  * 
- * @param sidebar Pointer to sidebar block 
  */
-void sidebar_update(LeLayoutBlock *sidebar);
+void sidebar_update();
 
 /**
  * @brief Updates main content (example state). 
  * 
- * @param main_content Pointer to main content block 
  */
-void main_content_example_update(LeLayoutBlock *main_content);
+void main_content_example_update();
 
 /**
  * @brief Handles user input for main content block 
@@ -66,51 +62,43 @@ void main_content_example_update(LeLayoutBlock *main_content);
  * @param main_content Pointer to main content block 
  * @param ch Input key (from getch()) 
  */
-void main_content_handle(LeLayoutBlock *main_content, int ch);
+void main_content_handle(int ch);
 
 /**
  * @brief Initalises sidebar block. 
  * 
- * @param sidebar Pointer to pointer to sidebar block 
  * @return LESTATUS_OK on success 
  */
-status_t sidebar_init(LeLayoutBlock **sidebar);
+status_t sidebar_init();
 
 /**
  * @brief Initalises main content block. 
  * 
- * @param sidebar Pointer to pointer to main content block 
  * @return LESTATUS_OK on success 
  */
-status_t main_content_init(LeLayoutBlock **main_content);
+status_t main_content_init();
 
 /**
  * @brief Calls initialisators of blocks 
  * 
- * @param sidebar 
- * @param main_content 
  * @return status_t 
  */
-status_t lelayoutblocks_init(LeLayoutBlock **sidebar, LeLayoutBlock **main_content);
+status_t lelayoutblocks_init();
 
 
 /**
  * @brief Initialises program 
  * 
- * @param sidebar Pointer to pointer to sidebar block 
- * @param main_content Pointer to pointer to main content block 
  * @return LESTATUS_OK on success 
  */
-status_t startup(LeLayoutBlock **sidebar, LeLayoutBlock **main_content);
+status_t startup();
 
 /**
  * @brief Cleans all the program data 
  * 
- * @param sidebar Pointer to pointer to sidebar block 
- * @param main_content Pointer to pointer to main content block 
  * @return LESTATUS_OK on success 
  */
-status_t cleanup(LeLayoutBlock **sidebar, LeLayoutBlock **main_content);
+status_t cleanup();
 
 /**
  * @brief Program termination handler. Simply modifies g_working value. 

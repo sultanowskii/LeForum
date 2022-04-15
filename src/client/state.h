@@ -16,6 +16,7 @@ enum SidebarStateIDs {
 	ssid_DEFAULT,
 	_ssid_END,
 };
+const char * SidebarStateIDs_REPR(enum SidebarStateIDs id);
 
 /**
  * @brief IDs of MainContent states
@@ -26,6 +27,7 @@ enum MainContentStateIDs {
 	mcsid_EXAMPLE,
 	_mcsid_END,
 };
+const char * MainContentStateIDs_REPR(enum MainContentStateIDs id);
 
 /**
  * @brief State of the LeLayoutBlock. One LeLayoutBlock may contain multiple states.
@@ -33,8 +35,8 @@ enum MainContentStateIDs {
  */
 struct LeState {
 	int       id;
-	void    (*update)(LeLayoutBlock *);
-	void    (*handle)(LeLayoutBlock *, int ch);
+	void    (*update)();
+	void    (*handle)(int ch);
 	void     *data;
 	void    (*data_destruct)(void *);
 };
@@ -45,7 +47,7 @@ typedef struct LeState LeState;
  * 
  */
 struct SidebarData {
-	bool_t    sidebar_on_right;
+
 };
 typedef struct SidebarData SidebarData;
 
@@ -80,4 +82,4 @@ status_t           sidebardata_delete(SidebarData *data);
  * @param data Pointer to SidebarData 
  * @return LESTATUS_OK on success 
  */
-status_t           maincontextexampledata_delete(MainContentExampleData *data);
+status_t           maincontentexampledata_delete(MainContentExampleData *data);
