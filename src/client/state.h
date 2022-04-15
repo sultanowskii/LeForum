@@ -2,6 +2,7 @@
 
 #include "lib/security.h"
 
+
 /* Dependency */
 struct LeLayoutBlock;
 typedef struct LeLayoutBlock LeLayoutBlock;
@@ -15,7 +16,6 @@ enum SidebarStateIDs {
 	ssid_DEFAULT,
 	_ssid_END,
 };
-
 
 /**
  * @brief IDs of MainContent states

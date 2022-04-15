@@ -29,12 +29,11 @@
 - [x] Test for messages
 
 #### Client
-- [ ] cleanup() improvements, checking if already cleaned or not
+- [x] cleanup() improvements, checking if already cleaned or not
 - [ ] Meta context (for is_cleaned, sidebar_on_right, etc.)
-- [ ] Function definitions in headers
-- [ ] Comments
-- [ ] Enum for color pairs
-- [ ] atexit, signal handlers
+- [x] Function definitions in headers
+- [x] Comments
+- [x] Enum for color pairs
 
 ### Global features
 #### Server
