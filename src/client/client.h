@@ -30,7 +30,11 @@ enum LeLayoutBlockEnum {
 	MAINCONTENT,
 };
 
-enum ColorParis {
+/**
+ * @brief Color pairs for COLOR_PAIR(n)
+ * 
+ */
+enum ColorPairs {
 	PAIR_RED_BLACK = 1,
 };
 
