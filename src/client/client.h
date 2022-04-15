@@ -21,8 +21,8 @@
 #include "client/state.h"
 #include "client/layout.h"
 
-#define s_inc(x, min, max) x = ((x + 1) <= (max)) ? (x + 1) : (min)
-#define s_dec(x, min, max) x = ((x - 1) >= (min)) ? (x - 1) : (max)
+#define ctrl(ch) ((ch) & 0x1f)
+
 
 /**
  * @brief LeLayoutBlock IDs
@@ -42,16 +42,31 @@ enum ColorPairs {
 };
 
 /**
+ * @brief Sets the current lestate by its ID. 
+ * 
+ * @param id ID of desired state
+ * @return LESTATUS_OK on success, LESTATUS_NFND if not found any state with the given ID 
+ */
+status_t           set_current_lestate(LeLayoutBlock *block, int id);
+
+/**
  * @brief Updates layout block information. 
  * 
  */
 void layout_update();
 
 /**
- * @brief Updates sidebar.
+ * @brief Handles user input for sidebar block (default state). 
+ * 
+ * @param ch Input key (from getch()) 
+ */
+void sidebar_default_handle(int ch);
+
+/**
+ * @brief Updates sidebar (default state). 
  * 
  */
-void sidebar_update();
+void sidebar_default_update();
 
 /**
  * @brief Updates main content (example state). 
@@ -62,7 +77,6 @@ void main_content_example_update();
 /**
  * @brief Handles user input for main content block (example state) 
  * 
- * @param main_content Pointer to main content block 
  * @param ch Input key (from getch()) 
  */
 void main_content_example_handle(int ch);

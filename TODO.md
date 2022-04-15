@@ -34,7 +34,7 @@
 - [x] Function definitions in headers
 - [x] Comments
 - [x] Enum for color pairs
-- [ ] Switching current state (and then call it in sidebar_handle())
+- [x] Switching current state (and then call it in sidebar_handle())
 
 ### Global features
 #### Server

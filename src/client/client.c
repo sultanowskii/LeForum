@@ -1,13 +1,38 @@
 #include "client/client.h"
 
-#define ctrl(ch) ((ch) & 0x1f)
-
 LeLayoutBlock     *sidebar;
 LeLayoutBlock     *main_content;
 
 bool_t             g_working             = TRUE;
 bool_t             g_sidebar_on_right    = TRUE;
 
+status_t set_current_lestate(LeLayoutBlock *block, int id) {
+	QueueNode     *tmp_node;
+	LeState       *tmp_state;
+
+
+	NULLPTR_PREVENT(block, LESTATUS_NPTR)
+	NULLPTR_PREVENT(block->states, LESTATUS_NPTR)
+
+	tmp_node = block->states->first;
+
+	while (tmp_node != nullptr) {
+		if (tmp_node->data == nullptr) {
+			continue;
+		}
+	
+		tmp_state = (LeState *)tmp_node->data;
+	
+		if (tmp_state->id == id) {
+			block->current_state = tmp_state;
+			return LESTATUS_OK;
+		}
+
+		tmp_node = tmp_node->next;
+	}
+
+	return LESTATUS_NFND;
+}
 
 void layout_update() {
 	int            size_y, size_x;
@@ -43,7 +68,7 @@ void layout_update() {
 	}
 }
 
-void sidebar_update() {
+void sidebar_default_update() {
 	int            x, y;
 
 
@@ -78,12 +103,12 @@ void sidebar_update() {
 	wrefresh(sidebar->win);
 }
 
-void sidebar_handle(int ch) {
+void sidebar_default_handle(int ch) {
 	SidebarData   *data;
+	int            tmp_id;
 
 
 	data = (SidebarData *)sidebar->current_state->data;
-
 
 	switch (ch) {
 		case KEY_RESIZE: {
@@ -91,13 +116,21 @@ void sidebar_handle(int ch) {
 			break;
 		}
 		case KEY_UP: {
-			// s_dec(tmp, _mcsid_BEGIN + 1, _mcsid_END - 1);
-			sidebar->current_state->update();
+			tmp_id = main_content->current_state->id;
+			cyclic_dec(tmp_id, _mcsid_BEGIN + 1, _mcsid_END - 1);
+			if (set_current_lestate(main_content, tmp_id) == LESTATUS_OK) {
+				main_content->current_state->update();
+				sidebar->current_state->update();
+			}
 			break;
 		}
 		case KEY_DOWN: {
-			// s_inc(tmp, _mcsid_BEGIN + 1, _mcsid_END - 1);
-			sidebar->current_state->update();
+			tmp_id = main_content->current_state->id;
+			cyclic_inc(tmp_id, _mcsid_BEGIN + 1, _mcsid_END - 1);
+			if (set_current_lestate(main_content, tmp_id) == LESTATUS_OK) {
+				main_content->current_state->update();
+				sidebar->current_state->update();
+			}
 			break;
 		}
 	}
@@ -188,8 +221,8 @@ status_t sidebar_init() {
 	data = (SidebarData *)malloc(sizeof(SidebarData));
 	lestate = (LeState *)malloc(sizeof(LeState));
 	lestate->id = ssid_DEFAULT;
-	lestate->update = sidebar_update;
-	lestate->handle = sidebar_handle;
+	lestate->update = sidebar_default_update;
+	lestate->handle = sidebar_default_handle;
 	lestate->data = data;
 	lestate->name = SidebarStateIDs_REPR(lestate->id);
 	lestate->data_destruct = sidebardata_delete;
