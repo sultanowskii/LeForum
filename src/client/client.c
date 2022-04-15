@@ -1,9 +1,11 @@
 #include "client/client.h"
 
-bool_t             g_working           = TRUE;
+LeLayoutBlock     *sidebar;
+LeLayoutBlock     *main_content;
+
+bool_t             g_working             = TRUE;
 bool_t             g_sidebar_on_right    = TRUE;
-LeLayoutBlock      *sidebar;
-LeLayoutBlock      *main_content;
+
 
 void layout_update() {
 	int            size_y, size_x;
