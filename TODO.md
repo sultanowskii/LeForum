@@ -30,7 +30,6 @@
 
 #### Client
 - [x] cleanup() improvements, checking if already cleaned or not
-- [ ] Meta context (for is_cleaned, sidebar_on_right, etc.)
 - [x] Function definitions in headers
 - [x] Comments
 - [x] Enum for color pairs

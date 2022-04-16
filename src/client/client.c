@@ -6,6 +6,8 @@ LeLayoutBlock     *main_content;
 bool_t             g_working             = TRUE;
 bool_t             g_sidebar_on_right    = TRUE;
 
+struct arguments arguments;
+
 status_t set_current_lestate(LeLayoutBlock *block, int id) {
 	QueueNode     *tmp_node;
 	LeState       *tmp_state;
@@ -272,6 +274,12 @@ status_t lelayoutblocks_init() {
 	main_content_init();
 }
 
+status_t load_args(int argc, char **argv) {
+	arguments.no_color = FALSE;
+
+	argp_parse(&le_argp, argc, argv, 0, 0, &arguments);
+}
+
 status_t startup() {
 	signal(SIGTERM, stop_program_handle);
 	signal(SIGINT, stop_program_handle);
@@ -290,8 +298,10 @@ status_t startup() {
 	noecho();
 	/* Hides cursor */
 	curs_set(0);
-	/* Starts using colors, helpful for --no-color implementation :) */
-	start_color();
+	/* Starts using colors, if --no-color is not provided */
+	if (!arguments.no_color) {
+		start_color();
+	}
 	/* Prevents getch() blocking */
 	nodelay(stdscr, TRUE);
 	/* For CTRL+KEY */
@@ -337,6 +347,8 @@ status_t main(size_t argc, char **argv) {
 	int                 ch;
 	int                 tmp_y, tmp_x;
 
+
+	load_args(argc, argv);
 
 	startup();
 

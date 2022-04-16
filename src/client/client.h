@@ -20,6 +20,7 @@
 
 #include "client/state.h"
 #include "client/layout.h"
+#include "client/arg.h"
 
 #define ctrl(ch) ((ch) & 0x1f)
 

@@ -1,8 +1,8 @@
 #include "lib/status.h"
 
-const char *get_lestatus_string_repr(status_t status) {
+inline const char *get_lestatus_string_repr(status_t status) {
 	switch (status) {
-		case LESTATUS_OK: return "OK";
+		case LESTATUS_OK:   return "OK";
 		case LESTATUS_CLIB: return "CLIB";
 		case LESTATUS_NSFD: return "NSFD";
 		case LESTATUS_EXST: return "EXST";
