@@ -29,11 +29,6 @@
 - [x] Test for messages
 
 #### Client
-- [x] cleanup() improvements, checking if already cleaned or not
-- [x] Function definitions in headers
-- [x] Comments
-- [x] Enum for color pairs
-- [x] Switching current state (and then call it in sidebar_handle())
 
 ### Global features
 #### Server
@@ -43,8 +38,6 @@
 #### Client
 - [ ] Query processing
 - [ ] Arguments
-- [ ] TUI
 - [ ] Tokens logic
 - [ ] Customisation
-- [ ] Documentation
 - [ ] Tests
