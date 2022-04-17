@@ -1,7 +1,7 @@
 CFLAGS = -I.
 
 LIBS_SERVER = -pthread
-LIBS_CLIENT = -pthread -lncurses
+LIBS_CLIENT = -pthread
 
 LIB_FILES_SERVER = $(wildcard lib/*.c server/core/*.c server/*.c)
 LIB_FILES_CLIENT = $(wildcard lib/*.c client/*.c)
