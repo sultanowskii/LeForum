@@ -18,6 +18,18 @@
 
 #include "client/arg.h"
 
+/**
+ * @brief Main command list 
+ * 
+ */
+enum MainCmdIDs {
+	_mcid_BEGIN,
+	mcid_SERVER,
+	mcid_THREAD,
+	mcid_SETTINGS,
+	mcid_EXIT,
+	_mcid_END
+};
 
 /**
  * @brief Initialises program 
@@ -39,5 +51,10 @@ status_t cleanup();
  * @param Singnum
  */
 void stop_program_handle(const int signum);
+
+/**
+ * @brief Prints main menu 
+ */
+void print_main_menu();
 
 status_t main(size_t argc, char **argv);
