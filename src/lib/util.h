@@ -1,5 +1,11 @@
 #pragma once
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "lib/status.h"
+
 /**
  * @brief Returns maximum between two given arguments. 
  * 
@@ -23,3 +29,12 @@
  * 
  */
 #define cyclic_dec(x, min, max) x = ((x - 1) >= (min)) ? (x - 1) : (max)
+
+/**
+ * @brief fgets() wrapper that adds 0 in the end. 
+ * 
+ * @param s Data pointer where input will be stored
+ * @param n Max amounts to read 
+ * @return Size of read data 
+ */
+size_t s_fgets(char *s, size_t n);

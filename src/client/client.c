@@ -3,7 +3,11 @@
 bool_t             g_working             = TRUE;
 bool_t             g_connected           = FALSE;
 
+struct sockaddr_in g_server_addr = {0};
+int                g_server_fd = nullptr;
+
 struct arguments   arguments;
+
 
 const char *MainCmdID_REPR(enum MainCmdIDs id) {
 	switch (id) {
@@ -17,7 +21,7 @@ const char *MainCmdID_REPR(enum MainCmdIDs id) {
 
 const char *ServerCmdID_REPR(enum ServerCmdIDs id) {
 	switch (id) {
-		case scid_CONNECT_DISCONNECT:  return g_connected ? "Connect" : "Disconnect";
+		case scid_CONNECT_DISCONNECT:  return g_connected ? "Disconnect" : "Connect";
 		case scid_HISTORY:             return "Server history";
 		case scid_BACK:                return "Back";
 		default:                       return LESTATUS_NFND;
@@ -88,6 +92,8 @@ inline void print_prefix_main() {
 status_t startup() {
 	signal(SIGTERM, stop_program_handle);
 	signal(SIGINT, stop_program_handle);
+
+	signal(SIGPIPE, SIG_IGN);
 }
 
 status_t cleanup() {
@@ -106,12 +112,66 @@ void cmd_server() {
 		cmd_id = leclient_loop_process(print_menu_server, print_prefix_server);
 
 		switch (cmd_id) {
-			case scid_CONNECT_DISCONNECT:   return;
-			case scid_HISTORY:              return;
-			case scid_BACK:                 return;
+			case scid_CONNECT_DISCONNECT:   g_connected ? cmd_server_disconnect() : cmd_server_connect(); continue;
+			case scid_HISTORY:              continue;
+			case scid_BACK:                 continue;
 			default:                        puts("Command not found");
 		}
 	}
+}
+
+void cmd_server_connect() {
+	char                tmp_port[128];
+	char                tmp_addr[128];
+	size_t              tmp_size;
+
+	uint16_t            port;
+
+
+	puts("Enter address of the server.");
+	print_prefix_server();
+
+	s_fgets(tmp_addr, 128);
+
+	puts("Enter port of the server.");
+	print_prefix_server();
+
+	s_fgets(tmp_port, 128);
+
+	port = atoi(tmp_port);
+
+	if (port < 0 || port > 0xffff) {
+		puts("Invalid port. Aborted.");
+		return;
+	}
+
+	if ((g_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		perror("Error occured during socket()");
+		return;
+	}
+
+	printf("%s:%hd\n", tmp_addr, port);
+
+	g_server_addr.sin_family = AF_INET;
+	g_server_addr.sin_port = htons(port);
+
+	if (inet_pton(AF_INET, tmp_addr, &g_server_addr.sin_addr) <= 0) {
+		puts("Invalid address is provided. Aborted.");
+		return;
+	}
+
+	if (connect(g_server_fd, (struct sockaddr *)&g_server_addr, sizeof(struct sockaddr_in)) < 0) {
+		perror("Error occured during connect()");
+		return;
+	}
+
+	/* TODO: create pthread and run conversation there */
+	g_connected = TRUE;
+}
+
+void cmd_server_disconnect() {
+	close(g_server_fd);
+	g_connected = FALSE;
 }
 
 void cmd_thread() {
@@ -122,10 +182,10 @@ void cmd_thread() {
 		cmd_id = leclient_loop_process(print_menu_thread, print_prefix_thread);
 
 		switch (cmd_id) {
-			case tcid_INFO:                 return;
-			case tcid_MESSAGES:             return;
-			case tcid_POST_MESSAGE:         return;
-			case tcid_BACK:                 return;
+			case tcid_INFO:                 continue;
+			case tcid_MESSAGES:             continue;
+			case tcid_POST_MESSAGE:         continue;
+			case tcid_BACK:                 continue;
 			default:                        puts("Command not found");
 		}
 	}
@@ -139,16 +199,20 @@ void cmd_settings() {
 		cmd_id = leclient_loop_process(print_menu_settings, print_prefix_settings);
 
 		switch (cmd_id) {
-			case stgcid_BACK:               return;
+			case stgcid_BACK:               continue;
 			default:                        puts("Command not found");
 		}
 	}
-	
+
 }
 
 void cmd_exit() {
+	if (g_connected) {
+		close(g_server_fd);
+	}
 	cleanup();
-	exit(0);	
+
+	exit(0);
 }
 
 int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
@@ -160,14 +224,8 @@ int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
 
 	print_menu();
 	print_prefix();
-	
-	fgets(tmp, 127, stdin);
-	
-	tmp_size = strlen(tmp);
-	if (tmp_size >= 128) {
-		tmp_size = 127;
-	}
-	tmp[tmp_size] = '\0';
+
+	s_fgets(tmp, 128);
 
 	cmd_id = atoi(tmp);
 

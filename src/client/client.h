@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <signal.h>
 
+#include <unistd.h>
+
 #include <pthread.h>
 
 #include <sys/socket.h>
@@ -66,6 +68,8 @@ enum SettingsCmdIDs {
 	_stgcid_END,
 };
 
+
+/* ---- Command string representators ----- */
 /**
  * @brief Returns string representation of main command with provided id. 
  * 
@@ -97,6 +101,7 @@ const char *ThreadCmdID_REPR(enum ThreadCmdIDs id);
  * @return Command string representation. LESTATUS_NFND is returned if there is no such command with given id
  */
 const char *SettingsCmdID_REPR(enum SettingsCmdIDs id);
+/* ---------------------------------------- */
 
 
 /**
@@ -120,6 +125,8 @@ status_t cleanup();
  */
 void stop_program_handle(const int signum);
 
+
+/* ------------ Menu printers-------------- */
 /**
  * @brief Prints server menu. 
  * 
@@ -143,7 +150,10 @@ void print_menu_settings();
  * 
  */
 void print_menu_main();
+/* ---------------------------------------- */
 
+
+/* ---------------- Prefix ---------------- */
 /**
  * @brief Prints server prefix before user input
  * 
@@ -167,12 +177,27 @@ void print_prefix_settings();
  * 
  */
 void print_prefix_main();
+/* ---------------------------------------- */
 
+
+/* -------------- Commands ---------------- */
 /**
  * @brief Processes Server commands. 
  * 
  */
 void cmd_server();
+
+/**
+ * @brief Connects to the server
+ * 
+ */
+void cmd_server_connect();
+
+/**
+ * @brief Disconnects from the current server
+ * 
+ */
+void cmd_server_disconnect();
 
 /**
  * @brief Processes Thread commands.
@@ -191,6 +216,8 @@ void cmd_settings();
  * 
  */
 void cmd_exit();
+/* ---------------------------------------- */
+
 
 /**
  * @brief Prints all the menues and stuff, then reads command from user. 
