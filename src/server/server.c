@@ -126,9 +126,8 @@ Queue * lethread_find(char *topic_part, size_t topic_part_size) {
 
 	while (node != NULL) {
 		lethread = ((SharedPtr *)node->data)->data;
-		if (strstr(lethread->topic, topic_part) != NULL) {
+		if (strstr(lethread->topic, topic_part) != NULL)
 			queue_push(lethreads_match, sharedptr_add(node->data), sizeof(SharedPtr));
-		}
 		node = node->next;
 	}
 
@@ -249,13 +248,11 @@ size_t startup() {
 	while ((dent = readdir(srcdir)) != NULL) {
 		struct stat st;
 
-		if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0) {
+		if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0)
 			continue;
-		}
 
-		if (fstatat(dirfd(srcdir), dent->d_name, &st, 0) < 0) {
+		if (fstatat(dirfd(srcdir), dent->d_name, &st, 0) < 0)
 			continue;
-		}
 
 		if (S_ISDIR(st.st_mode)) {
 			lethread = (LeThread *)malloc(sizeof(LeThread));
@@ -366,9 +363,9 @@ void * handle_client(void *arg) {
 	while (!program_on_finish) {
 		recv(client_info->fd, &cl_expected_data_size, sizeof(cl_expected_data_size), NULL);
 		/* Explicitly prevent overflowing and */
-		if (cl_expected_data_size > MAX_PACKET_SIZE) {
+		if (cl_expected_data_size > MAX_PACKET_SIZE)
 			goto CLIENT_HANDLER_ERR;
-		}
+
 		cl_data_size = recv(client_info->fd, cl_data, cl_expected_data_size, NULL);
 
 		/* Timeout/connection closed */
@@ -457,9 +454,8 @@ status_t main(int argc, char *argv[]) {
 
 	startup();
 
-	if (arguments.hello_message != nullptr && strlen(arguments.hello_message) > 0) {
+	if (arguments.hello_message != nullptr && strlen(arguments.hello_message) > 0)
 		puts(arguments.hello_message);
-	}
 
 	if (pthread_create(&lethread_query_manager_thread, NULL, lethread_query_manage, NULL) != 0) {
 		perror("failed to start lethread query manager");

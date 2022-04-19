@@ -82,9 +82,8 @@ void * queue_pop(Queue *queue) {
 
 	first = queue->first;
 
-	if (queue_is_empty(queue) == TRUE) {
+	if (queue_is_empty(queue) == TRUE)
 		return nullptr;
-	}
 
 	/* Retrieve data to return */
 	data = first->data;
@@ -96,9 +95,8 @@ void * queue_pop(Queue *queue) {
 	first = nullptr;
 
 	/* If Queue is empty, the last element has to point to nullptr */
-	if (queue_is_empty(queue) == TRUE) {
+	if (queue_is_empty(queue) == TRUE)
 		queue->last = nullptr;
-	}
 
 	queue->size--;
 

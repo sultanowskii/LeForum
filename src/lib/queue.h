@@ -53,7 +53,7 @@ status_t           queue_push(Queue *queue, void *data, size_t size);
  * @brief Retrieves the first element and deletes it from the Queue. 
  * 
  * @param queue Pointer to Queue to pop element from 
- * @return Pointer to the popped data 
+ * @return Pointer to the popped data. nullptr if queue is empty 
  */
 void *             queue_pop(Queue *queue);
 

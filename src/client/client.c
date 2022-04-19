@@ -106,13 +106,11 @@ void load_server_addr_history() {
 
 	file = get_leclient_file(FILENAME_SERVERS, "r", FALSE);
 
-	if (file == LESTATUS_NSFD) {
+	if (file == LESTATUS_NSFD)
 		return;
-	}
 
-	if (g_server_addr_history != nullptr) {
+	if (g_server_addr_history != nullptr)
 		queue_delete(g_server_addr_history);
-	}
 
 	/* ServerAddress structure doesn't require any special clearing */
 	g_server_addr_history = queue_create(free);
@@ -160,30 +158,26 @@ status_t __server_connect(const char *addr, uint16_t port) {
 
 inline void print_menu_server() {
 	puts("Available server commands:");
-	for (enum ServerCmdIDs scid = _scid_BEGIN + 1; scid < _scid_END; scid++) {
+	for (enum ServerCmdIDs scid = _scid_BEGIN + 1; scid < _scid_END; scid++)
 		printf("%d - %s\n", scid, ServerCmdID_REPR(scid));
-	}
 }
 
 inline void print_menu_thread() {
 	puts("Available thread commands:");
-	for (enum ThreadCmdIDs tcid = _tcid_BEGIN + 1; tcid < _tcid_END; tcid++) {
+	for (enum ThreadCmdIDs tcid = _tcid_BEGIN + 1; tcid < _tcid_END; tcid++)
 		printf("%d - %s\n", tcid, ThreadCmdID_REPR(tcid));
-	}
 }
 
 inline void print_menu_settings() {
 	puts("Available settings commands:");
-	for (enum SettingsCmdIDs stgcid = _stgcid_BEGIN + 1; stgcid < _stgcid_END; stgcid++) {
+	for (enum SettingsCmdIDs stgcid = _stgcid_BEGIN + 1; stgcid < _stgcid_END; stgcid++)
 		printf("%d - %s\n", stgcid, SettingsCmdID_REPR(stgcid));
-	}
 }
 
 inline void print_menu_main() {
 	puts("Available commands:");
-	for (enum MainCmdIDs mcid = _mcid_BEGIN + 1; mcid < _mcid_END; mcid++) {
+	for (enum MainCmdIDs mcid = _mcid_BEGIN + 1; mcid < _mcid_END; mcid++)
 		printf("%d - %s\n", mcid, MainCmdID_REPR(mcid));
-	}
 }
 
 inline void print_prefix_server() {
@@ -210,9 +204,8 @@ status_t startup() {
 }
 
 status_t cleanup() {
-	if (g_connected) {
+	if (g_connected)
 		close(g_server_fd);
-	}
 
 	return LESTATUS_OK;
 }

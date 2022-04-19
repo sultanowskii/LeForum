@@ -10,9 +10,8 @@ size_t s_fgets(char *s, size_t n, FILE* fd) {
 	}
 
 	size = strlen(s);
-	if (size >= n) {
+	if (size >= n)
 		size = n - 1;
-	}
 
 	s[size - 1] = '\0';
 

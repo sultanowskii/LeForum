@@ -73,9 +73,8 @@ LeMessage * lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_
 
 	length = strlen(text);
 
-	if (length < MIN_MESSAGE_SIZE || length > MAX_MESSAGE_SIZE) {
+	if (length < MIN_MESSAGE_SIZE || length > MAX_MESSAGE_SIZE)
 		return LESTATUS_IDAT;
-	}
 
 	new_lemessage = (LeMessage *)malloc(sizeof(LeMessage));
 
@@ -137,6 +136,7 @@ status_t leauthor_delete(LeAuthor *author) {
 		free(author->token);
 		author->token = nullptr;
 	}
+
 	free(author);
 	author = nullptr;
 
@@ -161,16 +161,16 @@ FILE * get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t creat
 
 	/* Check if the directory exists */
 	if (stat(path, &st) == -1) {
-		if (!create) return LESTATUS_NSFD;
+		if (!create)
+			return LESTATUS_NSFD;
 		mkdir(path, 0700);
 	}
 
 	strcat(path, filename);
 
 	/* Check if the file exists */
-	if (stat(path, &st) == -1 && !create) {
+	if (stat(path, &st) == -1 && !create)
 		return LESTATUS_NSFD;
-	}
 
 	file = fopen(path, mode);
 
@@ -215,9 +215,8 @@ status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
 
 	lethread_info_file = get_lefile(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
 
-	if (lethread_info_file == LESTATUS_NSFD || lethread_info_file == LESTATUS_NPTR) {
+	if (lethread_info_file == LESTATUS_NSFD || lethread_info_file == LESTATUS_NPTR)
 		return lethread_info_file;
-	}
 
 	lethread->messages = queue_create(lemessage_delete);
 	lethread->author = nullptr;
@@ -312,9 +311,8 @@ status_t lemessages_load(LeThread *lethread) {
 	NULLPTR_PREVENT(lethread->messages, LESTATUS_NPTR)
 
 	lemessages_file = get_lefile(lethread->id, "rb", FILENAME_LEMESSAGES, FALSE);
-	if (lemessages_file == LESTATUS_NSFD || lemessages_file == LESTATUS_NPTR) {
+	if (lemessages_file == LESTATUS_NSFD || lemessages_file == LESTATUS_NPTR)
 		return lemessages_file;
-	}
 
 	for (size_t i = 0; i < lethread_message_count(lethread); ++i) {
 		lemessage = (LeMessage *)malloc(sizeof(LeMessage));
@@ -345,9 +343,8 @@ status_t leauthor_load(LeThread *lethread) {
 	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
 
 	leauthor_file = get_lefile(lethread->id, "rb", FILENAME_LEAUTHOR, FALSE);
-	if (leauthor_file == LESTATUS_NSFD) {
+	if (leauthor_file == LESTATUS_NSFD)
 		return LESTATUS_NSFD;
-	}
 
 	leauthor = leauthor_create(lethread, FALSE);
 
@@ -386,9 +383,7 @@ bool_t is_token_valid(LeThread *lethread, const char *token) {
 	NULLPTR_PREVENT(lethread->author->token, LESTATUS_NPTR)
 	NULLPTR_PREVENT(token, LESTATUS_NPTR)
 
-	if (strncmp(lethread->author->token, token, TOKEN_SIZE) != 0) {
+	if (strncmp(lethread->author->token, token, TOKEN_SIZE) != 0)
 		return FALSE;
-	}
-
 	return TRUE;
 }
