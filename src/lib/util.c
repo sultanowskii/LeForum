@@ -1,13 +1,12 @@
 #include "lib/util.h"
 
-size_t s_fgets(char *s, size_t n) {
+size_t s_fgets(char *s, size_t n, FILE* fd) {
 	size_t    size;
 
-	if (fgets(s, n - 1, stdin) == NULL) {
+	if (fgets(s, n - 1, fd) == NULL) {
 		/* Here we're preventing infinite loops if CTRL+D (aka EOF) is pressed */
 		clearerr(stdin);
-		printf("\n");
-		return LESTATUS_IDAT;
+		return LESTATUS_CLIB;
 	}
 
 	size = strlen(s);

@@ -1,17 +1,15 @@
 #pragma ocnce
 
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <signal.h>
-
 #include <unistd.h>
-
-#include <pthread.h>
-
-#include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
 
 #include "lib/constants.h"
 #include "lib/queue.h"
@@ -19,6 +17,8 @@
 #include "lib/util.h"
 
 #include "client/arg.h"
+
+#define FILENAME_SERVERS ".leservers"
 
 /**
  * @brief Main command list. 
@@ -68,6 +68,12 @@ enum SettingsCmdIDs {
 	_stgcid_END,
 };
 
+
+struct ServerAddress {
+	char      addr[32];
+	uint16_t  port
+};
+typedef struct ServerAddress ServerAddress;
 
 /* ---- Command string representators ----- */
 /**
@@ -125,6 +131,14 @@ status_t cleanup();
  */
 void stop_program_handle(const int signum);
 
+/**
+ * @brief Inner connection to the server. 
+ * 
+ * @param addr Server addr
+ * @param port Server port 
+ * @return LESTATUS_OK on success. LESTATUS_CLIB if one of built-in functions failed. LESTATUS_IDAT if bad addr or port provdided 
+ */
+status_t __server_connect(const char *addr, uint16_t port);
 
 /* ------------ Menu printers-------------- */
 /**
@@ -200,6 +214,12 @@ void cmd_server_connect();
 void cmd_server_disconnect();
 
 /**
+ * @brief Prints server addresses history 
+ * 
+ */
+void cmd_server_history();
+
+/**
  * @brief Processes Thread commands.
  * 
  */
@@ -218,6 +238,29 @@ void cmd_settings();
 void cmd_exit();
 /* ---------------------------------------- */
 
+/**
+ * @brief Saves server addr in the file. 
+ * 
+ * @param addr Server addr 
+ * @param port Server port  
+ */
+void save_server_addr(const char *addr, uint16_t port);
+
+/**
+ * @brief Loads server addr history from the file. 
+ * 
+ */
+void load_server_addr_history();
+
+/**
+ * @brief Get the leclient file. Wrapper over fopen 
+ * 
+ * @param filename Filename 
+ * @param mode Mode
+ * @param create To create file if not found or not?
+ * @return FD on success. LESTATUS_NSFD if file doesn't exist and create==FALSE 
+ */
+FILE * get_leclient_file(const char *filename, const char *mode, bool_t create);
 
 /**
  * @brief Prints all the menues and stuff, then reads command from user. 

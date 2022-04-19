@@ -35,6 +35,7 @@
  * 
  * @param s Data pointer where input will be stored
  * @param n Max amounts to read 
- * @return Size of read data 
+ * @param fd File descriptor to read from 
+ * @return Size of read data on success. LESTATUS_CLIB is retured if fgets() failed  
  */
-size_t s_fgets(char *s, size_t n);
+size_t s_fgets(char *s, size_t n, FILE* fd);

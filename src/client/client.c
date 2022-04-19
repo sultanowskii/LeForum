@@ -1,12 +1,14 @@
 #include "client/client.h"
 
-bool_t             g_working             = TRUE;
-bool_t             g_connected           = FALSE;
+bool_t             g_working                = TRUE;
+bool_t             g_connected              = FALSE;
 
-struct sockaddr_in g_server_addr = {0};
-int                g_server_fd = nullptr;
+struct sockaddr_in g_server_addr            = {0};
+int                g_server_fd              = nullptr;
 
 struct arguments   arguments;
+
+Queue*             g_server_addr_history    = nullptr;
 
 
 const char *MainCmdID_REPR(enum MainCmdIDs id) {
@@ -49,25 +51,136 @@ status_t load_args(int argc, char **argv) {
 	argp_parse(&le_argp, argc, argv, 0, 0, &arguments);
 }
 
+FILE * get_leclient_file(const char *filename, const char *mode, bool_t create) {
+	FILE          *file;
+	char          *tmp;
+	size_t         tmp_size;
+	char          *home_dir;
+	struct stat    st             = {0};
+
+
+	home_dir = getenv("HOME");
+	tmp_size = strlen(home_dir);
+	tmp = malloc(tmp_size + strlen(filename) + 8);
+	memset(tmp, 0, tmp_size + strlen(filename) + 8);
+
+	strncpy(tmp, home_dir, tmp_size);
+	strcat(tmp, "/");
+	strcat(tmp, filename);
+
+	if (stat(tmp, &st) < 0 && !create) {
+		free(tmp);
+		return LESTATUS_NSFD;
+	}
+
+	file = fopen(tmp, mode);
+
+	free(tmp);
+
+	return file;
+}
+
+void save_server_addr(const char *addr, uint16_t port) {
+	FILE          *file;
+
+
+	file = get_leclient_file(FILENAME_SERVERS, "a", FALSE);
+
+	fprintf(file, "%s %hd\n", addr, port);
+
+	fclose(file);
+}
+
+void load_server_addr_history() {
+	FILE          *file;
+
+	char           tmp[64];
+
+	char           addr[32];
+	uint16_t       port;
+
+	size_t         bytes_read;
+
+	ServerAddress *tmp_server_addr;
+
+
+	file = get_leclient_file(FILENAME_SERVERS, "r", FALSE);
+
+	if (file == LESTATUS_NSFD) {
+		return;
+	}
+
+	if (g_server_addr_history != nullptr) {
+		queue_delete(g_server_addr_history);
+	}
+
+	/* ServerAddress structure doesn't require any special clearing */
+	g_server_addr_history = queue_create(free);
+
+	while ((int64_t)(bytes_read = s_fgets(tmp, 64, file)) > 0) {
+		sscanf(tmp, "%s %hd", &addr, &port);
+
+		tmp_server_addr = (ServerAddress *)malloc(sizeof(*tmp_server_addr));
+
+		strncpy(tmp_server_addr->addr, addr, 32);
+		tmp_server_addr->port = port;
+
+		queue_push(g_server_addr_history, tmp_server_addr, sizeof(*tmp_server_addr));		
+    }
+
+	fclose(file);
+}
+
+status_t __server_connect(const char *addr, uint16_t port) {
+	if (port < 0 || port > 0xffff) {
+		puts("Invalid port. Aborted.");
+		return LESTATUS_IDAT;
+	}
+
+	if ((g_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		perror("Error occured during socket()");
+		return LESTATUS_CLIB;
+	}
+
+	g_server_addr.sin_family = AF_INET;
+	g_server_addr.sin_port = htons(port);
+
+	if (inet_pton(AF_INET, addr, &g_server_addr.sin_addr) <= 0) {
+		puts("Invalid addr is provided. Aborted.");
+		return LESTATUS_IDAT;
+	}
+
+	if (connect(g_server_fd, (struct sockaddr *)&g_server_addr, sizeof(struct sockaddr_in)) < 0) {
+		perror("Error occured during connect()");
+		return LESTATUS_CLIB;
+	}
+
+	return LESTATUS_OK;
+}
+
 inline void print_menu_server() {
+	puts("Available server commands:");
 	for (enum ServerCmdIDs scid = _scid_BEGIN + 1; scid < _scid_END; scid++) {
 		printf("%d - %s\n", scid, ServerCmdID_REPR(scid));
 	}
 }
 
 inline void print_menu_thread() {
+	puts("Available thread commands:");
 	for (enum ThreadCmdIDs tcid = _tcid_BEGIN + 1; tcid < _tcid_END; tcid++) {
 		printf("%d - %s\n", tcid, ThreadCmdID_REPR(tcid));
 	}
 }
 
 inline void print_menu_settings() {
+	puts("Available settings commands:");
 	for (enum SettingsCmdIDs stgcid = _stgcid_BEGIN + 1; stgcid < _stgcid_END; stgcid++) {
 		printf("%d - %s\n", stgcid, SettingsCmdID_REPR(stgcid));
 	}
 }
 
 inline void print_menu_main() {
+	puts("Available commands:");
 	for (enum MainCmdIDs mcid = _mcid_BEGIN + 1; mcid < _mcid_END; mcid++) {
 		printf("%d - %s\n", mcid, MainCmdID_REPR(mcid));
 	}
@@ -97,6 +210,10 @@ status_t startup() {
 }
 
 status_t cleanup() {
+	if (g_connected) {
+		close(g_server_fd);
+	}
+
 	return LESTATUS_OK;
 }
 
@@ -113,65 +230,69 @@ void cmd_server() {
 
 		switch (cmd_id) {
 			case scid_CONNECT_DISCONNECT:   g_connected ? cmd_server_disconnect() : cmd_server_connect(); continue;
-			case scid_HISTORY:              continue;
+			case scid_HISTORY:              cmd_server_history(); continue;
 			case scid_BACK:                 continue;
-			default:                        puts("Command not found");
+			default:                        puts("Command not found."); continue;
 		}
 	}
 }
 
 void cmd_server_connect() {
-	char                tmp_port[128];
-	char                tmp_addr[128];
+	char                tmp_port[32];
+	char                tmp_addr[32];
 	size_t              tmp_size;
 
 	uint16_t            port;
 
 
-	puts("Enter address of the server.");
+	puts("Enter addr of the server.");
 	print_prefix_server();
 
-	s_fgets(tmp_addr, 128);
+	if ((int64_t)s_fgets(tmp_addr, sizeof(tmp_addr), stdin) < 0)
+		printf("\n");
+	
 
 	puts("Enter port of the server.");
 	print_prefix_server();
 
-	s_fgets(tmp_port, 128);
+	if ((int64_t)s_fgets(tmp_port, sizeof(tmp_port), stdin) < 0)
+		printf("\n");
 
 	port = atoi(tmp_port);
 
-	if (port < 0 || port > 0xffff) {
-		puts("Invalid port. Aborted.");
+	if (__server_connect(tmp_addr, port) != LESTATUS_OK) {
 		return;
 	}
 
-	if ((g_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		perror("Error occured during socket()");
-		return;
-	}
+	save_server_addr(tmp_addr, port);
 
-	printf("%s:%hd\n", tmp_addr, port);
-
-	g_server_addr.sin_family = AF_INET;
-	g_server_addr.sin_port = htons(port);
-
-	if (inet_pton(AF_INET, tmp_addr, &g_server_addr.sin_addr) <= 0) {
-		puts("Invalid address is provided. Aborted.");
-		return;
-	}
-
-	if (connect(g_server_fd, (struct sockaddr *)&g_server_addr, sizeof(struct sockaddr_in)) < 0) {
-		perror("Error occured during connect()");
-		return;
-	}
+	g_connected = TRUE;
 
 	/* TODO: create pthread and run conversation there */
-	g_connected = TRUE;
 }
 
 void cmd_server_disconnect() {
 	close(g_server_fd);
 	g_connected = FALSE;
+}
+
+void cmd_server_history() {
+	QueueNode     *node;
+	ServerAddress *server_addr_tmp;
+	size_t         i = 1;
+	
+
+	load_server_addr_history();
+
+	node = g_server_addr_history->first;
+	
+	while (node != nullptr) {
+		server_addr_tmp = (ServerAddress *)node->data;
+
+		printf("%llu. %s:%hd\n", i++, server_addr_tmp->addr, server_addr_tmp->port);
+
+		node = node->next;
+	}
 }
 
 void cmd_thread() {
@@ -186,7 +307,7 @@ void cmd_thread() {
 			case tcid_MESSAGES:             continue;
 			case tcid_POST_MESSAGE:         continue;
 			case tcid_BACK:                 continue;
-			default:                        puts("Command not found");
+			default:                        puts("Command not found."); continue;
 		}
 	}
 }
@@ -200,18 +321,14 @@ void cmd_settings() {
 
 		switch (cmd_id) {
 			case stgcid_BACK:               continue;
-			default:                        puts("Command not found");
+			default:                        puts("Command not found."); continue;
 		}
 	}
-
 }
 
 void cmd_exit() {
-	if (g_connected) {
-		close(g_server_fd);
-	}
 	cleanup();
-
+	puts("Bye!");
 	exit(0);
 }
 
@@ -225,9 +342,12 @@ int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
 	print_menu();
 	print_prefix();
 
-	s_fgets(tmp, 128);
+	if ((int64_t)s_fgets(tmp, 128, stdin) < 0)
+		printf("\n");
 
 	cmd_id = atoi(tmp);
+
+	printf("\n");
 
 	return cmd_id;
 }
