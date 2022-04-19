@@ -21,7 +21,7 @@ make server
 make client
 ```
 
-Compiled binary/-ies will appear in the **le-forum/src**
+Compiled binary/-ies will appear in the **le-forum/** directory.
 
 ## Contribute
 If you are interested in this project and want to implement a new feature or to fix some bug - feel free to open pull request.
@@ -29,10 +29,7 @@ If you are interested in this project and want to implement a new feature or to 
 ## Support
 First of all, read "--help" manual. For further explanation, go to [docs](docs/README.md).
 
-If you still experience some issues - open issue on github and DM me if you feel that it is necessary.
-
-Contacts: [@sultanowskii](https://t.me/sultanowskii) (Telegram)
+This project is not fully supported (and will get less and less of it as times passes). It's more about getting C experience for me.
 
 ## License
 This project is licensed under GPL-3.0 License.
-
