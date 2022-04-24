@@ -8,14 +8,14 @@ LIB_FILES_CLIENT = $(wildcard lib/*.c client/*.c)
 LIB_FILES_TEST_FORUM_CORE = $(wildcard server/core/forum.c lib/queue.c lib/shared_ptr.c lib/security.c)
 LIB_FILES_TEST_QUEUE = $(wildcard lib/*.c)
 
-server: server/server.c $(LIB_FILES_SERVER)
+c-server: server/server.c $(LIB_FILES_SERVER)
 	$(CC) $(CFLAGS) $^ $(LIBS_SERVER) -o LeForumServer
 
-client: client/client.c $(LIB_FILES_CLIENT)
+c-client: client/client.c $(LIB_FILES_CLIENT)
 	$(CC) $(CFLAGS) $^ $(LIBS_CLIENT) -o LeForumClient
 
-test-forum-core: test/test-forum-core.c $(LIB_FILES_TEST_FORUM_CORE)
+c-test-forum-core: test/test-forum-core.c $(LIB_FILES_TEST_FORUM_CORE)
 	$(CC) $(CFLAGS) $^ $(LIBS_SERVER) -g -o test/LeForumCoreTest
 
-test-queue: test/test-queue.c $(LIB_FILES_TEST_QUEUE)
+c-test-queue: test/test-queue.c $(LIB_FILES_TEST_QUEUE)
 	$(CC) $(CFLAGS) $^ $(LIBS_SERVER) -g -o test/QueueTest

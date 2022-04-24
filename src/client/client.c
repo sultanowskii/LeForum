@@ -116,7 +116,7 @@ void load_server_addr_history() {
 	g_server_addr_history = queue_create(free);
 
 	while ((int64_t)(bytes_read = s_fgets(tmp, 64, file)) > 0) {
-		sscanf(tmp, "%s %hd", &addr, &port);
+		sscanf(tmp, "%s %hd", addr, &port);
 
 		tmp_server_addr = (ServerAddress *)malloc(sizeof(*tmp_server_addr));
 
@@ -282,7 +282,7 @@ void cmd_server_history() {
 	while (node != nullptr) {
 		server_addr_tmp = (ServerAddress *)node->data;
 
-		printf("%llu. %s:%hd\n", i++, server_addr_tmp->addr, server_addr_tmp->port);
+		printf("%zu. %s:%hd\n", i++, server_addr_tmp->addr, server_addr_tmp->port);
 
 		node = node->next;
 	}

@@ -17,8 +17,8 @@ cd le-forum/src
 
 Then compile server/client using following commands:
 ```bash
-make server
-make client
+make c-server
+make c-client
 ```
 
 Compiled binary/-ies will appear in the **le-forum/** directory.
