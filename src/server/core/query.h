@@ -3,7 +3,7 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include "server/core/forum.h"
+#include "lib/forum.h"
 
 #include "server/conf.h"
 

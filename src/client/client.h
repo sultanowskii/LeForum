@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 
 #include "lib/constants.h"
+#include "lib/forum.h"
 #include "lib/queue.h"
 #include "lib/status.h"
 #include "lib/util.h"

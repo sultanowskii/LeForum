@@ -19,7 +19,7 @@
 
 #include "server/arg.h"
 
-#include "server/core/forum.h"
+#include "lib/forum.h"
 #include "server/core/query.h"
 
 #include "lib/communication.h"

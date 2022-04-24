@@ -3,16 +3,16 @@
 bool_t             g_working                = TRUE;
 bool_t             g_connected              = FALSE;
 
-bool_t             g_active_thread_exists   = FALSE;
-uint64_t           g_active_thread_id       = 0;
-char              *g_active_thread_name     = nullptr;
-
 struct sockaddr_in g_server_addr            = {0};
 int                g_server_fd              = nullptr;
+
 size_t             g_min_message_size       = 0;
 size_t             g_max_message_size       = 0;
 size_t             g_min_topic_size         = 0;
 size_t             g_max_topic_size         = 0;
+
+bool_t             g_active_thread_exists   = FALSE;
+uint64_t           g_active_thread_id       = 0;
 
 struct arguments   arguments;
 
@@ -275,7 +275,7 @@ void cmd_server_connect() {
 
 	/* TODO: create pthread and run conversation there */
 
-	/* Send META query and fill g_max_*, g_min_* values */
+	/* TODO: Send META query and fill g_max_*, g_min_* values */
 }
 
 void cmd_server_disconnect() {
@@ -327,10 +327,14 @@ void cmd_thread() {
 
 void cmd_thread_find() {
 	char          *search_query = nullptr;
+	
 	Queue         *found_threads = nullptr;
 	QueueNode     *tmp_node = nullptr;
+	LeThread      *tmp_thread = nullptr;
+
 	size_t         thread_choice_n;
 	char           tmp_buf[64];
+	size_t         cntr = 1;
 
 
 	puts("Search query:");
@@ -342,16 +346,17 @@ void cmd_thread_find() {
 		goto THREAD_FIND_EXIT;
 	}
 
-	/* TODO: Send thread find query */
+	/* TODO: Send FTHR query */
 
 	tmp_node = found_threads->first;
 
 	while (tmp_node != nullptr) {
-		/* 
-		 * TODO: Print thread in a beautiful way, such as:
-		 * 1. How I Did 2+2 Using For() Loop In Java
-		 */
+		tmp_thread = tmp_node->data;
+
+		printf("%zu. %s", cntr, tmp_thread->topic);
+
 		tmp_node = tmp_node->next;
+		cntr++;
 	}
 
 	if (found_threads->size == 0) {
@@ -369,8 +374,19 @@ void cmd_thread_find() {
 			goto THREAD_FIND_EXIT;
 		}
 
+		cntr = 1;
+
+		tmp_node = found_threads->first;
+
+		while (tmp_node != nullptr && cntr < thread_choice_n) {
+			tmp_node = tmp_node->next;
+			cntr++;
+		}
+
+		tmp_thread = tmp_node->data;
+
+		g_active_thread_id = tmp_thread->id;
 		g_active_thread_exists = TRUE;
-		/* TODO: Assign id an name to the global variables */
 	}
 
 THREAD_FIND_EXIT:
@@ -378,9 +394,14 @@ THREAD_FIND_EXIT:
 	found_threads = nullptr;
 	free(search_query);
 	search_query = nullptr;
+	tmp_node = nullptr;
+	tmp_thread = nullptr;
 }
 
 void cmd_thread_info() {
+	LeThread      *tmp_thread;
+
+
 	if (!g_active_thread_exists) {
 		puts("To use this command, choose some thread first!");
 		return;
@@ -388,13 +409,20 @@ void cmd_thread_info() {
 
 	/* TODO: Update information using GTHR query */
 
-	printf("Name: %s\n", g_active_thread_name);
-	printf("ID: %zu\n", g_active_thread_id);
+	printf("Topic: %s\n", tmp_thread->topic);
+	printf("ID: %zu\n", tmp_thread->id);
+	printf("Messages posted: %zu\n", lethread_message_count(tmp_thread));
 
-	/* TODO: print number of messages */
+	lethread_delete(tmp_thread);
+	tmp_thread = nullptr;
 }
 
 void cmd_thread_message_history() {
+	LeThread      *tmp_thread;
+	QueueNode     *tmp_node;
+	LeMessage     *tmp_message;
+
+
 	if (!g_active_thread_exists) {
 		puts("To use this command, choose some thread first!");
 		return;
@@ -402,7 +430,24 @@ void cmd_thread_message_history() {
 
 	/* TODO: update information using GTHR query */
 
-	/* TODO: print messages */
+	tmp_node = tmp_thread->messages->first;
+	
+	while (tmp_node != nullptr) {
+		tmp_message = (LeMessage *)tmp_node->data;
+
+		printf("msg #%zu", tmp_message->id);
+		if (tmp_message->by_lethread_author) 
+			printf(" (OP)");
+		printf(":\n");
+		printf("  %s", tmp_message->text);
+
+		tmp_node = tmp_node->next;
+	}
+
+	lethread_delete(tmp_thread);
+	tmp_thread = nullptr;
+	tmp_node = nullptr;
+	tmp_message = nullptr;
 }
 
 void cmd_thread_send_message() {
@@ -420,7 +465,7 @@ void cmd_thread_send_message() {
 
 	s_fgets(user_message, g_max_message_size, stdin);
 
-	/* TODO: CMSG query */
+	/* TODO: Send CMSG query */
 
 	free(user_message);
 	user_message = nullptr;

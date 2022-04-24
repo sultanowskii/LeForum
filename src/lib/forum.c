@@ -1,4 +1,4 @@
-#include "server/core/forum.h"
+#include "lib/forum.h"
 
 LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	LeThread           *new_lethread;
