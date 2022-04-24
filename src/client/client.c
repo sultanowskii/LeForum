@@ -84,7 +84,10 @@ void save_server_addr(const char *addr, uint16_t port) {
 	FILE          *file;
 
 
-	file = get_leclient_file(FILENAME_SERVERS, "a", FALSE);
+	file = get_leclient_file(FILENAME_SERVERS, "a+", TRUE);
+
+	if (!file)
+		return;
 
 	fprintf(file, "%s %hd\n", addr, port);
 
@@ -250,14 +253,17 @@ void cmd_server_connect() {
 
 	if ((int64_t)s_fgets(tmp_port, sizeof(tmp_port), stdin) < 0)
 		printf("\n");
-
+puts("1");
 	port = atoi(tmp_port);
+puts("2");
 
 	if (__server_connect(tmp_addr, port) != LESTATUS_OK) {
 		return;
 	}
+puts("3");
 
 	save_server_addr(tmp_addr, port);
+puts("4");
 
 	g_connected = TRUE;
 
