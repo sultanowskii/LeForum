@@ -3,8 +3,16 @@
 bool_t             g_working                = TRUE;
 bool_t             g_connected              = FALSE;
 
+bool_t             g_active_thread_exists   = FALSE;
+uint64_t           g_active_thread_id       = 0;
+char              *g_active_thread_name     = nullptr;
+
 struct sockaddr_in g_server_addr            = {0};
 int                g_server_fd              = nullptr;
+size_t             g_min_message_size       = 0;
+size_t             g_max_message_size       = 0;
+size_t             g_min_topic_size         = 0;
+size_t             g_max_topic_size         = 0;
 
 struct arguments   arguments;
 
@@ -32,9 +40,10 @@ const char *ServerCmdID_REPR(enum ServerCmdIDs id) {
 
 const char *ThreadCmdID_REPR(enum ThreadCmdIDs id) {
 	switch (id) {
+		case tcid_FIND:                return "Find thread";
 		case tcid_INFO:                return "Thread info";
 		case tcid_MESSAGES:            return "Message history";
-		case tcid_POST_MESSAGE:        return "Post message";
+		case tcid_SEND_MESSAGE:        return "Post message";
 		case tcid_BACK:                return "Back";
 		default:                       return LESTATUS_NFND;
 	}
@@ -126,7 +135,7 @@ void load_server_addr_history() {
 		strncpy(tmp_server_addr->addr, addr, 32);
 		tmp_server_addr->port = port;
 
-		queue_push(g_server_addr_history, tmp_server_addr, sizeof(*tmp_server_addr));		
+		queue_push(g_server_addr_history, tmp_server_addr, sizeof(*tmp_server_addr));
     }
 
 	fclose(file);
@@ -227,7 +236,7 @@ void cmd_server() {
 		switch (cmd_id) {
 			case scid_CONNECT_DISCONNECT:   g_connected ? cmd_server_disconnect() : cmd_server_connect(); continue;
 			case scid_HISTORY:              cmd_server_history(); continue;
-			case scid_BACK:                 continue;
+			case scid_BACK:                 break;
 			default:                        puts("Command not found."); continue;
 		}
 	}
@@ -246,28 +255,27 @@ void cmd_server_connect() {
 
 	if ((int64_t)s_fgets(tmp_addr, sizeof(tmp_addr), stdin) < 0)
 		printf("\n");
-	
+
 
 	puts("Enter port of the server.");
 	print_prefix_server();
 
 	if ((int64_t)s_fgets(tmp_port, sizeof(tmp_port), stdin) < 0)
 		printf("\n");
-puts("1");
+
 	port = atoi(tmp_port);
-puts("2");
 
 	if (__server_connect(tmp_addr, port) != LESTATUS_OK) {
 		return;
 	}
-puts("3");
 
 	save_server_addr(tmp_addr, port);
-puts("4");
 
 	g_connected = TRUE;
 
 	/* TODO: create pthread and run conversation there */
+
+	/* Send META query and fill g_max_*, g_min_* values */
 }
 
 void cmd_server_disconnect() {
@@ -279,12 +287,12 @@ void cmd_server_history() {
 	QueueNode     *node;
 	ServerAddress *server_addr_tmp;
 	size_t         i = 1;
-	
+
 
 	load_server_addr_history();
 
 	node = g_server_addr_history->first;
-	
+
 	while (node != nullptr) {
 		server_addr_tmp = (ServerAddress *)node->data;
 
@@ -298,17 +306,124 @@ void cmd_thread() {
 	enum ThreadCmdIDs   cmd_id = _tcid_BEGIN;
 
 
+	if (!g_connected) {
+		puts("To see threads, connect to some server first!");
+		return;
+	}
+
 	while (cmd_id != tcid_BACK) {
 		cmd_id = leclient_loop_process(print_menu_thread, print_prefix_thread);
 
 		switch (cmd_id) {
-			case tcid_INFO:                 continue;
-			case tcid_MESSAGES:             continue;
-			case tcid_POST_MESSAGE:         continue;
-			case tcid_BACK:                 continue;
+			case tcid_FIND:                 cmd_thread_find(); continue;
+			case tcid_INFO:                 cmd_thread_info(); continue;
+			case tcid_MESSAGES:             cmd_thread_message_history(); continue;
+			case tcid_SEND_MESSAGE:         cmd_thread_send_message(); continue;
+			case tcid_BACK:                 break;
 			default:                        puts("Command not found."); continue;
 		}
 	}
+}
+
+void cmd_thread_find() {
+	char          *search_query = nullptr;
+	Queue         *found_threads = nullptr;
+	QueueNode     *tmp_node = nullptr;
+	size_t         thread_choice_n;
+	char           tmp_buf[64];
+
+
+	puts("Search query:");
+	print_prefix_thread();
+
+	search_query = malloc(g_max_topic_size + 1);
+
+	if ((int64_t)s_fgets(search_query, g_max_topic_size, stdin) < 0) {
+		goto THREAD_FIND_EXIT;
+	}
+
+	/* TODO: Send thread find query */
+
+	tmp_node = found_threads->first;
+
+	while (tmp_node != nullptr) {
+		/* 
+		 * TODO: Print thread in a beautiful way, such as:
+		 * 1. How I Did 2+2 Using For() Loop In Java
+		 */
+		tmp_node = tmp_node->next;
+	}
+
+	if (found_threads->size == 0) {
+		puts("Nothing found.");
+	}
+	else {
+		printf("Choose the thread number (1-%zu). Type 'r' any other number if you want to return:\n", found_threads->size);
+		print_prefix_thread();
+
+		s_fgets(tmp_buf, sizeof(tmp_buf), stdin);
+
+		thread_choice_n = strtoull(tmp_buf, nullptr, 10);
+
+		if (thread_choice_n < 1 || thread_choice_n > found_threads->size) {
+			goto THREAD_FIND_EXIT;
+		}
+
+		g_active_thread_exists = TRUE;
+		/* TODO: Assign id an name to the global variables */
+	}
+
+THREAD_FIND_EXIT:
+	queue_delete(found_threads);
+	found_threads = nullptr;
+	free(search_query);
+	search_query = nullptr;
+}
+
+void cmd_thread_info() {
+	if (!g_active_thread_exists) {
+		puts("To use this command, choose some thread first!");
+		return;
+	}
+
+	/* TODO: Update information using GTHR query */
+
+	printf("Name: %s\n", g_active_thread_name);
+	printf("ID: %zu\n", g_active_thread_id);
+
+	/* TODO: print number of messages */
+}
+
+void cmd_thread_message_history() {
+	if (!g_active_thread_exists) {
+		puts("To use this command, choose some thread first!");
+		return;
+	}
+
+	/* TODO: update information using GTHR query */
+
+	/* TODO: print messages */
+}
+
+void cmd_thread_send_message() {
+	char          *user_message;
+
+
+	if (!g_active_thread_exists) {
+		puts("To use this command, choose some thread first!");
+		return;
+	}
+
+	user_message = malloc(g_max_message_size + 1);
+
+	printf("Type your message (%zu characters max, no newlines):\n", g_max_message_size);
+
+	s_fgets(user_message, g_max_message_size, stdin);
+
+	/* TODO: CMSG query */
+
+	free(user_message);
+	user_message = nullptr;
 }
 
 void cmd_settings() {
@@ -319,7 +434,7 @@ void cmd_settings() {
 		cmd_id = leclient_loop_process(print_menu_settings, print_prefix_settings);
 
 		switch (cmd_id) {
-			case stgcid_BACK:               continue;
+			case stgcid_BACK:               break;
 			default:                        puts("Command not found."); continue;
 		}
 	}

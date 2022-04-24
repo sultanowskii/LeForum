@@ -51,9 +51,10 @@ enum ServerCmdIDs {
  */
 enum ThreadCmdIDs {
 	_tcid_BEGIN,
+	tcid_FIND,
 	tcid_INFO,
 	tcid_MESSAGES,
-	tcid_POST_MESSAGE,
+	tcid_SEND_MESSAGE,
 	tcid_BACK,
 	_tcid_END,
 };
@@ -224,6 +225,31 @@ void cmd_server_history();
  * 
  */
 void cmd_thread();
+
+/**
+ * @brief Sends FIND query to the connected server with user input. 
+ * Then it prints the result and lets user choose thread to be active. 
+ * 
+ */
+void cmd_thread_find();
+
+/**
+ * @brief Shows active thread info. 
+ * 
+ */
+void cmd_thread_info();
+
+/**
+ * @brief Sends GTHR query and prints message history of the active thread. 
+ * 
+ */
+void cmd_thread_message_history();
+
+/**
+ * @brief Sends (aka posts) user message to the active thread. 
+ * 
+ */ 
+void cmd_thread_send_message();
 
 /**
  * @brief Processes Settings commands. 
