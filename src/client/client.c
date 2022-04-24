@@ -40,6 +40,7 @@ const char *ServerCmdID_REPR(enum ServerCmdIDs id) {
 
 const char *ThreadCmdID_REPR(enum ThreadCmdIDs id) {
 	switch (id) {
+		case tcid_CREATE:              return "Create thread";
 		case tcid_FIND:                return "Find thread";
 		case tcid_INFO:                return "Thread info";
 		case tcid_MESSAGES:            return "Message history";
@@ -315,6 +316,7 @@ void cmd_thread() {
 		cmd_id = leclient_loop_process(print_menu_thread, print_prefix_thread);
 
 		switch (cmd_id) {
+			case tcid_CREATE:               cmd_thread_create(); continue;
 			case tcid_FIND:                 cmd_thread_find(); continue;
 			case tcid_INFO:                 cmd_thread_info(); continue;
 			case tcid_MESSAGES:             cmd_thread_message_history(); continue;
@@ -323,6 +325,26 @@ void cmd_thread() {
 			default:                        puts("Command not found."); continue;
 		}
 	}
+}
+
+void cmd_thread_create() {
+	char          *topic;
+
+	
+	puts("Thread topic:");
+	print_prefix_thread();
+
+	topic = malloc(g_max_topic_size + 1);
+
+	if ((int64_t)s_fgets(topic, g_max_topic_size, stdin) < 0) {
+		goto THREAD_CREATE_EXIT;
+	}
+
+	/* TODO: Send CTHR query, save the token locally */
+
+THREAD_CREATE_EXIT:
+	free(topic);
+	topic = nullptr;
 }
 
 void cmd_thread_find() {
@@ -465,7 +487,7 @@ void cmd_thread_send_message() {
 
 	s_fgets(user_message, g_max_message_size, stdin);
 
-	/* TODO: Send CMSG query */
+	/* TODO: Send CMSG query, trying to load token */
 
 	free(user_message);
 	user_message = nullptr;

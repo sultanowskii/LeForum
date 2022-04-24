@@ -52,6 +52,7 @@ enum ServerCmdIDs {
  */
 enum ThreadCmdIDs {
 	_tcid_BEGIN,
+	tcid_CREATE,
 	tcid_FIND,
 	tcid_INFO,
 	tcid_MESSAGES,
@@ -226,6 +227,12 @@ void cmd_server_history();
  * 
  */
 void cmd_thread();
+
+/**
+ * @brief Create thread and make it active on success.
+ * 
+ */
+void cmd_thread_create();
 
 /**
  * @brief Sends FIND query to the connected server with user input. 
