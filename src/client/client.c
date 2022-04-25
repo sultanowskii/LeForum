@@ -6,17 +6,16 @@ bool_t             g_connected              = FALSE;
 struct sockaddr_in g_server_addr            = {0};
 int                g_server_fd              = nullptr;
 
-size_t             g_min_message_size       = 0;
-size_t             g_max_message_size       = 0;
-size_t             g_min_topic_size         = 0;
-size_t             g_max_topic_size         = 0;
+LeMeta             g_server_meta            = {0};
 
 bool_t             g_active_thread_exists   = FALSE;
 uint64_t           g_active_thread_id       = 0;
 
 struct arguments   arguments;
 
-Queue*             g_server_addr_history    = nullptr;
+Queue             *g_server_addr_history    = nullptr;
+
+Queue             *g_server_queries         = nullptr;
 
 
 const char *MainCmdID_REPR(enum MainCmdIDs id) {
@@ -59,6 +58,14 @@ const char *SettingsCmdID_REPR(enum SettingsCmdIDs id) {
 
 status_t load_args(int argc, char **argv) {
 	argp_parse(&le_argp, argc, argv, 0, 0, &arguments);
+}
+
+/* 
+ * You should delete query by yourself after it is complete.
+ * Don't delete it until query->completed==TRUE, otherwise it might cause null pointer dereference.
+ */
+void server_query_add(ServerQuery *query) {
+	queue_push(g_server_queries, query, sizeof(ServerQuery));
 }
 
 FILE * get_leclient_file(const char *filename, const char *mode, bool_t create) {
@@ -214,12 +221,19 @@ status_t startup() {
 	signal(SIGINT, stop_program_handle);
 
 	signal(SIGPIPE, SIG_IGN);
+
+	g_server_queries = queue_create(free);
 }
 
 status_t cleanup() {
 	if (g_connected)
 		close(g_server_fd);
 
+	if (g_server_queries != nullptr) {
+		queue_delete(g_server_queries);
+		g_server_queries = nullptr;
+	}
+		
 	return LESTATUS_OK;
 }
 
@@ -334,9 +348,9 @@ void cmd_thread_create() {
 	puts("Thread topic:");
 	print_prefix_thread();
 
-	topic = malloc(g_max_topic_size + 1);
+	topic = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((int64_t)s_fgets(topic, g_max_topic_size, stdin) < 0) {
+	if ((int64_t)s_fgets(topic, g_server_meta.max_topic_size, stdin) < 0) {
 		goto THREAD_CREATE_EXIT;
 	}
 
@@ -362,9 +376,9 @@ void cmd_thread_find() {
 	puts("Search query:");
 	print_prefix_thread();
 
-	search_query = malloc(g_max_topic_size + 1);
+	search_query = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((int64_t)s_fgets(search_query, g_max_topic_size, stdin) < 0) {
+	if ((int64_t)s_fgets(search_query, g_server_meta.max_topic_size, stdin) < 0) {
 		goto THREAD_FIND_EXIT;
 	}
 
@@ -481,11 +495,11 @@ void cmd_thread_send_message() {
 		return;
 	}
 
-	user_message = malloc(g_max_message_size + 1);
+	user_message = malloc(g_server_meta.max_message_size + 1);
 
-	printf("Type your message (%zu characters max, no newlines):\n", g_max_message_size);
+	printf("Type your message (%zu characters max, no newlines):\n", g_server_meta.max_message_size);
 
-	s_fgets(user_message, g_max_message_size, stdin);
+	s_fgets(user_message, g_server_meta.max_message_size, stdin);
 
 	/* TODO: Send CMSG query, trying to load token */
 

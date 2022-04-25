@@ -18,6 +18,7 @@
 #include "lib/util.h"
 
 #include "client/arg.h"
+#include "client/query.h"
 
 #define FILENAME_SERVERS ".leservers"
 
@@ -271,6 +272,13 @@ void cmd_settings();
  */
 void cmd_exit();
 /* ---------------------------------------- */
+
+/**
+ * @brief Adds server query to the global query. 
+ * 
+ * @param query Query to send   
+ */
+void server_query_add(ServerQuery *query);
 
 /**
  * @brief Saves server addr in the file. 
