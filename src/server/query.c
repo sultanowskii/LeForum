@@ -1,4 +1,4 @@
-#include "server/core/query.h"
+#include "server/query.h"
 
 LeCommand CMDS[CMD_COUNT] = {
 	{"GTHR", cmd_lethread_get},

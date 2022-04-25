@@ -1,7 +1,7 @@
 # LeForum Developer Documentation
 ## Server inner structures
 ### LeThread
-**Declared in**: [src/server/forum.h](/src/server/core/forum.h)
+**Declared in**: [src/server/forum.h](/src/lib/forum.h)
 
 **Description**:
 Contains information about a thing which widely known as Fourm Thread - discussion, tree of messages.
@@ -17,7 +17,7 @@ Contains information about a thing which widely known as Fourm Thread - discussi
 ---
 
 ### LeMessage
-**Declared in**: [src/server/forum.h](/src/server/core/forum.h)
+**Declared in**: [src/server/forum.h](/src/lib/forum.h)
 
 **Description**:
 Contains information about message. Related with specific LeThread.
@@ -31,7 +31,7 @@ Contains information about message. Related with specific LeThread.
 ---
 
 ### LeAuthor
-**Declared in**: [src/server/forum.h](/src/server/core/forum.h)
+**Declared in**: [src/server/forum.h](/src/lib/forum.h)
 
 **Description**:
 Contains information about author.
@@ -43,7 +43,7 @@ Contains information about author.
 ---
 
 ### LeCommand
-**Declared in**: [src/server/query.h](/src/server/core/query.h)
+**Declared in**: [src/server/query.h](/src/server/query.h)
 
 **Description**:
 Contains information about "command" - query processor and its trigger.
@@ -55,7 +55,7 @@ Contains information about "command" - query processor and its trigger.
 ---
 
 ### LeCommandResult
-**Declared in**: [src/server/query.h](/src/server/core/query.h)
+**Declared in**: [src/server/query.h](/src/server/query.h)
 
 **Description**:
 Contains result of the query processor.

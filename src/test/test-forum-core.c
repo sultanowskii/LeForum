@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "server/core/forum.h"
+#include "lib/forum.h"
 
 #include "lib/queue.h"
 #include "lib/security.h"
