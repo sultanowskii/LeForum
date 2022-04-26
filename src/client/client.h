@@ -76,7 +76,7 @@ enum SettingsCmdIDs {
 
 struct ServerAddress {
 	char      addr[32];
-	uint16_t  port
+	uint16_t  port;
 };
 typedef struct ServerAddress ServerAddress;
 

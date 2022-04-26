@@ -700,7 +700,7 @@ void query_loop() {
 				recv(g_server_fd, raw_response, response_size, NULL);
 				/* TODO: Sanity check */
 				
-				free(response_size);
+				free(raw_response);
 			}		
 		}
 	}
