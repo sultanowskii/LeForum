@@ -12,7 +12,7 @@ extern const char *argp_program_version;
 extern const char *argp_program_bug_address;
 
 struct arguments {
-	bool_t         no_color;
+
 };
 
 /**

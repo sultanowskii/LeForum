@@ -7,18 +7,16 @@ char doc[] = "LeForum Client - ncurses-based client for LeForum users.";
 char args_doc[] = "";
 
 struct argp_option options[] = { 
-    {"no-color", 'N', 0, 0, "Run application in colorless mode."},
     { 0 }
 };
 
 struct argp le_argp = {options, parse_opt, args_doc, doc, 0, 0, 0};
 
 error_t parse_opt(int key, char *arg, struct argp_state *state) {
-    struct arguments *arguments = state->input;
+	struct arguments *arguments = state->input;
 
-    switch (key) {
-		case 'N': arguments->no_color = TRUE; break;
+	switch (key) {
 		default: return ARGP_ERR_UNKNOWN;
-    }   
-    return 0;
+	}   
+return 0;
 }
