@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 
+#include "lib/communication.h"
 #include "lib/constants.h"
 #include "lib/forum.h"
 #include "lib/queue.h"
@@ -78,6 +79,7 @@ struct ServerAddress {
 	uint16_t  port
 };
 typedef struct ServerAddress ServerAddress;
+
 
 /* ---- Command string representators ----- */
 /**
@@ -272,6 +274,12 @@ void cmd_settings();
  */
 void cmd_exit();
 /* ---------------------------------------- */
+
+/**
+ * @brief Loop that communicates with the server. If query queue is empty, sends LIVE to keep the connection.
+ *  
+ */
+void query_loop();
 
 /**
  * @brief Adds server query to the global query. 

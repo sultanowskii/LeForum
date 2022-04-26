@@ -9,6 +9,8 @@
 #include "lib/security.h"
 #include "lib/status.h"
 
+#define MAX_PACKET_SIZE      64 * 1024
+
 /**
  * @brief Does the same thing as printf() except it
  * prints the result to the socket.

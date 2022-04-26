@@ -31,7 +31,6 @@
 #include "lib/util.h"
 
 
-#define MAX_PACKET_SIZE      16 * 1024
 #define FILENAME_LEMETA      "lemeta"
 
 

@@ -17,6 +17,8 @@ Queue             *g_server_addr_history    = nullptr;
 
 Queue             *g_server_queries         = nullptr;
 
+pthread_t          g_query_loop_pthread;
+
 
 const char *MainCmdID_REPR(enum MainCmdIDs id) {
 	switch (id) {
@@ -66,6 +68,26 @@ status_t load_args(int argc, char **argv) {
  */
 void server_query_add(ServerQuery *query) {
 	queue_push(g_server_queries, query, sizeof(ServerQuery));
+}
+
+int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
+	static char         tmp[128];
+	size_t              tmp_size;
+
+	int                 cmd_id;
+
+
+	print_menu();
+	print_prefix();
+
+	if ((int64_t)s_fgets(tmp, 128, stdin) < 0)
+		printf("\n");
+
+	cmd_id = atoi(tmp);
+
+	printf("\n");
+
+	return cmd_id;
 }
 
 FILE * get_leclient_file(const char *filename, const char *mode, bool_t create) {
@@ -216,31 +238,6 @@ inline void print_prefix_main() {
 	printf("[*] > ");
 }
 
-status_t startup() {
-	signal(SIGTERM, stop_program_handle);
-	signal(SIGINT, stop_program_handle);
-
-	signal(SIGPIPE, SIG_IGN);
-
-	g_server_queries = queue_create(free);
-}
-
-status_t cleanup() {
-	if (g_connected)
-		close(g_server_fd);
-
-	if (g_server_queries != nullptr) {
-		queue_delete(g_server_queries);
-		g_server_queries = nullptr;
-	}
-		
-	return LESTATUS_OK;
-}
-
-void stop_program_handle(const int signum) {
-	g_working = FALSE;
-}
-
 void cmd_server() {
 	enum ServerCmdIDs   cmd_id = _scid_BEGIN;
 
@@ -261,8 +258,10 @@ void cmd_server_connect() {
 	char                tmp_port[32];
 	char                tmp_addr[32];
 	size_t              tmp_size;
-
 	uint16_t            port;
+	ServerQuery        *tmp_query;
+	LeMeta             *tmp_lemeta;
+	LeData              tmp_ledata;
 
 
 	puts("Enter addr of the server.");
@@ -288,9 +287,24 @@ void cmd_server_connect() {
 
 	g_connected = TRUE;
 
-	/* TODO: create pthread and run conversation there */
+	tmp_ledata = gen_query_META();
+	tmp_query = query_create(parse_response_META, tmp_ledata.data, tmp_ledata.size);
+	queue_push(g_server_queries, tmp_query, sizeof(*tmp_query));
+	while (tmp_query->completed == FALSE) {
 
-	/* TODO: Send META query and fill g_max_*, g_min_* values */
+	}
+	tmp_lemeta = (LeMeta *)tmp_query->parsed_data;
+
+	query_delete(tmp_query);
+	tmp_query = nullptr;
+
+	g_server_meta.max_message_size = tmp_lemeta->max_message_size;
+	g_server_meta.min_message_size = tmp_lemeta->min_message_size;
+	g_server_meta.max_topic_size = tmp_lemeta->max_topic_size;
+	g_server_meta.min_topic_size = tmp_lemeta->min_topic_size;
+
+	free(tmp_lemeta);
+	tmp_lemeta = nullptr;
 }
 
 void cmd_server_disconnect() {
@@ -342,19 +356,39 @@ void cmd_thread() {
 }
 
 void cmd_thread_create() {
-	char          *topic;
+	char *topic;
+	size_t topic_size;
+	LeData qdata;
+	ServerQuery *query;
+	CreatedThreadInfo *tmp;
 
-	
+
 	puts("Thread topic:");
 	print_prefix_thread();
 
 	topic = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((int64_t)s_fgets(topic, g_server_meta.max_topic_size, stdin) < 0) {
+	if ((topic_size = s_fgets(topic, g_server_meta.max_topic_size, stdin)) < 0) {
 		goto THREAD_CREATE_EXIT;
 	}
 
-	/* TODO: Send CTHR query, save the token locally */
+	qdata = gen_query_CTHR(topic, topic_size);
+	query = query_create(parse_response_CTHR, qdata.data, qdata.size);
+	queue_push(g_server_queries, query, sizeof(*query));
+	while (query->completed == FALSE) {
+
+	}
+	tmp = (CreatedThreadInfo *)query->parsed_data;
+	query_delete(query);
+	query = nullptr;
+
+	/* TODO: save tmp->token to the file */
+	g_active_thread_id = tmp->thread_id;
+
+	free(tmp->token);
+	tmp->token = nullptr;
+	free(tmp);
+	tmp = nullptr;
 
 THREAD_CREATE_EXIT:
 	free(topic);
@@ -363,6 +397,7 @@ THREAD_CREATE_EXIT:
 
 void cmd_thread_find() {
 	char          *search_query = nullptr;
+	size_t         search_query_size;
 	
 	Queue         *found_threads = nullptr;
 	QueueNode     *tmp_node = nullptr;
@@ -372,17 +407,28 @@ void cmd_thread_find() {
 	char           tmp_buf[64];
 	size_t         cntr = 1;
 
+	LeData qdata;
+	ServerQuery *query;
+
 
 	puts("Search query:");
 	print_prefix_thread();
 
 	search_query = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((int64_t)s_fgets(search_query, g_server_meta.max_topic_size, stdin) < 0) {
+	if ((search_query_size = s_fgets(search_query, g_server_meta.max_topic_size, stdin)) < 0) {
 		goto THREAD_FIND_EXIT;
 	}
 
-	/* TODO: Send FTHR query */
+	qdata = gen_query_FTHR(search_query, search_query_size);
+	query = query_create(parse_response_FTHR, qdata.data, qdata.size);
+	queue_push(g_server_queries, query, sizeof(*query));
+	while (query->completed == FALSE) {
+
+	}
+	found_threads = (Queue *)query->parsed_data;
+	query_delete(query);
+	query = nullptr;
 
 	tmp_node = found_threads->first;
 
@@ -435,28 +481,39 @@ THREAD_FIND_EXIT:
 }
 
 void cmd_thread_info() {
-	LeThread      *tmp_thread;
-
+	LeThread *thread;
+	LeData qdata;
+	ServerQuery *query;
 
 	if (!g_active_thread_exists) {
 		puts("To use this command, choose some thread first!");
 		return;
 	}
 
-	/* TODO: Update information using GTHR query */
+	qdata = gen_query_GTHR(g_active_thread_id);
+	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
+	queue_push(g_server_queries, query, sizeof(*query));
+	while (query->completed == FALSE) {
 
-	printf("Topic: %s\n", tmp_thread->topic);
-	printf("ID: %zu\n", tmp_thread->id);
-	printf("Messages posted: %zu\n", lethread_message_count(tmp_thread));
+	}
+	thread = (LeThread *)query->parsed_data;
+	query_delete(query);
+	query = nullptr;
 
-	lethread_delete(tmp_thread);
-	tmp_thread = nullptr;
+	printf("Topic: %s\n", thread->topic);
+	printf("ID: %zu\n", thread->id);
+	printf("Messages posted: %zu\n", lethread_message_count(thread));
+
+	lethread_delete(thread);
+	thread = nullptr;
 }
 
 void cmd_thread_message_history() {
-	LeThread      *tmp_thread;
-	QueueNode     *tmp_node;
-	LeMessage     *tmp_message;
+	LeThread *thread;
+	QueueNode *tmp_node;
+	LeMessage *tmp_message;
+	LeData qdata;
+	ServerQuery *query;
 
 
 	if (!g_active_thread_exists) {
@@ -464,9 +521,17 @@ void cmd_thread_message_history() {
 		return;
 	}
 
-	/* TODO: update information using GTHR query */
+	qdata = gen_query_GTHR(g_active_thread_id);
+	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
+	queue_push(g_server_queries, query, sizeof(*query));
+	while (query->completed == FALSE) {
 
-	tmp_node = tmp_thread->messages->first;
+	}
+	thread = (LeThread *)query->parsed_data;
+	query_delete(query);
+	query = nullptr;
+
+	tmp_node = thread->messages->first;
 	
 	while (tmp_node != nullptr) {
 		tmp_message = (LeMessage *)tmp_node->data;
@@ -480,14 +545,18 @@ void cmd_thread_message_history() {
 		tmp_node = tmp_node->next;
 	}
 
-	lethread_delete(tmp_thread);
-	tmp_thread = nullptr;
+	lethread_delete(thread);
+	thread = nullptr;
 	tmp_node = nullptr;
 	tmp_message = nullptr;
 }
 
 void cmd_thread_send_message() {
-	char          *user_message;
+	char *user_message;
+	size_t size;
+	LeData qdata;
+	ServerQuery *query;
+	char *token = nullptr;
 
 
 	if (!g_active_thread_exists) {
@@ -499,9 +568,20 @@ void cmd_thread_send_message() {
 
 	printf("Type your message (%zu characters max, no newlines):\n", g_server_meta.max_message_size);
 
-	s_fgets(user_message, g_server_meta.max_message_size, stdin);
+	size = s_fgets(user_message, g_server_meta.max_message_size, stdin);
 
-	/* TODO: Send CMSG query, trying to load token */
+	/* TODO: load token from file */
+
+	qdata = gen_query_CMSG(g_active_thread_id, user_message, size, token);
+	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
+	queue_push(g_server_queries, query, sizeof(*query));
+	while (query->completed == FALSE) {
+
+	}
+	query_delete(query);
+	query = nullptr;
+
+	/* TODO: Sanity check */
 
 	free(user_message);
 	user_message = nullptr;
@@ -521,30 +601,80 @@ void cmd_settings() {
 	}
 }
 
+void query_loop() {
+	ServerQuery   *tmp_query;
+	size_t         part_size;
+	size_t         response_size;
+	void          *raw_response;
+
+
+	while (g_working) {
+		if (g_connected) {	
+			if (g_server_queries->size != 0) {
+				tmp_query = (ServerQuery *)queue_pop(g_server_queries);
+
+				/* send packet part by part in order not to exceed send() max size */
+				for (size_t i = 0; i < tmp_query->raw_request_data_size / MAX_PACKET_SIZE + 1; i++) {
+					part_size = tmp_query->raw_request_data + (MAX_PACKET_SIZE * i);
+					send(g_server_fd, part_size, tmp_query->raw_request_data_size, NULL);
+				}
+
+				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
+				raw_response = malloc(response_size);
+				recv(g_server_fd, raw_response, response_size, NULL);
+				
+				tmp_query->parsed_data = tmp_query->parse_response(raw_response);
+				tmp_query->completed = TRUE;
+
+				free(raw_response);
+			}
+			else {
+				send(g_server_fd, "LIVE", 4, NULL);
+				
+				recv(g_server_fd, &response_size, 8, NULL);
+				raw_response = malloc(response_size);
+				recv(g_server_fd, raw_response, response_size, NULL);
+				/* TODO: Sanity check */
+				
+				free(response_size);
+			}		
+		}
+	}
+}
+
+status_t startup() {
+	signal(SIGTERM, stop_program_handle);
+	signal(SIGINT, stop_program_handle);
+
+	signal(SIGPIPE, SIG_IGN);
+
+	g_server_queries = queue_create(free);
+
+	pthread_create(&g_query_loop_pthread, NULL, query_loop, NULL);
+	/* auto-cleanup on termination */
+	pthread_detach(g_query_loop_pthread);
+}
+
+status_t cleanup() {
+	if (g_connected)
+		close(g_server_fd);
+
+	if (g_server_queries != nullptr) {
+		queue_delete(g_server_queries);
+		g_server_queries = nullptr;
+	}
+		
+	return LESTATUS_OK;
+}
+
+void stop_program_handle(const int signum) {
+	g_working = FALSE;
+}
+
 void cmd_exit() {
 	cleanup();
 	puts("Bye!");
 	exit(0);
-}
-
-int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
-	static char         tmp[128];
-	size_t              tmp_size;
-
-	int                 cmd_id;
-
-
-	print_menu();
-	print_prefix();
-
-	if ((int64_t)s_fgets(tmp, 128, stdin) < 0)
-		printf("\n");
-
-	cmd_id = atoi(tmp);
-
-	printf("\n");
-
-	return cmd_id;
 }
 
 status_t main(size_t argc, char **argv) {
