@@ -80,6 +80,15 @@ struct ServerAddress {
 };
 typedef struct ServerAddress ServerAddress;
 
+/**
+ * @brief Inner connection to the server. 
+ * 
+ * @param addr Server addr
+ * @param port Server port 
+ * @return LESTATUS_OK on success. LESTATUS_CLIB if one of built-in functions failed. LESTATUS_IDAT if bad addr or port provdided 
+ */
+status_t __server_connect(const char *addr, uint16_t port);
+
 
 /* ---- Command string representators ----- */
 /**
@@ -115,6 +124,8 @@ const char *ThreadCmdID_REPR(enum ThreadCmdIDs id);
 const char *SettingsCmdID_REPR(enum SettingsCmdIDs id);
 /* ---------------------------------------- */
 
+
+/* ------------ File stuff----------------- */
 /**
  * @brief Get the leclient file. Wrapper over fopen 
  * 
@@ -125,18 +136,49 @@ const char *SettingsCmdID_REPR(enum SettingsCmdIDs id);
  */
 FILE * get_leclient_file(const char *filename, const char *mode, bool_t create);
 
-
+/**
+ * @brief Saves server addr in the file. 
+ * 
+ * @param addr Server addr 
+ * @param port Server port 
+ * @return LESTATUS_OK on success  
+ */
+status_t server_addr_save(const char *addr, uint16_t port);
 
 /**
- * @brief Inner connection to the server. 
+ * @brief Loads server addr history from the file. 
  * 
- * @param addr Server addr
- * @param port Server port 
- * @return LESTATUS_OK on success. LESTATUS_CLIB if one of built-in functions failed. LESTATUS_IDAT if bad addr or port provdided 
+ * @return LESTATUS_OK on success 
  */
-status_t __server_connect(const char *addr, uint16_t port);
+status_t server_addr_history_load();
+
+/**
+ * @brief Saves token of the current server in the file. 
+ * 
+ * @param token Token to save
+ * @return LESTATUS_OK on success. LESTATUS_IDAT no thread is active 
+ */
+status_t token_save(char *token);
+
+/**
+ * @brief Loads token (if exists) from the file. 
+ * 
+ * @return Token on success. LESTATUS_NSFD if not found. LESTATUS_IDAT no thread is active  
+ */
+char * token_load();
+/* ---------------------------------------- */
+
 
 /* ------------ Menu printers-------------- */
+/**
+ * @brief Prints all the menues and stuff, then reads command from user. 
+ * 
+ * @param print_menu Function that prints menu
+ * @param print_prefix Function that prints prefix before user input
+ * @return User command
+ */
+int leclient_loop_process(void (*print_menu)(), void (*print_prefix)());
+
 /**
  * @brief Prints server menu. 
  * 
@@ -265,6 +307,9 @@ void cmd_settings();
 void cmd_exit();
 /* ---------------------------------------- */
 
+
+/* -------------- Main flow --------------- */
+
 /**
  * @brief Loop that communicates with the server. If query queue is empty, sends LIVE to keep the connection.
  *  
@@ -279,35 +324,11 @@ void query_loop();
 void server_query_add(ServerQuery *query);
 
 /**
- * @brief Saves server addr in the file. 
+ * @brief Program termination handler. Simply modifies g_working value. 
  * 
- * @param addr Server addr 
- * @param port Server port 
- * @return LESTATUS_OK on success  
+ * @param Signum
  */
-status_t server_addr_save(const char *addr, uint16_t port);
-
-/**
- * @brief Loads server addr history from the file. 
- * 
- * @return LESTATUS_OK on success 
- */
-status_t server_addr_history_load();
-
-/**
- * @brief Saves token of the current server in the file. 
- * 
- * @param token Token to save
- * @return LESTATUS_OK on success. LESTATUS_IDAT no thread is active 
- */
-status_t token_save(char *token);
-
-/**
- * @brief Loads token (if exists) from the file. 
- * 
- * @return Token on success. LESTATUS_NSFD if not found. LESTATUS_IDAT no thread is active  
- */
-char * token_load();
+void stop_program_handle(const int signum);
 
 /**
  * @brief Initialises program, 
@@ -323,21 +344,5 @@ status_t startup();
  */
 status_t cleanup();
 
-/**
- * @brief Program termination handler. Simply modifies g_working value. 
- * 
- * @param Signum
- */
-void stop_program_handle(const int signum);
-
-
-/**
- * @brief Prints all the menues and stuff, then reads command from user. 
- * 
- * @param print_menu Function that prints menu
- * @param print_prefix Function that prints prefix before user input
- * @return User command
- */
-int leclient_loop_process(void (*print_menu)(), void (*print_prefix)());
-
 status_t main(size_t argc, char **argv);
+/* ---------------------------------------- */

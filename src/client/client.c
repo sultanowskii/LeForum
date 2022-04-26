@@ -58,16 +58,71 @@ const char *SettingsCmdID_REPR(enum SettingsCmdIDs id) {
 	}
 };
 
-status_t load_args(int argc, char **argv) {
-	argp_parse(&le_argp, argc, argv, 0, 0, &arguments);
+inline void print_menu_server() {
+	puts("Available server commands:");
+	for (enum ServerCmdIDs scid = _scid_BEGIN + 1; scid < _scid_END; scid++)
+		printf("%d - %s\n", scid, ServerCmdID_REPR(scid));
 }
 
-/* 
- * You should delete query by yourself after it is complete.
- * Don't delete it until query->completed==TRUE, otherwise it might cause null pointer dereference.
- */
-void server_query_add(ServerQuery *query) {
-	queue_push(g_server_queries, query, sizeof(ServerQuery));
+inline void print_menu_thread() {
+	puts("Available thread commands:");
+	for (enum ThreadCmdIDs tcid = _tcid_BEGIN + 1; tcid < _tcid_END; tcid++)
+		printf("%d - %s\n", tcid, ThreadCmdID_REPR(tcid));
+}
+
+inline void print_menu_settings() {
+	puts("Available settings commands:");
+	for (enum SettingsCmdIDs stgcid = _stgcid_BEGIN + 1; stgcid < _stgcid_END; stgcid++)
+		printf("%d - %s\n", stgcid, SettingsCmdID_REPR(stgcid));
+}
+
+inline void print_menu_main() {
+	puts("Available commands:");
+	for (enum MainCmdIDs mcid = _mcid_BEGIN + 1; mcid < _mcid_END; mcid++)
+		printf("%d - %s\n", mcid, MainCmdID_REPR(mcid));
+}
+
+inline void print_prefix_server() {
+	printf("[Server] > ");
+}
+
+inline void print_prefix_thread() {
+	printf("[Thread] > ");
+}
+
+inline void print_prefix_settings() {
+	printf("[Settings] > ");
+}
+
+inline void print_prefix_main() {
+	printf("[*] > ");
+}
+
+status_t __server_connect(const char *addr, uint16_t port) {
+	if (port < 0 || port > 0xffff) {
+		puts("Invalid port. Aborted.");
+		return LESTATUS_IDAT;
+	}
+
+	if ((g_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		perror("Error occured during socket()");
+		return LESTATUS_CLIB;
+	}
+
+	g_server_addr.sin_family = AF_INET;
+	g_server_addr.sin_port = htons(port);
+
+	if (inet_pton(AF_INET, addr, &g_server_addr.sin_addr) <= 0) {
+		puts("Invalid addr is provided. Aborted.");
+		return LESTATUS_IDAT;
+	}
+
+	if (connect(g_server_fd, (struct sockaddr *)&g_server_addr, sizeof(struct sockaddr_in)) < 0) {
+		perror("Error occured during connect()");
+		return LESTATUS_CLIB;
+	}
+
+	return LESTATUS_OK;
 }
 
 int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
@@ -88,6 +143,18 @@ int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
 	printf("\n");
 
 	return cmd_id;
+}
+
+status_t load_args(int argc, char **argv) {
+	argp_parse(&le_argp, argc, argv, 0, 0, &arguments);
+}
+
+/* 
+ * You should delete query by yourself after it is complete.
+ * Don't delete it until query->completed==TRUE, otherwise it might cause null pointer dereference.
+ */
+void server_query_add(ServerQuery *query) {
+	queue_push(g_server_queries, query, sizeof(ServerQuery));
 }
 
 FILE * get_leclient_file(const char *filename, const char *mode, bool_t create) {
@@ -221,73 +288,6 @@ char * token_load() {
 	fclose(file);
 
 	return token;
-}
-
-status_t __server_connect(const char *addr, uint16_t port) {
-	if (port < 0 || port > 0xffff) {
-		puts("Invalid port. Aborted.");
-		return LESTATUS_IDAT;
-	}
-
-	if ((g_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		perror("Error occured during socket()");
-		return LESTATUS_CLIB;
-	}
-
-	g_server_addr.sin_family = AF_INET;
-	g_server_addr.sin_port = htons(port);
-
-	if (inet_pton(AF_INET, addr, &g_server_addr.sin_addr) <= 0) {
-		puts("Invalid addr is provided. Aborted.");
-		return LESTATUS_IDAT;
-	}
-
-	if (connect(g_server_fd, (struct sockaddr *)&g_server_addr, sizeof(struct sockaddr_in)) < 0) {
-		perror("Error occured during connect()");
-		return LESTATUS_CLIB;
-	}
-
-	return LESTATUS_OK;
-}
-
-inline void print_menu_server() {
-	puts("Available server commands:");
-	for (enum ServerCmdIDs scid = _scid_BEGIN + 1; scid < _scid_END; scid++)
-		printf("%d - %s\n", scid, ServerCmdID_REPR(scid));
-}
-
-inline void print_menu_thread() {
-	puts("Available thread commands:");
-	for (enum ThreadCmdIDs tcid = _tcid_BEGIN + 1; tcid < _tcid_END; tcid++)
-		printf("%d - %s\n", tcid, ThreadCmdID_REPR(tcid));
-}
-
-inline void print_menu_settings() {
-	puts("Available settings commands:");
-	for (enum SettingsCmdIDs stgcid = _stgcid_BEGIN + 1; stgcid < _stgcid_END; stgcid++)
-		printf("%d - %s\n", stgcid, SettingsCmdID_REPR(stgcid));
-}
-
-inline void print_menu_main() {
-	puts("Available commands:");
-	for (enum MainCmdIDs mcid = _mcid_BEGIN + 1; mcid < _mcid_END; mcid++)
-		printf("%d - %s\n", mcid, MainCmdID_REPR(mcid));
-}
-
-inline void print_prefix_server() {
-	printf("[Server] > ");
-}
-
-inline void print_prefix_thread() {
-	printf("[Thread] > ");
-}
-
-inline void print_prefix_settings() {
-	printf("[Settings] > ");
-}
-
-inline void print_prefix_main() {
-	printf("[*] > ");
 }
 
 void cmd_server() {
@@ -663,6 +663,12 @@ void cmd_settings() {
 	}
 }
 
+void cmd_exit() {
+	cleanup();
+	puts("Bye!");
+	exit(0);
+}
+
 void query_loop() {
 	ServerQuery   *tmp_query;
 	size_t         part_size;
@@ -731,12 +737,6 @@ status_t cleanup() {
 
 void stop_program_handle(const int signum) {
 	g_working = FALSE;
-}
-
-void cmd_exit() {
-	cleanup();
-	puts("Bye!");
-	exit(0);
 }
 
 status_t main(size_t argc, char **argv) {
