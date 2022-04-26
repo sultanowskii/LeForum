@@ -119,21 +119,23 @@ FILE * get_leclient_file(const char *filename, const char *mode, bool_t create) 
 	return file;
 }
 
-void save_server_addr(const char *addr, uint16_t port) {
+status_t server_addr_save(const char *addr, uint16_t port) {
 	FILE          *file;
 
 
 	file = get_leclient_file(FILENAME_SERVERS, "a+", TRUE);
 
-	if (!file)
-		return;
+	if (file < 0)
+		return LESTATUS_CLIB;
 
 	fprintf(file, "%s %hd\n", addr, port);
 
 	fclose(file);
+
+	return LESTATUS_OK;
 }
 
-void load_server_addr_history() {
+status_t server_addr_history_load() {
 	FILE          *file;
 
 	char           tmp[64];
@@ -149,7 +151,7 @@ void load_server_addr_history() {
 	file = get_leclient_file(FILENAME_SERVERS, "r", FALSE);
 
 	if (file == LESTATUS_NSFD)
-		return;
+		return LESTATUS_NSFD;
 
 	if (g_server_addr_history != nullptr)
 		queue_delete(g_server_addr_history);
@@ -169,6 +171,56 @@ void load_server_addr_history() {
     }
 
 	fclose(file);
+
+	return LESTATUS_OK;
+}
+
+status_t token_save(char *token) {
+	FILE          *file;
+	char         thread_id_repr[32];
+
+
+	if (!g_active_thread_exists) {
+		return LESTATUS_IDAT;
+	}
+
+	memset(thread_id_repr, 0, sizeof(thread_id_repr));
+
+	sprintf(thread_id_repr, "%llu", g_active_thread_id);
+	file = get_leclient_file(thread_id_repr, "w+", TRUE);
+
+	fprintf(file, "%s", token);
+
+	fclose(file);
+}
+
+char * token_load() {
+	FILE *file;
+	char thread_id_repr[32];
+	char *token;
+
+
+	if (!g_active_thread_exists) {
+		return LESTATUS_IDAT;
+	}
+
+	memset(thread_id_repr, 0, sizeof(thread_id_repr));
+
+	sprintf(thread_id_repr, "%llu", g_active_thread_id);
+	file = get_leclient_file(thread_id_repr, "r", FALSE);
+
+	if (file < 0) {
+		return LESTATUS_NSFD;
+	}
+
+	token = malloc(TOKEN_SIZE + 1);
+	memset(token, 0, TOKEN_SIZE + 1);
+
+	s_fgets(token, TOKEN_SIZE, file);
+
+	fclose(file);
+
+	return token;
 }
 
 status_t __server_connect(const char *addr, uint16_t port) {
@@ -283,7 +335,7 @@ void cmd_server_connect() {
 		return;
 	}
 
-	save_server_addr(tmp_addr, port);
+	server_addr_save(tmp_addr, port);
 
 	g_connected = TRUE;
 
@@ -318,7 +370,7 @@ void cmd_server_history() {
 	size_t         i = 1;
 
 
-	load_server_addr_history();
+	server_addr_history_load();
 
 	node = g_server_addr_history->first;
 
@@ -382,8 +434,8 @@ void cmd_thread_create() {
 	query_delete(query);
 	query = nullptr;
 
-	/* TODO: save tmp->token to the file */
 	g_active_thread_id = tmp->thread_id;
+	token_save(tmp->token);
 
 	free(tmp->token);
 	tmp->token = nullptr;
@@ -570,18 +622,28 @@ void cmd_thread_send_message() {
 
 	size = s_fgets(user_message, g_server_meta.max_message_size, stdin);
 
-	/* TODO: load token from file */
+	token = token_load();
+	if (token == LESTATUS_IDAT || token == LESTATUS_NSFD)
+		token = nullptr;
 
 	qdata = gen_query_CMSG(g_active_thread_id, user_message, size, token);
 	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
 	queue_push(g_server_queries, query, sizeof(*query));
+
 	while (query->completed == FALSE) {
 
 	}
+
+	/* TODO: Sanity check */
+
 	query_delete(query);
 	query = nullptr;
 
-	/* TODO: Sanity check */
+	if (token != nullptr) {
+		free(token);
+		token = nullptr;
+	}
+
 
 	free(user_message);
 	user_message = nullptr;

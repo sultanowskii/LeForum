@@ -115,27 +115,17 @@ const char *ThreadCmdID_REPR(enum ThreadCmdIDs id);
 const char *SettingsCmdID_REPR(enum SettingsCmdIDs id);
 /* ---------------------------------------- */
 
-
 /**
- * @brief Initialises program, 
+ * @brief Get the leclient file. Wrapper over fopen 
  * 
- * @return LESTATUS_OK on success 
+ * @param filename Filename 
+ * @param mode Mode
+ * @param create To create file if not found or not?
+ * @return FD on success. LESTATUS_NSFD if file doesn't exist and create==FALSE 
  */
-status_t startup();
+FILE * get_leclient_file(const char *filename, const char *mode, bool_t create);
 
-/**
- * @brief Cleans all the program data. 
- * 
- * @return LESTATUS_OK on success 
- */
-status_t cleanup();
 
-/**
- * @brief Program termination handler. Simply modifies g_working value. 
- * 
- * @param Signum
- */
-void stop_program_handle(const int signum);
 
 /**
  * @brief Inner connection to the server. 
@@ -292,25 +282,54 @@ void server_query_add(ServerQuery *query);
  * @brief Saves server addr in the file. 
  * 
  * @param addr Server addr 
- * @param port Server port  
+ * @param port Server port 
+ * @return LESTATUS_OK on success  
  */
-void save_server_addr(const char *addr, uint16_t port);
+status_t server_addr_save(const char *addr, uint16_t port);
 
 /**
  * @brief Loads server addr history from the file. 
  * 
+ * @return LESTATUS_OK on success 
  */
-void load_server_addr_history();
+status_t server_addr_history_load();
 
 /**
- * @brief Get the leclient file. Wrapper over fopen 
+ * @brief Saves token of the current server in the file. 
  * 
- * @param filename Filename 
- * @param mode Mode
- * @param create To create file if not found or not?
- * @return FD on success. LESTATUS_NSFD if file doesn't exist and create==FALSE 
+ * @param token Token to save
+ * @return LESTATUS_OK on success. LESTATUS_IDAT no thread is active 
  */
-FILE * get_leclient_file(const char *filename, const char *mode, bool_t create);
+status_t token_save(char *token);
+
+/**
+ * @brief Loads token (if exists) from the file. 
+ * 
+ * @return Token on success. LESTATUS_NSFD if not found. LESTATUS_IDAT no thread is active  
+ */
+char * token_load();
+
+/**
+ * @brief Initialises program, 
+ * 
+ * @return LESTATUS_OK on success 
+ */
+status_t startup();
+
+/**
+ * @brief Cleans all the program data. 
+ * 
+ * @return LESTATUS_OK on success 
+ */
+status_t cleanup();
+
+/**
+ * @brief Program termination handler. Simply modifies g_working value. 
+ * 
+ * @param Signum
+ */
+void stop_program_handle(const int signum);
+
 
 /**
  * @brief Prints all the menues and stuff, then reads command from user. 
