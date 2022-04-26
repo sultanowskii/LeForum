@@ -17,8 +17,7 @@ LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	new_lethread->messages = queue_create(lemessage_delete);
 	new_lethread->author = nullptr;
 
-	new_lethread->topic = malloc(topic_size + 1);
-	memset(new_lethread->topic, 0, topic_size + 1);
+	new_lethread->topic = calloc(sizeof(char), topic_size + 1);
 	strncpy(new_lethread->topic, topic, topic_size);
 
 	return new_lethread;
@@ -107,13 +106,10 @@ LeAuthor * leauthor_create(LeThread *lethread, bool_t create_token) {
 
 	new_leauthor = (LeAuthor *)malloc(sizeof(LeAuthor));
 	new_leauthor->id = rand_uint64_t() % 0xffffffff;
-	new_leauthor->token = malloc(TOKEN_SIZE + 1);
+	new_leauthor->token = calloc(sizeof(char), TOKEN_SIZE + 1);
 
 	if (create_token) {
 		rand_string(new_leauthor->token, TOKEN_SIZE);
-	}
-	else {
-		memset(new_leauthor->token, 0, TOKEN_SIZE + 1);
 	}
 
 	lethread->author = new_leauthor;
@@ -221,8 +217,7 @@ status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
 
 	topic_size = MIN(topic_size, MAX_TOPIC_SIZE);
 
-	lethread->topic = malloc(topic_size + 1);
-	memset(lethread->topic, 0, topic_size + 1);
+	lethread->topic = calloc(sizeof(char), topic_size + 1);
 
 	fread(lethread->topic, 1, topic_size, lethread_info_file);
 
@@ -313,8 +308,7 @@ status_t lemessages_load(LeThread *lethread) {
 		fread(&text_size, sizeof(text_size), 1, lemessages_file);
 		text_size = MIN(text_size, MAX_MESSAGE_SIZE);
 
-		lemessage->text = malloc(text_size + 1);
-		memset(lemessage->text, 0, text_size + 1);
+		lemessage->text = calloc(sizeof(char), text_size + 1);
 		fread(lemessage->text, 1, text_size, lemessages_file);
 
 		queue_push(lethread->messages, lemessage, sizeof(LeMessage));

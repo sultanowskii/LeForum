@@ -245,8 +245,8 @@ status_t server_addr_history_load() {
 }
 
 status_t token_save(char *token) {
-	FILE          *file;
-	char         thread_id_repr[32];
+	FILE      *file;
+	char       thread_id_repr[32];
 
 
 	if (!g_active_thread_exists) {
@@ -721,7 +721,7 @@ void query_loop() {
 				
 				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
 
-				raw_response = calloc(sizeof(char), response_size);
+				raw_response = calloc(sizeof(char), response_size + 1);
 				bytes_read = recv(g_server_fd, raw_response, response_size, NULL);
 				
 				tmp_query->parsed_data = tmp_query->parse_response(raw_response, bytes_read);
@@ -735,7 +735,7 @@ void query_loop() {
 				send(g_server_fd, "LIVE", tmp, NULL);
 				
 				recv(g_server_fd, &response_size, sizeof(size_t), NULL);
-				raw_response = calloc(sizeof(char), response_size);
+				raw_response = calloc(sizeof(char), response_size + 1);
 				recv(g_server_fd, raw_response, response_size, NULL);
 				/* TODO: Sanity check */
 				

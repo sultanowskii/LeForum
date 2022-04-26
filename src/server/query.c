@@ -60,7 +60,7 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	response_size = strlen("THRID") + sizeof(lethread_id) + strlen("TPCSZ") + sizeof(topic_size) + strlen("TPC") + topic_size + strlen("MSGCNT") + sizeof(message_cnt);
 	chunk_size = response_size + 1024;
 
-	response_start = malloc(chunk_size);
+	response_start = malloc(chunk_size + 1);
 	response = response_start;
 
 	strncpy(response, "THRID", strlen("THRID"));
@@ -178,7 +178,7 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	s_lethread_save(sharedptr_lethread);
 	s_leauthor_save(sharedptr_lethread);
 
-	response_start = malloc(response_size);
+	response_start = malloc(response_size + 1);
 	response = response_start;
 
 	strncpy(response, "THRID", strlen("THRID"));
@@ -256,7 +256,7 @@ LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	node = lethreads->first;
 
 	chunk_size = 1024;
-	response_start = malloc(chunk_size);
+	response_start = malloc(chunk_size + 1);
 	response = response_start;
 	response_size = response - response_start;
 

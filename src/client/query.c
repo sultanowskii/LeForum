@@ -4,11 +4,12 @@ ServerQuery * query_create(void * (*parser)(char *raw_data), char *request_data,
 	ServerQuery        *query;
 
 
-	query = calloc(sizeof(*query), 1);
+	query = malloc(sizeof(*query));
 	query->completed = FALSE;
 	query->parse_response = parser;
 	query->raw_request_data = request_data;
 	query->raw_request_data_size = size;
+	query->parsed_data = nullptr;
 
 	return query;
 }
@@ -219,11 +220,11 @@ CreatedThreadInfo * parse_response_CTHR(char *raw_data, size_t size) {
 	}
 	data_ptr += strlen("TKN");
 
-	info = (CreatedThreadInfo *)calloc(sizeof(void), sizeof(*info));
+	info = (CreatedThreadInfo *)malloc(sizeof(*info));
 	info->thread_id = tmp;
-	info->token = calloc(sizeof(char), TOKEN_SIZE + 1);
-
+	info->token = malloc(TOKEN_SIZE + 1);
 	strncpy(info->token, data_ptr, TOKEN_SIZE);
+	info->token[TOKEN_SIZE] = '\0';
 	
 	return info;
 }
@@ -258,7 +259,7 @@ LeThread * parse_response_GTHR(char *raw_data, size_t size) {
 	topic_size = *(uint64_t *)data_ptr;
 	data_ptr += sizeof(topic_size);
 
-	thread_topic = calloc(sizeof(char), topic_size + 1);
+	thread_topic = malloc(topic_size + 1);
 	if (strncmp(data_ptr, "TPC", strlen("TPC")) != 0) {
 		free(thread_topic);
 		return LESTATUS_IDAT;
@@ -266,6 +267,7 @@ LeThread * parse_response_GTHR(char *raw_data, size_t size) {
 	data_ptr += strlen("TPC");
 
 	strncpy(thread_topic, data_ptr, topic_size);
+	thread_topic[topic_size] = '\0';
 	data_ptr += topic_size;
 
 	thread = lethread_create(thread_topic, thread_id);
@@ -295,8 +297,9 @@ LeThread * parse_response_GTHR(char *raw_data, size_t size) {
 		msg_size = *(uint64_t *)data_ptr;
 		data_ptr += sizeof(msg_size);
 
-		msg_text = calloc(sizeof(char), msg_size);
+		msg_text = malloc(msg_size + 1);
 		strncpy(msg_text, data_ptr, msg_size);
+		msg_text[msg_size] = '\0';
 		data_ptr += msg_size;
 
 		lemessage_create(thread, msg_text, by_author);
@@ -347,14 +350,15 @@ Queue * parse_response_FTHR(char *raw_data, size_t size) {
 		topic_size = *(uint64_t *)data_ptr;
 		data_ptr += sizeof(topic_size);
 
-		thread_topic = calloc(sizeof(char), topic_size + 1);
 		if (strncmp(data_ptr, "TPC", strlen("TPC")) != 0) {
 			query_delete(found);
 			return LESTATUS_IDAT;
 		}
 		data_ptr += strlen("TPC");
 
+		thread_topic = malloc(topic_size + 1);
 		strncpy(thread_topic, data_ptr, topic_size);
+		thread_topic[topic_size] = '\0';
 		data_ptr += topic_size;
 
 		thread = lethread_create(thread_topic, thread_id);
@@ -443,11 +447,11 @@ LeMeta * parse_response_META(char *raw_data, size_t size) {
 	}
 	data_ptr += strlen("VER");
 
-	version = calloc(sizeof(char), version_size + 1);
-
+	version = malloc(version_size + 1);
 	strncpy(version, data_ptr, version_size);
+	version[version_size] = '\0';
 
-	meta = calloc(sizeof(LeMeta), 1);
+	meta = malloc(sizeof(*meta));
 
 	meta->max_topic_size = max_topic_size;
 	meta->min_topic_size = min_topic_size;

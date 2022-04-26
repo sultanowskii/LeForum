@@ -345,7 +345,7 @@ void * handle_client(void *arg) {
 
 	NULLPTR_PREVENT(arg, LESTATUS_NPTR)
 
-	cl_data = malloc(MAX_PACKET_SIZE);
+	cl_data = malloc(MAX_PACKET_SIZE + 1);
 	client_info = (LeClientInfo *)arg;
 
 	/* =================================== Example ====================================== */
