@@ -378,7 +378,7 @@ void cmd_server_info() {
 
 	// printf("Server address: %s:%hd\n", g_server_ip, g_server_port);
 	printf("Server version: %s\n", g_server_meta.version);
-	printf("Threads on a server: %llu", g_server_meta.thread_count);
+	printf("Threads on a server: %llu\n", g_server_meta.thread_count);
 
 	newline();
 }
@@ -434,6 +434,7 @@ void cmd_thread_create() {
 	LeData qdata;
 	ServerQuery *query;
 	CreatedThreadInfo *tmp;
+	size_t tmp_n;
 
 
 	printf("Thread topic (%zu-%zu characters, no newlines):\n", g_server_meta.min_topic_size, g_server_meta.max_topic_size);
@@ -441,7 +442,8 @@ void cmd_thread_create() {
 
 	topic = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((topic_size = s_fgets(topic, g_server_meta.max_topic_size + 1, stdin)) < 0) {
+	if ((topic_size = s_fgets_range(topic, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == -LESTATUS_IDAT) {
+		newline();
 		goto THREAD_CREATE_EXIT;
 	}
 	newline();
@@ -472,7 +474,7 @@ THREAD_CREATE_EXIT:
 
 void cmd_thread_find() {
 	char          *search_query = nullptr;
-	size_t         search_query_size;
+	size_t         search_query_size = 0;
 	
 	Queue         *found_threads = nullptr;
 	QueueNode     *tmp_node = nullptr;
@@ -481,9 +483,10 @@ void cmd_thread_find() {
 	size_t         thread_choice_n;
 	char           tmp_buf[64];
 	size_t         cntr = 1;
+	size_t         tmp = 0;
 
-	LeData qdata;
-	ServerQuery *query;
+	LeData         qdata;
+	ServerQuery   *query;
 
 
 	printf("Type part of the topic to find (%zu-%zu characters, no newlines):\n", g_server_meta.min_topic_size, g_server_meta.max_topic_size);
@@ -491,9 +494,11 @@ void cmd_thread_find() {
 
 	search_query = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((search_query_size = s_fgets(search_query, g_server_meta.max_topic_size + 1, stdin)) < 0) {
+	if ((search_query_size = s_fgets_range(search_query, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == -LESTATUS_IDAT) {
+		newline();
 		goto THREAD_FIND_EXIT;
 	}
+
 	newline();
 
 	qdata = gen_query_FTHR(search_query, search_query_size);
@@ -510,7 +515,7 @@ void cmd_thread_find() {
 		puts("Nothing found.");
 	}
 	else {
-		printf("Choose the thread number (1-%zu). Type 'r' or any other number if you want to return:\n", found_threads->size);
+		printf("Here are the threads that match '%s':\n", search_query);
 		
 		tmp_node = found_threads->first;
 
@@ -522,6 +527,8 @@ void cmd_thread_find() {
 			tmp_node = tmp_node->next;
 			cntr++;
 		}
+
+		printf("Choose the thread number (1-%zu). Type 'r' or any other number if you want to return:\n", found_threads->size);
 		
 		print_prefix_thread();
 
@@ -611,20 +618,24 @@ void cmd_thread_message_history() {
 	query_delete(query);
 	query = nullptr;
 
-	tmp_node = thread->messages->first;
-	
-	while (tmp_node != nullptr) {
-		tmp_message = (LeMessage *)tmp_node->data;
+	if (thread->messages->size > 0) {
+		tmp_node = thread->messages->first;
+		
+		while (tmp_node != nullptr) {
+			tmp_message = (LeMessage *)tmp_node->data;
 
-		printf("msg #%zu", tmp_message->id);
-		if (tmp_message->by_lethread_author) 
-			printf(" (OP)");
-		printf(":\n");
-		printf("  %s\n", tmp_message->text);
+			printf("msg #%zu", tmp_message->id);
+			if (tmp_message->by_lethread_author) 
+				printf(" (OP)");
+			printf(":\n");
+			printf("  %s\n", tmp_message->text);
 
-		tmp_node = tmp_node->next;
+			tmp_node = tmp_node->next;
+		}
 	}
-
+	else {
+		puts("No messages. Be first to post here!");
+	}
 	newline();
 
 	lethread_delete(thread);
@@ -635,7 +646,7 @@ void cmd_thread_message_history() {
 
 void cmd_thread_send_message() {
 	char *user_message;
-	size_t size;
+	size_t size = 0;
 	LeData qdata;
 	ServerQuery *query;
 	char *token = nullptr;
@@ -649,8 +660,11 @@ void cmd_thread_send_message() {
 	user_message = malloc(g_server_meta.max_message_size + 1);
 
 	printf("Type your message (%zu-%zu characters, no newlines):\n", g_server_meta.min_message_size, g_server_meta.max_message_size);
-
-	size = s_fgets(user_message, g_server_meta.max_message_size + 1, stdin);
+	
+	if ((size = s_fgets_range(user_message, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == -LESTATUS_IDAT) {
+		newline();
+		goto THREAD_SEND_MESSAGE_EXIT;
+	}
 	newline();
 
 	token = token_load();
@@ -675,7 +689,7 @@ void cmd_thread_send_message() {
 		token = nullptr;
 	}
 
-
+THREAD_SEND_MESSAGE_EXIT:
 	free(user_message);
 	user_message = nullptr;
 }
