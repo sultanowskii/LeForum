@@ -10,12 +10,12 @@
  * 
  */
 struct LeMeta {
-    size_t    min_message_size;
-    size_t    max_message_size;
-    size_t    min_topic_size;
-    size_t    max_topic_size;
-    char     *version;
-    size_t    version_size;
+	size_t    min_message_size;
+	size_t    max_message_size;
+	size_t    min_topic_size;
+	size_t    max_topic_size;
+	char     *version;
+	size_t    version_size;
 };
 typedef struct LeMeta LeMeta;
 
@@ -24,23 +24,23 @@ typedef struct LeMeta LeMeta;
  * 
  */
 struct ServerQuery {
-    bool_t    completed;
-    void     *raw_request_data;
-    size_t    raw_request_data_size;
-    void *  (*parse_response)(char *raw_data);
-    void     *parsed_data;
+	bool_t    completed;
+	void     *raw_request_data;
+	size_t    raw_request_data_size;
+	void *  (*parse_response)(char *raw_data);
+	void     *parsed_data;
 };
 typedef struct ServerQuery ServerQuery;
 
 struct LeData {
-    void     *data;
-    size_t    size;
+	void     *data;
+	size_t    size;
 };
 typedef struct LeData LeData;
 
 struct CreatedThreadInfo {
-    uint64_t  thread_id;
-    char     *token;
+	uint64_t  thread_id;
+	char     *token;
 };
 typedef struct CreatedThreadInfo CreatedThreadInfo;
 

@@ -235,7 +235,7 @@ status_t server_addr_history_load() {
 		tmp_server_addr->port = port;
 
 		queue_push(g_server_addr_history, tmp_server_addr, sizeof(*tmp_server_addr));
-    }
+	}
 
 	fclose(file);
 
