@@ -14,8 +14,9 @@
  * 
  * @param str Pointer, which will point to the resulting string 
  * @param size String size 
+ * @return LESTATUS_OK on succes 
  */
-void               rand_string(char *str, size_t size);
+status_t            rand_string(char *str, size_t size);
 
 /**
  * @brief Returns random unsigned 8-byte number. 
