@@ -25,23 +25,23 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 
 	size_t              chunk_size;
 
-	char               *answer;
-	char               *answer_start;
-	size_t              answer_size;
+	char               *response;
+	char               *response_start;
+	size_t              response_size;
 
 	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
 
 
-	if (size < sizeof("THRID") - 1 + sizeof(lethread_id)) {
+	if (size < strlen("THRID") + sizeof(lethread_id)) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
 
-	if (strncmp(data_ptr, "THRID", sizeof("THRID") - 1) != 0) {
+	if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
-	data_ptr += sizeof("THRID") - 1;
+	data_ptr += strlen("THRID");
 
 	lethread_id = *(uint64_t *)data_ptr;
 
@@ -57,34 +57,34 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	topic_size = strlen(lethread->topic);
 
 	message_cnt = lethread_message_count(lethread);
-	answer_size = sizeof("THRID") - 1 + sizeof(lethread_id) + sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1 + topic_size + sizeof("MSGCNT") - 1 + sizeof(message_cnt);
-	chunk_size = answer_size + 1024;
+	response_size = strlen("THRID") + sizeof(lethread_id) + strlen("TPCSZ") + sizeof(topic_size) + strlen("TPC") + topic_size + strlen("MSGCNT") + sizeof(message_cnt);
+	chunk_size = response_size + 1024;
 
-	answer_start = malloc(chunk_size);
-	answer = answer_start;
+	response_start = malloc(chunk_size);
+	response = response_start;
 
-	strncpy(answer, "THRID", sizeof("THRID") - 1);
-	answer += sizeof("THRID") - 1;
+	strncpy(response, "THRID", strlen("THRID"));
+	response += strlen("THRID");
 
-	*(uint64_t *)answer = lethread_id;
-	answer += sizeof(lethread_id);
+	*(uint64_t *)response = lethread_id;
+	response += sizeof(lethread_id);
 
-	strncpy(answer, "TPCSZ", sizeof("TPCSZ") - 1);
-	answer += sizeof("TPCSZ") - 1;
-	*(size_t *)answer = topic_size;
-	answer += sizeof(topic_size);
+	strncpy(response, "TPCSZ", strlen("TPCSZ"));
+	response += strlen("TPCSZ");
+	*(size_t *)response = topic_size;
+	response += sizeof(topic_size);
 
-	strncpy(answer, "TPC", sizeof("TPC") - 1);
-	answer += sizeof("TPC") - 1;
+	strncpy(response, "TPC", strlen("TPC"));
+	response += strlen("TPC");
 
-	strncpy(answer, lethread->topic, topic_size);
-	answer += topic_size;
+	strncpy(response, lethread->topic, topic_size);
+	response += topic_size;
 
-	strncpy(answer, "MSGCNT", sizeof("MSGCNT") - 1);
-	answer += sizeof("MSGCNT") - 1;
+	strncpy(response, "MSGCNT", strlen("MSGCNT"));
+	response += strlen("MSGCNT");
 
-	*(uint64_t *)answer = message_cnt;
-	answer += sizeof(message_cnt);
+	*(uint64_t *)response = message_cnt;
+	response += sizeof(message_cnt);
 
 	node = lethread->messages->first;
 
@@ -93,39 +93,39 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 
 		text_size = strlen(lemessage->text);
 
-		while (answer_size + sizeof("MSG") - 1 + sizeof(uint8_t) + sizeof(size_t) + text_size + sizeof("MSGEND") - 1 >= chunk_size) {
+		while (response_size + strlen("MSG") + sizeof(uint8_t) + sizeof(size_t) + text_size + strlen("MSGEND") >= chunk_size) {
 			chunk_size *= 2;
-			answer_start = realloc(answer_start, chunk_size);
-			answer = answer_start + answer_size;
+			response_start = realloc(response_start, chunk_size);
+			response = response_start + response_size;
 		}
 
-		strncpy(answer, "MSG", sizeof("MSG") - 1);
-		answer += sizeof("MSG") - 1;
+		strncpy(response, "MSG", strlen("MSG"));
+		response += strlen("MSG");
 
-		*(uint8_t *)answer = lemessage->by_lethread_author;
-		answer += sizeof(lemessage->by_lethread_author);
+		*(uint8_t *)response = lemessage->by_lethread_author;
+		response += sizeof(lemessage->by_lethread_author);
 	
-		*(uint64_t *)answer = lemessage->id;
-		answer += sizeof(uint64_t);
+		*(uint64_t *)response = lemessage->id;
+		response += sizeof(uint64_t);
 
-		*(size_t *)answer = text_size;
-		answer += sizeof(size_t);
+		*(size_t *)response = text_size;
+		response += sizeof(size_t);
 
-		strncpy(answer, lemessage->text, text_size);
-		answer += text_size;
+		strncpy(response, lemessage->text, text_size);
+		response += text_size;
 
-		strncpy(answer, "MSGEND", sizeof("MSGEND") - 1);
-		answer += sizeof("MSGEND") - 1;
+		strncpy(response, "MSGEND", strlen("MSGEND"));
+		response += strlen("MSGEND");
 		node = node->next;
 
-		answer_size = answer - answer_start;
+		response_size = response - response_start;
 	}
 
 	sharedptr_delete(sharedptr_lethread);
 	sharedptr_lethread = nullptr;
 
-	result.data = answer_start;
-	result.size = answer - answer_start;
+	result.data = response_start;
+	result.size = response - response_start;
 	result.status = LESTATUS_OK;
 
 	return result;
@@ -138,23 +138,23 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	size_t              topic_size;
 	SharedPtr          *sharedptr_lethread;
 
-	char               *answer_start;
-	char               *answer;
-	size_t              answer_size           = sizeof("OKTHRID") - 1 + sizeof(uint64_t) + sizeof("TKN") - 1 + TOKEN_SIZE;
+	char               *response_start;
+	char               *response;
+	size_t              response_size           = strlen("OKTHRID") + sizeof(uint64_t) + strlen("TKN") + TOKEN_SIZE;
 
 	LeCommandResult     result                = {0, LESTATUS_OK, NULL};
 
 
-	if (size < sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1) {
+	if (size < strlen("TPCSZ") + sizeof(topic_size) + strlen("TPC")) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
 
-	if (strncmp(data_ptr, "TPCSZ", sizeof("TPCSZ") - 1) != 0) {
+	if (strncmp(data_ptr, "TPCSZ", strlen("TPCSZ")) != 0) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
-	data_ptr += sizeof("TPCSZ") - 1;
+	data_ptr += strlen("TPCSZ");
 
 	topic_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(size_t);
@@ -164,11 +164,11 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 		return result;
 	}
 
-	if (strncmp(data_ptr, "TPC", sizeof("TPC") - 1) != 0) {
+	if (strncmp(data_ptr, "TPC", strlen("TPC")) != 0) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
-	data_ptr += sizeof("TPC") - 1;
+	data_ptr += strlen("TPC");
 
 	sharedptr_lethread = s_lethread_create(data_ptr, rand_uint64_t() % 0xffffffff);
 	new_lethread = (LeThread *)sharedptr_lethread->data;
@@ -178,26 +178,26 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	s_lethread_save(sharedptr_lethread);
 	s_leauthor_save(sharedptr_lethread);
 
-	answer_start = malloc(answer_size);
-	answer = answer_start;
+	response_start = malloc(response_size);
+	response = response_start;
 
-	strncpy(answer, "THRID", sizeof("THRID") - 1);
-	answer += sizeof("THRID") - 1;
+	strncpy(response, "THRID", strlen("THRID"));
+	response += strlen("THRID");
 
-	*(uint64_t*)answer = new_lethread->id;
-	answer += sizeof(uint64_t);
+	*(uint64_t*)response = new_lethread->id;
+	response += sizeof(uint64_t);
 
-	strncpy(answer, "TKN", sizeof("TKN") - 1);
-	answer += sizeof("TKN") - 1;
+	strncpy(response, "TKN", strlen("TKN"));
+	response += strlen("TKN");
 
-	strncpy(answer, new_lethread->author->token, TOKEN_SIZE);
-	answer += TOKEN_SIZE;
+	strncpy(response, new_lethread->author->token, TOKEN_SIZE);
+	response += TOKEN_SIZE;
 
 	sharedptr_delete(sharedptr_lethread);
 	sharedptr_lethread = nullptr;
 
-	result.data = answer_start;
-	result.size = answer_size;
+	result.data = response_start;
+	result.size = response_size;
 	result.status = LESTATUS_OK;
 
 	return result;
@@ -219,18 +219,18 @@ LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 
 	size_t              chunk_size;
 
-	char               *answer;
-	char               *answer_start;
-	size_t              answer_size;
+	char               *response;
+	char               *response_start;
+	size_t              response_size;
 
 	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
 
 
-	if (strncmp(data_ptr, "TPCPSZ", sizeof("TPCPSZ") - 1) != 0) {
+	if (strncmp(data_ptr, "TPCPSZ", strlen("TPCPSZ")) != 0) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
-	data_ptr += sizeof("TPCPSZ") - 1;
+	data_ptr += strlen("TPCPSZ");
 
 	topic_part_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(topic_part_size);
@@ -240,11 +240,11 @@ LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 		return result;
 	}
 
-	if (strncmp(data_ptr, "TPCP", sizeof("TPCP") - 1) != 0) {
+	if (strncmp(data_ptr, "TPCP", strlen("TPCP")) != 0) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
-	data_ptr += sizeof("TPCP") - 1;
+	data_ptr += strlen("TPCP");
 
 	topic_part = malloc(topic_part_size + 1);
 	strncpy(topic_part, data_ptr, topic_part_size);
@@ -256,13 +256,13 @@ LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	node = lethreads->first;
 
 	chunk_size = 1024;
-	answer_start = malloc(chunk_size);
-	answer = answer_start;
-	answer_size = answer - answer_start;
+	response_start = malloc(chunk_size);
+	response = response_start;
+	response_size = response - response_start;
 
 	if (queue_is_empty(lethreads) || node == NULL) {
-		strncpy(answer, "NFND", sizeof("NFND") - 1);
-		answer += sizeof("NFND") - 1;
+		strncpy(response, "NFND", strlen("NFND"));
+		response += strlen("NFND");
 		goto FTHR_SUCCESS;
 	}
 
@@ -272,30 +272,30 @@ LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 
 		topic_size = strlen(lethread->topic);
 
-		while (answer_size + sizeof("THRID") - 1 + sizeof(lethread->id) + sizeof("TPCSZ") - 1 + sizeof(topic_size) + sizeof("TPC") - 1 + topic_size >= chunk_size) {
+		while (response_size + strlen("THRID") + sizeof(lethread->id) + strlen("TPCSZ") + sizeof(topic_size) + strlen("TPC") + topic_size >= chunk_size) {
 			chunk_size *= 2;
-			answer_start = realloc(answer_start, chunk_size);
-			answer = answer_start + answer_size;
+			response_start = realloc(response_start, chunk_size);
+			response = response_start + response_size;
 		}
 
-		strncpy(answer, "THRID", sizeof("THRID") - 1);
-		answer += sizeof("THRID") - 1;
+		strncpy(response, "THRID", strlen("THRID"));
+		response += strlen("THRID");
 
-		*(uint64_t *)answer = lethread->id;
-		answer += sizeof(lethread->id);
+		*(uint64_t *)response = lethread->id;
+		response += sizeof(lethread->id);
 
-		strncpy(answer, "TPCSZ", sizeof("TPCSZ") - 1);
-		answer += sizeof("TPCSZ") - 1;
-		*(size_t *)answer = topic_size;
-		answer += sizeof(topic_size);
+		strncpy(response, "TPCSZ", strlen("TPCSZ"));
+		response += strlen("TPCSZ");
+		*(size_t *)response = topic_size;
+		response += sizeof(topic_size);
 
-		strncpy(answer, "TPC", sizeof("TPC") - 1);
-		answer += sizeof("TPC") - 1;
+		strncpy(response, "TPC", strlen("TPC"));
+		response += strlen("TPC");
 
-		strncpy(answer, lethread->topic, topic_size);
-		answer += topic_size;
+		strncpy(response, lethread->topic, topic_size);
+		response += topic_size;
 
-		answer_size = answer - answer_start;
+		response_size = response - response_start;
 
 		node = node->next;
 	}
@@ -307,8 +307,8 @@ FTHR_SUCCESS:
 	free(topic_part);
 	topic_part = nullptr;
 
-	result.data = answer_start;
-	result.size = answer - answer_start;
+	result.data = response_start;
+	result.size = response - response_start;
 	result.status = LESTATUS_OK;
 
 	return result;
@@ -329,16 +329,16 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
 
 
-	if (size < sizeof("THRID") - 1 + sizeof(lethread_id) + sizeof("TXTSZ") - 1 + sizeof(text_size) + sizeof("TXT") - 1) {
+	if (size < strlen("THRID") + sizeof(lethread_id) + strlen("TXTSZ") + sizeof(text_size) + strlen("TXT")) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
 
-	if (strncmp(data_ptr, "THRID", sizeof("THRID") - 1) != 0) {
+	if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0) {
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
-	data_ptr += sizeof("THRID") - 1;
+	data_ptr += strlen("THRID");
 
 	lethread_id = *(uint64_t *)data_ptr;
 	data_ptr += sizeof(lethread_id);
@@ -352,13 +352,13 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	lethread = (LeThread *)sharedptr_lethread->data;
 
-	if (strncmp(data_ptr, "TXTSZ", sizeof("TXTSZ") - 1) != 0) {
+	if (strncmp(data_ptr, "TXTSZ", strlen("TXTSZ")) != 0) {
 		sharedptr_delete(sharedptr_lethread);
 		sharedptr_lethread = nullptr;
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
-	data_ptr += sizeof("TXTSZ") - 1;
+	data_ptr += strlen("TXTSZ");
 
 	text_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(text_size);
@@ -370,13 +370,13 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 		return result;
 	}
 
-	if (strncmp(data_ptr, "TXT", 3) != 0) {
+	if (strncmp(data_ptr, "TXT", strlen("TXT")) != 0) {
 		sharedptr_delete(sharedptr_lethread);
 		sharedptr_lethread = nullptr;
 		result.status = LESTATUS_ISYN;
 		return result;
 	}
-	data_ptr += 3;
+	data_ptr += strlen("TXT");
 
 	text = malloc(text_size + 1);
 	text[text_size] = '\0';
@@ -386,8 +386,8 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	is_author = FALSE;
 
 	/* TOKEN is an optional argument. If not presented/not correct, then the message  will be posted anonymously. */
-	if (strncmp(data_ptr, "TKN", sizeof("TKN") - 1) == 0) {
-		data_ptr += sizeof("TKN") - 1;
+	if (strncmp(data_ptr, "TKN", strlen("TKN")) == 0) {
+		data_ptr += strlen("TKN");
 		is_author = is_token_valid(lethread, data_ptr);
 	}
 
@@ -411,63 +411,63 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 LeCommandResult cmd_meta(char *raw_data, size_t size) {
 	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
 
-	char               *answer;
-	char               *answer_start;
+	char               *response;
+	char               *response_start;
 
 	char               *tmp;
 	size_t              tmp_size;
 
 
-	answer = malloc(128);
-	answer_start = answer;
+	response = malloc(128);
+	response_start = response;
 
-	strncpy(answer, "MINTPCSZ", sizeof("MINTPCSZ") - 1);
-	answer += sizeof("MINTPCSZ") - 1;
+	strncpy(response, "MINTPCSZ", strlen("MINTPCSZ"));
+	response += strlen("MINTPCSZ");
 
-	*(size_t *)answer = MIN_TOPIC_SIZE;
-	answer += sizeof(size_t);
+	*(size_t *)response = MIN_TOPIC_SIZE;
+	response += sizeof(size_t);
 
-	strncpy(answer, "MAXTPCSZ", sizeof("MAXTPCSZ") - 1);
-	answer += sizeof("MAXTPCSZ") - 1;
+	strncpy(response, "MAXTPCSZ", strlen("MAXTPCSZ"));
+	response += strlen("MAXTPCSZ");
 
-	*(size_t *)answer = MAX_TOPIC_SIZE;
-	answer += sizeof(size_t);
+	*(size_t *)response = MAX_TOPIC_SIZE;
+	response += sizeof(size_t);
 
-	strncpy(answer, "MINMSGSZ", sizeof("MINMSGSZ") - 1);
-	answer += sizeof("MINMSGSZ") - 1;
+	strncpy(response, "MINMSGSZ", strlen("MINMSGSZ"));
+	response += strlen("MINMSGSZ");
 
-	*(size_t *)answer = MIN_MESSAGE_SIZE;
-	answer += sizeof(size_t);
+	*(size_t *)response = MIN_MESSAGE_SIZE;
+	response += sizeof(size_t);
 
-	strncpy(answer, "MAXMSGSZ", sizeof("MAXMSGSZ") - 1);
-	answer += sizeof("MAXMSGSZ") - 1;
+	strncpy(response, "MAXMSGSZ", strlen("MAXMSGSZ"));
+	response += strlen("MAXMSGSZ");
 
-	*(size_t *)answer = MAX_MESSAGE_SIZE;
-	answer += sizeof(size_t);
+	*(size_t *)response = MAX_MESSAGE_SIZE;
+	response += sizeof(size_t);
 
-	strncpy(answer, "THRN", sizeof("THRN") - 1);
-	answer += sizeof("THRN") - 1;
+	strncpy(response, "THRN", strlen("THRN"));
+	response += strlen("THRN");
 
-	*(size_t *)answer = get_lethread_count();
-	answer += sizeof(size_t);
+	*(size_t *)response = get_lethread_count();
+	response += sizeof(size_t);
 
 	tmp = get_version();
 	tmp_size = strlen(tmp);
 
-	strncpy(answer, "VERSZ", sizeof("VERSZ") - 1);
-	answer += sizeof("VERSZ") - 1;
+	strncpy(response, "VERSZ", strlen("VERSZ"));
+	response += strlen("VERSZ");
 
-	*(size_t *)answer = tmp_size;
-	answer += sizeof(size_t);
+	*(size_t *)response = tmp_size;
+	response += sizeof(size_t);
 
-	strncpy(answer, "VER", sizeof("VER") - 1);
-	answer += sizeof("VER") - 1;
+	strncpy(response, "VER", strlen("VER"));
+	response += strlen("VER");
 
-	strncpy(answer, tmp, tmp_size);
-	answer += tmp_size;
+	strncpy(response, tmp, tmp_size);
+	response += tmp_size;
 
-	result.data = answer_start;
-	result.size = answer - answer_start;
+	result.data = response_start;
+	result.size = response - response_start;
 	result.status = LESTATUS_OK;
 
 	return result;
