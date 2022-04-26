@@ -28,7 +28,7 @@ struct ServerQuery {
 	bool_t    completed;
 	void     *raw_request_data;
 	size_t    raw_request_data_size;
-	void *  (*parse_response)(char *raw_data);
+	void *  (*parse_response)(char *raw_data, size_t size);
 	void     *parsed_data;
 };
 typedef struct ServerQuery ServerQuery;
@@ -118,46 +118,52 @@ LeData gen_query_LIVE();
  * @brief Parses CTHR response. 
  * 
  * @param raw_data Pointer to the raw reponse
+ * @param size Size of the data
  * @return Pointer to the LeThread object with ID, name and token fields filled 
  */
-CreatedThreadInfo * parse_response_CTHR(char *raw_data);
+CreatedThreadInfo * parse_response_CTHR(char *raw_data, size_t size);
 
 /**
  * @brief Parses GTHR response. 
  * 
  * @param raw_data Pointer to the raw reponse
+ * @param size Size of the data
  * @return Pointer to the LeThread object retrieved from the server 
  */
-LeThread * parse_response_GTHR(char *raw_data);
+LeThread * parse_response_GTHR(char *raw_data, size_t size);
 
 /**
  * @brief Parses FTHR response. 
  * 
  * @param raw_data Pointer to the raw reponse
+ * @param size Size of the data
  * @return Pointer to the queue that contains all the match threads  
  */
-Queue * parse_response_FTHR(char *raw_data);
+Queue * parse_response_FTHR(char *raw_data, size_t size);
 
 /**
  * @brief Parses CMSG response. 
  * 
  * @param raw_data Pointer to the raw reponse
+ * @param size Size of the data
  * @return LESTATUS_OK on success   
  */
-status_t parse_response_CMSG(char *raw_data);
+status_t parse_response_CMSG(char *raw_data, size_t size);
 
 /**
  * @brief Parses META response. 
  * 
  * @param raw_data Pointer to the raw reponse
+ * @param size Size of the data
  * @return LESTATUS_OK on success   
  */
-LeMeta * parse_response_META(char *raw_data);
+LeMeta * parse_response_META(char *raw_data, size_t size);
 
 /**
  * @brief Parses LIVE response. 
  * 
  * @param raw_data Pointer to the raw reponse
+ * @param size Size of the data
  * @return LESTATUS_OK on success   
  */
-status_t parse_response_LIVE(char *raw_data);
+status_t parse_response_LIVE(char *raw_data, size_t size);

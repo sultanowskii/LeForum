@@ -4,7 +4,7 @@ ServerQuery * query_create(void * (*parser)(char *raw_data), char *request_data,
 	ServerQuery        *query;
 
 
-	query = malloc(sizeof(*query));
+	query = calloc(sizeof(*query), 1);
 	query->completed = FALSE;
 	query->parse_response = parser;
 	query->raw_request_data = request_data;
@@ -37,24 +37,24 @@ LeData gen_query_CTHR(const char *topic, size_t size) {
 	size_t data_size;
 
 
-	data_size = sizeof("CTHR") + sizeof("TPCSZ") + sizeof(size) + sizeof("TPC") + size;
+	data_size = strlen("CTHR") + strlen("TPCSZ") + sizeof(size) + strlen("TPC") + size;
 
-	result.data = malloc(data_size);
+	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
 	
 	data_ptr = result.data;
 
-	strncpy(data_ptr, "CTHR", sizeof("CTHR"));
-	data_ptr += sizeof("CTHR");
+	strncpy(data_ptr, "CTHR", strlen("CTHR"));
+	data_ptr += strlen("CTHR");
 
-	strncpy(data_ptr, "TPCSZ", sizeof("TPCSZ"));
-	data_ptr += sizeof("TPCSZ");
+	strncpy(data_ptr, "TPCSZ", strlen("TPCSZ"));
+	data_ptr += strlen("TPCSZ");
 
 	*(size_t *)data_ptr = size;
 	data_ptr += sizeof(size);
 
-	strncpy(data_ptr, "TPC", sizeof("TPC"));
-	data_ptr += sizeof("TPC");
+	strncpy(data_ptr, "TPC", strlen("TPC"));
+	data_ptr += strlen("TPC");
 
 	strncpy(data_ptr, topic, size);
 	data_ptr += size;
@@ -68,18 +68,18 @@ LeData gen_query_GTHR(uint64_t thread_id) {
 	size_t data_size;
 
 
-	data_size = sizeof("GTHR") + sizeof("THRID") + sizeof(thread_id);
+	data_size = strlen("GTHR") + strlen("THRID") + sizeof(thread_id);
 
-	result.data = malloc(data_size);
+	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
 	
 	data_ptr = result.data;
 
-	strncpy(data_ptr, "GTHR", sizeof("GTHR"));
-	data_ptr += sizeof("GTHR");
+	strncpy(data_ptr, "GTHR", strlen("GTHR"));
+	data_ptr += strlen("GTHR");
 
-	strncpy(data_ptr, "THRID", sizeof("THRID"));
-	data_ptr += sizeof("THRID");
+	strncpy(data_ptr, "THRID", strlen("THRID"));
+	data_ptr += strlen("THRID");
 
 	*(uint64_t *)data_ptr = thread_id;
 	data_ptr += sizeof(thread_id);
@@ -93,24 +93,24 @@ LeData gen_query_FTHR(const char *topic_part, size_t size) {
 	size_t data_size;
 
 
-	data_size = sizeof("FTHR") + sizeof("TPCPSZ") + sizeof(size) + sizeof("TPCP") + size;
+	data_size = strlen("FTHR") + strlen("TPCPSZ") + sizeof(size) + strlen("TPCP") + size;
 
-	result.data = malloc(data_size);
+	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
 	
 	data_ptr = result.data;
 
-	strncpy(data_ptr, "FTHR", sizeof("FTHR"));
-	data_ptr += sizeof("FTHR");
+	strncpy(data_ptr, "FTHR", strlen("FTHR"));
+	data_ptr += strlen("FTHR");
 
-	strncpy(data_ptr, "TPCPSZ", sizeof("TPCPSZ"));
-	data_ptr += sizeof("TPCPSZ");
+	strncpy(data_ptr, "TPCPSZ", strlen("TPCPSZ"));
+	data_ptr += strlen("TPCPSZ");
 
 	*(size_t *)data_ptr = size;
 	data_ptr += sizeof(size);
 
-	strncpy(data_ptr, "TPCP", sizeof("TPCP"));
-	data_ptr += sizeof("TPCP");
+	strncpy(data_ptr, "TPCP", strlen("TPCP"));
+	data_ptr += strlen("TPCP");
 
 	strncpy(data_ptr, topic_part, size);
 	data_ptr += size;
@@ -124,39 +124,39 @@ LeData gen_query_CMSG(uint64_t thread_id, const char *msg, size_t size, char *to
 	size_t data_size;
 
 
-	data_size = sizeof("CMSG") + sizeof("THRID") + sizeof(thread_id) + sizeof("TXTSZ") + sizeof(size) + sizeof("TXT") + size;
+	data_size = strlen("CMSG") + strlen("THRID") + sizeof(thread_id) + strlen("TXTSZ") + sizeof(size) + strlen("TXT") + size;
 	if (token != nullptr)
-		data_size += sizeof("TKN") + TOKEN_SIZE;
+		data_size += strlen("TKN") + TOKEN_SIZE;
 
-	result.data = malloc(data_size);
+	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
 	
 	data_ptr = result.data;
 
-	strncpy(data_ptr, "CMSG", sizeof("CMSG"));
-	data_ptr += sizeof("CMSG");
+	strncpy(data_ptr, "CMSG", strlen("CMSG"));
+	data_ptr += strlen("CMSG");
 
-	strncpy(data_ptr, "THRID", sizeof("THRID"));
-	data_ptr += sizeof("THRID");
+	strncpy(data_ptr, "THRID", strlen("THRID"));
+	data_ptr += strlen("THRID");
 
 	*(uint64_t *)data_ptr = thread_id;
 	data_ptr += sizeof(thread_id);
 
-	strncpy(data_ptr, "TXTSZ", sizeof("TXTSZ"));
-	data_ptr += sizeof("TXTSZ");
+	strncpy(data_ptr, "TXTSZ", strlen("TXTSZ"));
+	data_ptr += strlen("TXTSZ");
 
 	*(uint64_t *)data_ptr = size;
 	data_ptr += sizeof(size);
 
-	strncpy(data_ptr, "TXT", sizeof("TXT"));
-	data_ptr += sizeof("TXT");
+	strncpy(data_ptr, "TXT", strlen("TXT"));
+	data_ptr += strlen("TXT");
 
 	strncpy(data_ptr, msg, size);
 	data_ptr += size;
 
 	if (token != nullptr) {
-		strncpy(data_ptr, "TKN", sizeof("TKN"));
-		data_ptr += sizeof("TKN");
+		strncpy(data_ptr, "TKN", strlen("TKN"));
+		data_ptr += strlen("TKN");
 
 		strncpy(data_ptr, token, TOKEN_SIZE);
 		data_ptr += TOKEN_SIZE;
@@ -171,15 +171,15 @@ LeData gen_query_META() {
 	size_t data_size;
 
 
-	data_size = sizeof("META");
+	data_size = strlen("META");
 
-	result.data = malloc(data_size);
+	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
 	
 	data_ptr = result.data;
 
-	strncpy(data_ptr, "META", sizeof("META"));
-	data_ptr += sizeof("META");
+	strncpy(data_ptr, "META", strlen("META"));
+	data_ptr += strlen("META");
 
 	return result;
 }
@@ -190,15 +190,291 @@ LeData gen_query_LIVE() {
 	size_t data_size;
 
 
-	data_size = sizeof("LIVE");
+	data_size = strlen("LIVE");
 
-	result.data = malloc(data_size);
+	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
 	
 	data_ptr = result.data;
 
-	strncpy(data_ptr, "LIVE", sizeof("LIVE"));
-	data_ptr += sizeof("LIVE");
+	strncpy(data_ptr, "LIVE", strlen("LIVE"));
+	data_ptr += strlen("LIVE");
 
 	return result;
+}
+
+CreatedThreadInfo * parse_response_CTHR(char *raw_data, size_t size) {
+	CreatedThreadInfo *info;
+	char *data_ptr;
+	uint64_t tmp;
+
+
+	/* TODO: check size */
+	data_ptr = raw_data;
+
+	if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0) {
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("THRID");
+
+	tmp = *(uint64_t *)data_ptr;
+	data_ptr += sizeof(tmp);
+
+	if (strncmp(data_ptr, "TKN", strlen("TKN")) != 0) {
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("TKN");
+
+	info = (CreatedThreadInfo *)calloc(sizeof(void), sizeof(*info));
+	info->thread_id = tmp;
+	info->token = calloc(sizeof(char), TOKEN_SIZE + 1);
+
+	strncpy(info->token, data_ptr, TOKEN_SIZE);
+	
+	return info;
+}
+
+LeThread * parse_response_GTHR(char *raw_data, size_t size) {
+	char *data_ptr;
+	LeThread *thread;
+	size_t thread_id;
+	char *thread_topic;
+	size_t topic_size;
+	size_t msg_cntr;
+	bool_t by_author;
+	uint64_t msg_id;
+	size_t msg_size;
+	char *msg_text;
+
+
+	/* TODO: check size */
+	data_ptr = raw_data;
+
+	if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0)
+		return LESTATUS_IDAT;
+	data_ptr += strlen("THRID");
+
+	thread_id = *(uint64_t *)data_ptr;
+	data_ptr += sizeof(thread_id);
+
+	if (strncmp(data_ptr, "TPCSZ", strlen("TPCSZ")) != 0)
+		return LESTATUS_IDAT;
+	data_ptr += strlen("TPCSZ");
+
+	topic_size = *(uint64_t *)data_ptr;
+	data_ptr += sizeof(topic_size);
+
+	thread_topic = malloc(topic_size);
+	if (strncmp(data_ptr, "TPC", strlen("TPC")) != 0) {
+		free(thread_topic);
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("TPC");
+
+	strncpy(thread_topic, data_ptr, topic_size);
+	data_ptr += topic_size;
+
+	thread = lethread_create(thread_topic, thread_id);
+
+	if (strncmp(data_ptr, "MSGCNT", strlen("MSGCNT")) != 0) {
+		lethread_delete(thread);
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("MSGCNT");
+
+	msg_cntr = *(uint64_t *)data_ptr;
+	data_ptr += sizeof(msg_cntr);
+
+	for (size_t i = 0; i < msg_cntr; i++) {
+		if (strncmp(data_ptr, "MSG", strlen("MSG")) != 0) {
+			lethread_delete(thread);
+			return LESTATUS_IDAT;
+		}
+		data_ptr += strlen("MSG");
+
+		by_author = *(bool_t *)data_ptr;
+		data_ptr += sizeof(by_author);
+
+		msg_id = *(uint64_t *)data_ptr;
+		data_ptr += sizeof(msg_id);
+
+		msg_size = *(uint64_t *)data_ptr;
+		data_ptr += sizeof(msg_size);
+
+		msg_text = calloc(sizeof(char), msg_size);
+		strncpy(msg_text, data_ptr, msg_size);
+		data_ptr += msg_size;
+
+		lemessage_create(thread, msg_text, by_author);
+
+		if (strncmp(data_ptr, "MSGEND", strlen("MSGEND")) != 0) {
+			lethread_delete(thread);
+			return LESTATUS_IDAT;
+		}
+		data_ptr += strlen("MSGEND");
+	}
+	
+	return thread;
+}
+
+Queue * parse_response_FTHR(char *raw_data, size_t size) {
+	char *data_ptr;
+	Queue *found;
+
+	LeThread *thread;
+	uint64_t thread_id;
+	size_t topic_size;
+	char *thread_topic;
+
+
+	found = queue_create(lethread_delete);
+	data_ptr = raw_data;
+
+	while ((size_t)(data_ptr - raw_data) < size) {
+		if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0) {
+			query_delete(found);
+			return LESTATUS_IDAT;
+		}
+		data_ptr += strlen("THRID");
+
+		thread_id = *(uint64_t *)data_ptr;
+		data_ptr += sizeof(thread_id);
+
+		if (strncmp(data_ptr, "TPCSZ", strlen("TPCSZ")) != 0) {
+			query_delete(found);
+			return LESTATUS_IDAT;
+		}
+		data_ptr += strlen("TPCSZ");
+
+		topic_size = *(uint64_t *)data_ptr;
+		data_ptr += sizeof(topic_size);
+
+		thread_topic = malloc(topic_size);
+		if (strncmp(data_ptr, "TPC", strlen("TPC")) != 0) {
+			query_delete(found);
+			return LESTATUS_IDAT;
+		}
+		data_ptr += strlen("TPC");
+
+		strncpy(thread_topic, data_ptr, topic_size);
+		data_ptr += topic_size;
+
+		thread = lethread_create(thread_topic, thread_id);
+
+		queue_push(found, thread, sizeof(thread));
+	}
+
+	return found;
+}
+
+status_t parse_response_CMSG(char *raw_data, size_t size) {
+	char *data_ptr;
+
+
+	data_ptr = raw_data;
+	if (strncmp(data_ptr, "OK", strlen("OK")) != 0) {
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("OK");
+
+	return LESTATUS_OK;
+}
+
+LeMeta * parse_response_META(char *raw_data, size_t size) {
+	LeMeta *meta;
+	char *data_ptr;
+	size_t min_topic_size, max_topic_size;
+	size_t min_message_size, max_message_size;
+	size_t lethreads_n;
+	size_t version_size;
+	char *version;
+
+
+	data_ptr = raw_data;
+	if (strncmp(data_ptr, "MINTPCSZ", strlen("MINTPCSZ")) != 0) {
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("MINTPCSZ");
+
+	min_topic_size = *(size_t *)data_ptr;
+	data_ptr += sizeof(min_topic_size);
+
+	data_ptr = raw_data;
+	if (strncmp(data_ptr, "MAXTPCSZ", strlen("MAXTPCSZ")) != 0) {
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("MAXTPCSZ");
+
+	max_topic_size = *(size_t *)data_ptr;
+	data_ptr += sizeof(max_topic_size);
+
+	data_ptr = raw_data;
+	if (strncmp(data_ptr, "MINMSGSZ", strlen("MINMSGSZ")) != 0) {
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("MINMSGSZ");
+
+	min_message_size = *(size_t *)data_ptr;
+	data_ptr += sizeof(min_message_size);
+
+	data_ptr = raw_data;
+	if (strncmp(data_ptr, "MAXMSGSZ", strlen("MAXMSGSZ")) != 0) {
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("MAXMSGSZ");
+
+	max_message_size = *(size_t *)data_ptr;
+	data_ptr += sizeof(max_message_size);
+
+	data_ptr = raw_data;
+	if (strncmp(data_ptr, "THRN", strlen("THRN")) != 0) {
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("THRN");
+
+	lethreads_n = *(size_t *)data_ptr;
+	data_ptr += sizeof(lethreads_n);
+
+	data_ptr = raw_data;
+	if (strncmp(data_ptr, "VERSZ", strlen("VERSZ")) != 0) {
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("VERSZ");
+
+	version_size = *(size_t *)data_ptr;
+	data_ptr += sizeof(version_size);
+
+	data_ptr = raw_data;
+	if (strncmp(data_ptr, "VER", strlen("VER")) != 0) {
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("VER");
+
+	version = calloc(sizeof(char), version_size + 1);
+	
+	strncpy(version, data_ptr, version_size);
+	
+	meta = calloc(sizeof(LeMeta), 1);
+
+	meta->max_topic_size = max_topic_size;
+	meta->min_topic_size = min_topic_size;
+	meta->max_message_size = max_message_size;
+	meta->min_message_size = min_message_size;
+	meta->version_size = version_size;
+	meta->version = version;
+
+	return meta;
+}
+
+status_t parse_response_LIVE(char *raw_data, size_t size) {
+	char *data_ptr;
+
+
+	data_ptr = raw_data;
+	if (strncmp(data_ptr, "OK", strlen("OK")) != 0) {
+		return LESTATUS_IDAT;
+	}
+	data_ptr += strlen("OK");
+
+	return LESTATUS_OK;
 }

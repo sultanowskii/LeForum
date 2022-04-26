@@ -234,7 +234,7 @@ status_t server_addr_history_load() {
 		strncpy(tmp_server_addr->addr, addr, 32);
 		tmp_server_addr->port = port;
 
-		queue_push(g_server_addr_history, tmp_server_addr, sizeof(*tmp_server_addr));
+		queue_push(g_server_addr_history, tmp_server_addr, sizeof(tmp_server_addr));
 	}
 
 	fclose(file);
@@ -341,7 +341,7 @@ void cmd_server_connect() {
 
 	tmp_ledata = gen_query_META();
 	tmp_query = query_create(parse_response_META, tmp_ledata.data, tmp_ledata.size);
-	queue_push(g_server_queries, tmp_query, sizeof(*tmp_query));
+	queue_push(g_server_queries, tmp_query, sizeof(tmp_query));
 	while (tmp_query->completed == FALSE) {
 
 	}
@@ -426,7 +426,7 @@ void cmd_thread_create() {
 
 	qdata = gen_query_CTHR(topic, topic_size);
 	query = query_create(parse_response_CTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(*query));
+	queue_push(g_server_queries, query, sizeof(query));
 	while (query->completed == FALSE) {
 
 	}
@@ -474,7 +474,7 @@ void cmd_thread_find() {
 
 	qdata = gen_query_FTHR(search_query, search_query_size);
 	query = query_create(parse_response_FTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(*query));
+	queue_push(g_server_queries, query, sizeof(query));
 	while (query->completed == FALSE) {
 
 	}
@@ -544,7 +544,7 @@ void cmd_thread_info() {
 
 	qdata = gen_query_GTHR(g_active_thread_id);
 	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(*query));
+	queue_push(g_server_queries, query, sizeof(query));
 	while (query->completed == FALSE) {
 
 	}
@@ -575,7 +575,7 @@ void cmd_thread_message_history() {
 
 	qdata = gen_query_GTHR(g_active_thread_id);
 	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(*query));
+	queue_push(g_server_queries, query, sizeof(query));
 	while (query->completed == FALSE) {
 
 	}
@@ -628,7 +628,7 @@ void cmd_thread_send_message() {
 
 	qdata = gen_query_CMSG(g_active_thread_id, user_message, size, token);
 	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(*query));
+	queue_push(g_server_queries, query, sizeof(query));
 
 	while (query->completed == FALSE) {
 
@@ -674,6 +674,7 @@ void query_loop() {
 	size_t         part_size;
 	size_t         response_size;
 	void          *raw_response;
+	size_t         bytes_read;
 
 
 	while (g_working) {
@@ -685,9 +686,9 @@ void query_loop() {
 				
 				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
 				raw_response = malloc(response_size);
-				recv(g_server_fd, raw_response, response_size, NULL);
+				bytes_read = recv(g_server_fd, raw_response, response_size, NULL);
 				
-				tmp_query->parsed_data = tmp_query->parse_response(raw_response);
+				tmp_query->parsed_data = tmp_query->parse_response(raw_response, bytes_read);
 				tmp_query->completed = TRUE;
 
 				free(raw_response);
