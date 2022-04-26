@@ -16,11 +16,6 @@ ServerQuery * query_create(void * (*parser)(char *raw_data), char *request_data,
 status_t query_delete(ServerQuery *query) {
 	NULLPTR_PREVENT(query, LESTATUS_NPTR)
 
-	if (query->parsed_data != nullptr) {
-		free(query->parsed_data);
-		query->parsed_data = nullptr;
-	}
-
 	if (query->raw_request_data != nullptr) {
 		free(query->raw_request_data);
 		query->raw_request_data = nullptr;
@@ -123,7 +118,6 @@ LeData gen_query_CMSG(uint64_t thread_id, const char *msg, size_t size, char *to
 	char *data_ptr;
 	size_t data_size;
 
-
 	data_size = strlen("CMSG") + strlen("THRID") + sizeof(thread_id) + strlen("TXTSZ") + sizeof(size) + strlen("TXT") + size;
 	if (token != nullptr)
 		data_size += strlen("TKN") + TOKEN_SIZE;
@@ -166,7 +160,7 @@ LeData gen_query_CMSG(uint64_t thread_id, const char *msg, size_t size, char *to
 }
 
 LeData gen_query_META() {
-	LeData result = {0};
+	LeData result;
 	char *data_ptr;
 	size_t data_size;
 
@@ -264,7 +258,7 @@ LeThread * parse_response_GTHR(char *raw_data, size_t size) {
 	topic_size = *(uint64_t *)data_ptr;
 	data_ptr += sizeof(topic_size);
 
-	thread_topic = malloc(topic_size);
+	thread_topic = calloc(sizeof(char), topic_size + 1);
 	if (strncmp(data_ptr, "TPC", strlen("TPC")) != 0) {
 		free(thread_topic);
 		return LESTATUS_IDAT;
@@ -330,6 +324,10 @@ Queue * parse_response_FTHR(char *raw_data, size_t size) {
 	found = queue_create(lethread_delete);
 	data_ptr = raw_data;
 
+	if (strncmp(data_ptr, "NFND", strlen("NFND")) == 0) {
+		return found;
+	}
+
 	while ((size_t)(data_ptr - raw_data) < size) {
 		if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0) {
 			query_delete(found);
@@ -349,7 +347,7 @@ Queue * parse_response_FTHR(char *raw_data, size_t size) {
 		topic_size = *(uint64_t *)data_ptr;
 		data_ptr += sizeof(topic_size);
 
-		thread_topic = malloc(topic_size);
+		thread_topic = calloc(sizeof(char), topic_size + 1);
 		if (strncmp(data_ptr, "TPC", strlen("TPC")) != 0) {
 			query_delete(found);
 			return LESTATUS_IDAT;
@@ -399,7 +397,6 @@ LeMeta * parse_response_META(char *raw_data, size_t size) {
 	min_topic_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(min_topic_size);
 
-	data_ptr = raw_data;
 	if (strncmp(data_ptr, "MAXTPCSZ", strlen("MAXTPCSZ")) != 0) {
 		return LESTATUS_IDAT;
 	}
@@ -408,7 +405,6 @@ LeMeta * parse_response_META(char *raw_data, size_t size) {
 	max_topic_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(max_topic_size);
 
-	data_ptr = raw_data;
 	if (strncmp(data_ptr, "MINMSGSZ", strlen("MINMSGSZ")) != 0) {
 		return LESTATUS_IDAT;
 	}
@@ -416,8 +412,7 @@ LeMeta * parse_response_META(char *raw_data, size_t size) {
 
 	min_message_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(min_message_size);
-
-	data_ptr = raw_data;
+	
 	if (strncmp(data_ptr, "MAXMSGSZ", strlen("MAXMSGSZ")) != 0) {
 		return LESTATUS_IDAT;
 	}
@@ -425,8 +420,7 @@ LeMeta * parse_response_META(char *raw_data, size_t size) {
 
 	max_message_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(max_message_size);
-
-	data_ptr = raw_data;
+	
 	if (strncmp(data_ptr, "THRN", strlen("THRN")) != 0) {
 		return LESTATUS_IDAT;
 	}
@@ -435,7 +429,7 @@ LeMeta * parse_response_META(char *raw_data, size_t size) {
 	lethreads_n = *(size_t *)data_ptr;
 	data_ptr += sizeof(lethreads_n);
 
-	data_ptr = raw_data;
+	
 	if (strncmp(data_ptr, "VERSZ", strlen("VERSZ")) != 0) {
 		return LESTATUS_IDAT;
 	}
@@ -443,17 +437,16 @@ LeMeta * parse_response_META(char *raw_data, size_t size) {
 
 	version_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(version_size);
-
-	data_ptr = raw_data;
+	
 	if (strncmp(data_ptr, "VER", strlen("VER")) != 0) {
 		return LESTATUS_IDAT;
 	}
 	data_ptr += strlen("VER");
 
 	version = calloc(sizeof(char), version_size + 1);
-	
+
 	strncpy(version, data_ptr, version_size);
-	
+
 	meta = calloc(sizeof(LeMeta), 1);
 
 	meta->max_topic_size = max_topic_size;

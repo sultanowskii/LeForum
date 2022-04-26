@@ -6,6 +6,8 @@
 
 #include "lib/status.h"
 
+#define newline() printf("\n")
+
 /**
  * @brief Returns maximum between two given arguments. 
  * 
@@ -31,7 +33,7 @@
 #define cyclic_dec(x, min, max) x = ((x - 1) >= (min)) ? (x - 1) : (max)
 
 /**
- * @brief fgets() wrapper that adds 0 in the end. 
+ * @brief fgets() wrapper that sets '\0' instead of '\n'. 
  * 
  * @param s Data pointer where input will be stored
  * @param n Max amounts to read 

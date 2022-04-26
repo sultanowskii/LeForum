@@ -19,6 +19,8 @@ Queue             *g_server_queries         = nullptr;
 
 pthread_t          g_query_loop_pthread;
 
+char               *g_home_dir = nullptr;
+
 
 const char *MainCmdID_REPR(enum MainCmdIDs id) {
 	switch (id) {
@@ -83,18 +85,22 @@ inline void print_menu_main() {
 }
 
 inline void print_prefix_server() {
+	newline();
 	printf("[Server] > ");
 }
 
 inline void print_prefix_thread() {
+	newline();
 	printf("[Thread] > ");
 }
 
 inline void print_prefix_settings() {
+	newline();
 	printf("[Settings] > ");
 }
 
 inline void print_prefix_main() {
+	newline();
 	printf("[*] > ");
 }
 
@@ -131,16 +137,17 @@ int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
 
 	int                 cmd_id;
 
-
 	print_menu();
 	print_prefix();
 
 	if ((int64_t)s_fgets(tmp, 128, stdin) < 0)
-		printf("\n");
+		newline();
 
 	cmd_id = atoi(tmp);
 
-	printf("\n");
+	newline();
+
+	memset(tmp, 0, 128);
 
 	return cmd_id;
 }
@@ -161,17 +168,14 @@ FILE * get_leclient_file(const char *filename, const char *mode, bool_t create) 
 	FILE          *file;
 	char          *tmp;
 	size_t         tmp_size;
-	char          *home_dir;
 	struct stat    st             = {0};
 
 
-	home_dir = getenv("HOME");
-	tmp_size = strlen(home_dir);
-	tmp = malloc(tmp_size + strlen(filename) + 8);
-	memset(tmp, 0, tmp_size + strlen(filename) + 8);
+	tmp_size = strlen(g_home_dir);
+	tmp = calloc(sizeof(char), tmp_size + strlen(filename) + 8);
 
-	strncpy(tmp, home_dir, tmp_size);
-	strcat(tmp, "/");
+	strncpy(tmp, g_home_dir, tmp_size);
+	strcat(tmp, "/" CLIENT_DIR);
 	strcat(tmp, filename);
 
 	if (stat(tmp, &st) < 0 && !create) {
@@ -273,17 +277,16 @@ char * token_load() {
 
 	memset(thread_id_repr, 0, sizeof(thread_id_repr));
 
-	sprintf(thread_id_repr, "%llu", g_active_thread_id);
+	snprintf(thread_id_repr, sizeof(thread_id_repr), "%llu", g_active_thread_id);
 	file = get_leclient_file(thread_id_repr, "r", FALSE);
 
-	if (file < 0) {
+	if (file == LESTATUS_NSFD) {
 		return LESTATUS_NSFD;
 	}
 
-	token = malloc(TOKEN_SIZE + 1);
-	memset(token, 0, TOKEN_SIZE + 1);
+	token = calloc(sizeof(char), TOKEN_SIZE + 1);
 
-	s_fgets(token, TOKEN_SIZE, file);
+	s_fgets(token, TOKEN_SIZE + 1, file);
 
 	fclose(file);
 
@@ -320,20 +323,20 @@ void cmd_server_connect() {
 	print_prefix_server();
 
 	if ((int64_t)s_fgets(tmp_addr, sizeof(tmp_addr), stdin) < 0)
-		printf("\n");
-
+		newline();
+	newline();
 
 	puts("Enter port of the server.");
 	print_prefix_server();
 
 	if ((int64_t)s_fgets(tmp_port, sizeof(tmp_port), stdin) < 0)
-		printf("\n");
+		newline();
+	newline();
 
 	port = atoi(tmp_port);
 
-	if (__server_connect(tmp_addr, port) != LESTATUS_OK) {
+	if (__server_connect(tmp_addr, port) != LESTATUS_OK)
 		return;
-	}
 
 	server_addr_save(tmp_addr, port);
 
@@ -356,6 +359,7 @@ void cmd_server_connect() {
 	g_server_meta.min_topic_size = tmp_lemeta->min_topic_size;
 
 	free(tmp_lemeta);
+
 	tmp_lemeta = nullptr;
 }
 
@@ -381,6 +385,8 @@ void cmd_server_history() {
 
 		node = node->next;
 	}
+
+	newline();
 }
 
 void cmd_thread() {
@@ -415,14 +421,15 @@ void cmd_thread_create() {
 	CreatedThreadInfo *tmp;
 
 
-	puts("Thread topic:");
+	printf("Thread topic (%zu-%zu characters, no newlines):\n", g_server_meta.min_topic_size, g_server_meta.max_topic_size);
 	print_prefix_thread();
 
 	topic = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((topic_size = s_fgets(topic, g_server_meta.max_topic_size, stdin)) < 0) {
+	if ((topic_size = s_fgets(topic, g_server_meta.max_topic_size + 1, stdin)) < 0) {
 		goto THREAD_CREATE_EXIT;
 	}
+	newline();
 
 	qdata = gen_query_CTHR(topic, topic_size);
 	query = query_create(parse_response_CTHR, qdata.data, qdata.size);
@@ -434,6 +441,7 @@ void cmd_thread_create() {
 	query_delete(query);
 	query = nullptr;
 
+	g_active_thread_exists = TRUE;
 	g_active_thread_id = tmp->thread_id;
 	token_save(tmp->token);
 
@@ -463,14 +471,15 @@ void cmd_thread_find() {
 	ServerQuery *query;
 
 
-	puts("Search query:");
+	printf("Type part of the topic to find (%zu-%zu characters, no newlines):\n", g_server_meta.min_topic_size, g_server_meta.max_topic_size);
 	print_prefix_thread();
 
 	search_query = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((search_query_size = s_fgets(search_query, g_server_meta.max_topic_size, stdin)) < 0) {
+	if ((search_query_size = s_fgets(search_query, g_server_meta.max_topic_size + 1, stdin)) < 0) {
 		goto THREAD_FIND_EXIT;
 	}
+	newline();
 
 	qdata = gen_query_FTHR(search_query, search_query_size);
 	query = query_create(parse_response_FTHR, qdata.data, qdata.size);
@@ -482,22 +491,23 @@ void cmd_thread_find() {
 	query_delete(query);
 	query = nullptr;
 
-	tmp_node = found_threads->first;
-
-	while (tmp_node != nullptr) {
-		tmp_thread = tmp_node->data;
-
-		printf("%zu. %s", cntr, tmp_thread->topic);
-
-		tmp_node = tmp_node->next;
-		cntr++;
-	}
-
 	if (found_threads->size == 0) {
 		puts("Nothing found.");
 	}
 	else {
-		printf("Choose the thread number (1-%zu). Type 'r' any other number if you want to return:\n", found_threads->size);
+		printf("Choose the thread number (1-%zu). Type 'r' or any other number if you want to return:\n", found_threads->size);
+		
+		tmp_node = found_threads->first;
+
+		while (tmp_node != nullptr) {
+			tmp_thread = tmp_node->data;
+
+			printf("%zu. %s\n", cntr, tmp_thread->topic);
+
+			tmp_node = tmp_node->next;
+			cntr++;
+		}
+		
 		print_prefix_thread();
 
 		s_fgets(tmp_buf, sizeof(tmp_buf), stdin);
@@ -522,6 +532,8 @@ void cmd_thread_find() {
 		g_active_thread_id = tmp_thread->id;
 		g_active_thread_exists = TRUE;
 	}
+
+	newline();
 
 THREAD_FIND_EXIT:
 	queue_delete(found_threads);
@@ -555,6 +567,7 @@ void cmd_thread_info() {
 	printf("Topic: %s\n", thread->topic);
 	printf("ID: %zu\n", thread->id);
 	printf("Messages posted: %zu\n", lethread_message_count(thread));
+	newline();
 
 	lethread_delete(thread);
 	thread = nullptr;
@@ -592,10 +605,12 @@ void cmd_thread_message_history() {
 		if (tmp_message->by_lethread_author) 
 			printf(" (OP)");
 		printf(":\n");
-		printf("  %s", tmp_message->text);
+		printf("  %s\n", tmp_message->text);
 
 		tmp_node = tmp_node->next;
 	}
+
+	newline();
 
 	lethread_delete(thread);
 	thread = nullptr;
@@ -618,9 +633,10 @@ void cmd_thread_send_message() {
 
 	user_message = malloc(g_server_meta.max_message_size + 1);
 
-	printf("Type your message (%zu characters max, no newlines):\n", g_server_meta.max_message_size);
+	printf("Type your message (%zu-%zu characters, no newlines):\n", g_server_meta.min_message_size, g_server_meta.max_message_size);
 
-	size = s_fgets(user_message, g_server_meta.max_message_size, stdin);
+	size = s_fgets(user_message, g_server_meta.max_message_size + 1, stdin);
+	newline();
 
 	token = token_load();
 	if (token == LESTATUS_IDAT || token == LESTATUS_NSFD)
@@ -675,17 +691,22 @@ void query_loop() {
 	size_t         response_size;
 	void          *raw_response;
 	size_t         bytes_read;
+	size_t         tmp_n;
+	char           tmp[32];
 
 
 	while (g_working) {
 		if (g_connected) {	
 			if (g_server_queries->size != 0) {
 				tmp_query = (ServerQuery *)queue_pop(g_server_queries);
+				tmp_n = tmp_query->raw_request_data_size;
 
-				send(g_server_fd, tmp_query->raw_request_data, tmp_query->raw_request_data_size, NULL);
+				send(g_server_fd, &tmp_n, sizeof(size_t), NULL);
+				send(g_server_fd, tmp_query->raw_request_data, tmp_n, NULL);
 				
 				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
-				raw_response = malloc(response_size);
+
+				raw_response = calloc(sizeof(char), response_size);
 				bytes_read = recv(g_server_fd, raw_response, response_size, NULL);
 				
 				tmp_query->parsed_data = tmp_query->parse_response(raw_response, bytes_read);
@@ -694,10 +715,12 @@ void query_loop() {
 				free(raw_response);
 			}
 			else {
-				send(g_server_fd, "LIVE", 4, NULL);
+				*(size_t *)tmp = strlen("LIVE");
+				send(g_server_fd, tmp, sizeof(size_t), NULL);
+				send(g_server_fd, "LIVE", tmp, NULL);
 				
-				recv(g_server_fd, &response_size, 8, NULL);
-				raw_response = malloc(response_size);
+				recv(g_server_fd, &response_size, sizeof(size_t), NULL);
+				raw_response = calloc(sizeof(char), response_size);
 				recv(g_server_fd, raw_response, response_size, NULL);
 				/* TODO: Sanity check */
 				
@@ -708,10 +731,27 @@ void query_loop() {
 }
 
 status_t startup() {
+	struct stat         st                  = {0};
+	char               *tmp;
+
+
 	signal(SIGTERM, stop_program_handle);
 	signal(SIGINT, stop_program_handle);
 
 	signal(SIGPIPE, SIG_IGN);
+	
+	g_home_dir = getenv("HOME");
+
+	tmp = calloc(sizeof(char), strlen(g_home_dir) + strlen(CLIENT_DIR) + 1);
+	strncpy(tmp, g_home_dir, strlen(g_home_dir));
+	strcat(tmp, "/" CLIENT_DIR);
+
+	/* Check if the directory exists, creates if not */
+	if (stat(tmp, &st) == -1) {
+		mkdir(tmp, 0700);
+	}
+
+	free(tmp);
 
 	g_server_queries = queue_create(free);
 

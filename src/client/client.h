@@ -21,7 +21,8 @@
 #include "client/arg.h"
 #include "client/query.h"
 
-#define FILENAME_SERVERS ".leservers"
+#define FILENAME_SERVERS "servers"
+#define CLIENT_DIR ".lefourm/"
 
 /**
  * @brief Main command list. 

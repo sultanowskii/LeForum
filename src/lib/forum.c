@@ -8,14 +8,6 @@ LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 
 	NULLPTR_PREVENT(topic, LESTATUS_NPTR)
 
-	lethread_file = get_lefile(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
-
-	/* If the lethread file already exists, then nothing should be done */
-	if (lethread_file != LESTATUS_NSFD) {
-		fclose(lethread_file);
-		return LESTATUS_EXST;
-	}
-
 	new_lethread = (LeThread *)malloc(sizeof(LeThread));
 	topic_size = strlen(topic);
 

@@ -381,12 +381,13 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	text = malloc(text_size + 1);
 	text[text_size] = '\0';
 	strncpy(text, data_ptr, text_size);
+	data_ptr += text_size;
 
 	is_author = FALSE;
 
 	/* TOKEN is an optional argument. If not presented/not correct, then the message  will be posted anonymously. */
-	if (strncmp(data_ptr, "TKN", sizeof("TXT") - 1) == 0) {
-		data_ptr += sizeof("TXT") - 1;
+	if (strncmp(data_ptr, "TKN", sizeof("TKN") - 1) == 0) {
+		data_ptr += sizeof("TKN") - 1;
 		is_author = is_token_valid(lethread, data_ptr);
 	}
 

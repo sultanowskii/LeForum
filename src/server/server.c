@@ -350,13 +350,13 @@ void * handle_client(void *arg) {
 
 	/* =================================== Example ====================================== */
 
-	char client_ip[128];
+	// char client_ip[128];
 
-	uint16_t client_port = ntohs(client_info->addr.sin_port);
-	inet_ntop(AF_INET, &(client_info->addr.sin_addr), client_ip, 128);
+	// uint16_t client_port = ntohs(client_info->addr.sin_port);
+	// inet_ntop(AF_INET, &(client_info->addr.sin_addr), client_ip, 128);
 
-	sendf(client_info->fd, "Hi! You are fd=%d, addr=%s:%hu\n", client_info->fd, client_ip, client_port);
-	printf("Connection from fd=%d, addr=%s:%hu\n", client_info->fd, client_ip, client_port);
+	// sendf(client_info->fd, "Hi! You are fd=%d, addr=%s:%hu\n", client_info->fd, client_ip, client_port);
+	// printf("Connection from fd=%d, addr=%s:%hu\n", client_info->fd, client_ip, client_port);
 
 	/* ================================= Example end ==================================== */
 
