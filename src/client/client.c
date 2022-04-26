@@ -1,25 +1,22 @@
 #include "client/client.h"
 
 bool_t             g_working                = TRUE;
-bool_t             g_connected              = FALSE;
-
-struct sockaddr_in g_server_addr            = {0};
-int                g_server_fd              = nullptr;
-
-LeMeta             g_server_meta            = {0};
-
-bool_t             g_active_thread_exists   = FALSE;
-uint64_t           g_active_thread_id       = 0;
-
 struct arguments   arguments;
 
+bool_t             g_server_connected       = FALSE;
+struct sockaddr_in g_server_addr            = {0};
+int                g_server_fd              = nullptr;
+LeMeta             g_server_meta            = {0};
 Queue             *g_server_addr_history    = nullptr;
 
 Queue             *g_server_queries         = nullptr;
 
+bool_t             g_active_thread_exists   = FALSE;
+uint64_t           g_active_thread_id       = 0;
+
 pthread_t          g_query_loop_pthread;
 
-char               *g_home_dir = nullptr;
+char              *g_home_dir = nullptr;
 
 
 const char *MainCmdID_REPR(enum MainCmdIDs id) {
@@ -34,7 +31,8 @@ const char *MainCmdID_REPR(enum MainCmdIDs id) {
 
 const char *ServerCmdID_REPR(enum ServerCmdIDs id) {
 	switch (id) {
-		case scid_CONNECT_DISCONNECT:  return g_connected ? "Disconnect" : "Connect";
+		case scid_CONNECT_DISCONNECT:  return g_server_connected ? "Disconnect" : "Connect";
+		case scid_INFO:                return "Server information";
 		case scid_HISTORY:             return "Server history";
 		case scid_BACK:                return "Back";
 		default:                       return LESTATUS_NFND;
@@ -301,8 +299,9 @@ void cmd_server() {
 		cmd_id = leclient_loop_process(print_menu_server, print_prefix_server);
 
 		switch (cmd_id) {
-			case scid_CONNECT_DISCONNECT:   g_connected ? cmd_server_disconnect() : cmd_server_connect(); continue;
+			case scid_CONNECT_DISCONNECT:   g_server_connected ? cmd_server_disconnect() : cmd_server_connect(); continue;
 			case scid_HISTORY:              cmd_server_history(); continue;
+			case scid_INFO:                 cmd_server_info(); break;
 			case scid_BACK:                 break;
 			default:                        puts("Command not found."); continue;
 		}
@@ -340,7 +339,7 @@ void cmd_server_connect() {
 
 	server_addr_save(tmp_addr, port);
 
-	g_connected = TRUE;
+	g_server_connected = TRUE;
 
 	tmp_ledata = gen_query_META();
 	tmp_query = query_create(parse_response_META, tmp_ledata.data, tmp_ledata.size);
@@ -357,6 +356,8 @@ void cmd_server_connect() {
 	g_server_meta.min_message_size = tmp_lemeta->min_message_size;
 	g_server_meta.max_topic_size = tmp_lemeta->max_topic_size;
 	g_server_meta.min_topic_size = tmp_lemeta->min_topic_size;
+	g_server_meta.version = tmp_lemeta->version;
+	g_server_meta.thread_count = tmp_lemeta->thread_count;
 
 	free(tmp_lemeta);
 
@@ -365,7 +366,21 @@ void cmd_server_connect() {
 
 void cmd_server_disconnect() {
 	close(g_server_fd);
-	g_connected = FALSE;
+	g_server_connected = FALSE;
+}
+
+void cmd_server_info() {
+	if (!g_server_connected) {
+		puts("Can't get any information - you are not connected to any server.");		
+		newline();
+		return;
+	}
+
+	// printf("Server address: %s:%hd\n", g_server_ip, g_server_port);
+	printf("Server version: %s\n", g_server_meta.version);
+	printf("Threads on a server: %llu", g_server_meta.thread_count);
+
+	newline();
 }
 
 void cmd_server_history() {
@@ -393,7 +408,7 @@ void cmd_thread() {
 	enum ThreadCmdIDs   cmd_id = _tcid_BEGIN;
 
 
-	if (!g_connected) {
+	if (!g_server_connected) {
 		puts("To see threads, connect to some server first!");
 		return;
 	}
@@ -696,7 +711,7 @@ void query_loop() {
 
 
 	while (g_working) {
-		if (g_connected) {	
+		if (g_server_connected) {	
 			if (g_server_queries->size != 0) {
 				tmp_query = (ServerQuery *)queue_pop(g_server_queries);
 				tmp_n = tmp_query->raw_request_data_size;
@@ -761,7 +776,7 @@ status_t startup() {
 }
 
 status_t cleanup() {
-	if (g_connected)
+	if (g_server_connected)
 		close(g_server_fd);
 
 	if (g_server_queries != nullptr) {

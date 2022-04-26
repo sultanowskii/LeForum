@@ -178,7 +178,7 @@ SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
 	return sharedptr_add(sharedptr_lethread); 
 }
 
-size_t get_lethread_number() {
+size_t get_lethread_count() {
 	return lethread_queue->size;
 }
 

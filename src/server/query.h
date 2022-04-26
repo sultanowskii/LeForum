@@ -105,7 +105,7 @@ size_t                  get_max_message_size();
 size_t                  get_min_topic_size();
 size_t                  get_max_topic_size();
 
-size_t                  get_lethread_number();
+size_t                  get_lethread_count();
 
 const char *            get_version();
 

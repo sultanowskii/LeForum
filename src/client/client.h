@@ -44,6 +44,7 @@ enum MainCmdIDs {
 enum ServerCmdIDs {
 	_scid_BEGIN,
 	scid_CONNECT_DISCONNECT,
+	scid_INFO,
 	scid_HISTORY,
 	scid_BACK,
 	_scid_END,
@@ -251,6 +252,12 @@ void cmd_server_connect();
  * 
  */
 void cmd_server_disconnect();
+
+/**
+ * @brief Prints information about server. 
+ * 
+ */
+void cmd_server_info();
 
 /**
  * @brief Prints server addresses history 

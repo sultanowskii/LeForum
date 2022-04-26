@@ -17,6 +17,7 @@ struct LeMeta {
 	size_t    max_topic_size;
 	char     *version;
 	size_t    version_size;
+	size_t    thread_count;
 };
 typedef struct LeMeta LeMeta;
 

@@ -448,7 +448,7 @@ LeCommandResult cmd_meta(char *raw_data, size_t size) {
 	strncpy(answer, "THRN", sizeof("THRN") - 1);
 	answer += sizeof("THRN") - 1;
 
-	*(size_t *)answer = get_lethread_number();
+	*(size_t *)answer = get_lethread_count();
 	answer += sizeof(size_t);
 
 	tmp = get_version();

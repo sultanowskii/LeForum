@@ -89,6 +89,12 @@ void                    lemeta_load();
  */
 void                    lemeta_save();
 
+/**
+ * @brief Returns number of loaded lethreads. 
+ * 
+ * @returns Number of loaded lethreads
+ */
+size_t get_lethread_count();
 
 /**
  * @brief Saves LeThreads (to corresponding files). 

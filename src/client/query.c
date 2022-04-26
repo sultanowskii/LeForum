@@ -383,7 +383,7 @@ LeMeta * parse_response_META(char *raw_data, size_t size) {
 	char *data_ptr;
 	size_t min_topic_size, max_topic_size;
 	size_t min_message_size, max_message_size;
-	size_t lethreads_n;
+	size_t thread_count;
 	size_t version_size;
 	char *version;
 
@@ -426,8 +426,8 @@ LeMeta * parse_response_META(char *raw_data, size_t size) {
 	}
 	data_ptr += strlen("THRN");
 
-	lethreads_n = *(size_t *)data_ptr;
-	data_ptr += sizeof(lethreads_n);
+	thread_count = *(size_t *)data_ptr;
+	data_ptr += sizeof(thread_count);
 
 	
 	if (strncmp(data_ptr, "VERSZ", strlen("VERSZ")) != 0) {
@@ -455,6 +455,7 @@ LeMeta * parse_response_META(char *raw_data, size_t size) {
 	meta->min_message_size = min_message_size;
 	meta->version_size = version_size;
 	meta->version = version;
+	meta->thread_count = thread_count;
 
 	return meta;
 }
