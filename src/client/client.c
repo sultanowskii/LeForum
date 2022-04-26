@@ -25,7 +25,7 @@ const char *MainCmdID_REPR(enum MainCmdIDs id) {
 		case mcid_THREAD:              return "Thread";
 		case mcid_SETTINGS:            return "Settings";
 		case mcid_EXIT:                return "Exit";
-		default:                       return LESTATUS_NFND;
+		default:                       return -LESTATUS_NFND;
 	}
 };
 
@@ -35,7 +35,7 @@ const char *ServerCmdID_REPR(enum ServerCmdIDs id) {
 		case scid_INFO:                return "Server information";
 		case scid_HISTORY:             return "Server history";
 		case scid_BACK:                return "Back";
-		default:                       return LESTATUS_NFND;
+		default:                       return -LESTATUS_NFND;
 	}
 };
 
@@ -47,14 +47,14 @@ const char *ThreadCmdID_REPR(enum ThreadCmdIDs id) {
 		case tcid_MESSAGES:            return "Message history";
 		case tcid_SEND_MESSAGE:        return "Post message";
 		case tcid_BACK:                return "Back";
-		default:                       return LESTATUS_NFND;
+		default:                       return -LESTATUS_NFND;
 	}
 };
 
 const char *SettingsCmdID_REPR(enum SettingsCmdIDs id) {
 	switch (id) {
 		case stgcid_BACK:              return "Back";
-		default:                       return LESTATUS_NFND;
+		default:                       return -LESTATUS_NFND;
 	}
 };
 
@@ -105,12 +105,12 @@ inline void print_prefix_main() {
 status_t __server_connect(const char *addr, uint16_t port) {
 	if (port < 0 || port > 0xffff) {
 		puts("Invalid port. Aborted.");
-		return LESTATUS_IDAT;
+		return -LESTATUS_IDAT;
 	}
 
 	if ((g_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("Error occured during socket()");
-		return LESTATUS_CLIB;
+		return -LESTATUS_CLIB;
 	}
 
 	g_server_addr.sin_family = AF_INET;
@@ -118,15 +118,15 @@ status_t __server_connect(const char *addr, uint16_t port) {
 
 	if (inet_pton(AF_INET, addr, &g_server_addr.sin_addr) <= 0) {
 		puts("Invalid addr is provided. Aborted.");
-		return LESTATUS_IDAT;
+		return -LESTATUS_IDAT;
 	}
 
 	if (connect(g_server_fd, (struct sockaddr *)&g_server_addr, sizeof(struct sockaddr_in)) < 0) {
 		perror("Error occured during connect()");
-		return LESTATUS_CLIB;
+		return -LESTATUS_CLIB;
 	}
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
@@ -178,7 +178,7 @@ FILE * get_leclient_file(const char *filename, const char *mode, bool_t create) 
 
 	if (stat(tmp, &st) < 0 && !create) {
 		free(tmp);
-		return LESTATUS_NSFD;
+		return -LESTATUS_NSFD;
 	}
 
 	file = fopen(tmp, mode);
@@ -195,13 +195,13 @@ status_t server_addr_save(const char *addr, uint16_t port) {
 	file = get_leclient_file(FILENAME_SERVERS, "a+", TRUE);
 
 	if (file < 0)
-		return LESTATUS_CLIB;
+		return -LESTATUS_CLIB;
 
 	fprintf(file, "%s %hd\n", addr, port);
 
 	fclose(file);
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 status_t server_addr_history_load() {
@@ -219,8 +219,8 @@ status_t server_addr_history_load() {
 
 	file = get_leclient_file(FILENAME_SERVERS, "r", FALSE);
 
-	if (file == LESTATUS_NSFD)
-		return LESTATUS_NSFD;
+	if (file == -LESTATUS_NSFD)
+		return -LESTATUS_NSFD;
 
 	if (g_server_addr_history != nullptr)
 		queue_delete(g_server_addr_history);
@@ -241,7 +241,7 @@ status_t server_addr_history_load() {
 
 	fclose(file);
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 status_t token_save(char *token) {
@@ -250,7 +250,7 @@ status_t token_save(char *token) {
 
 
 	if (!g_active_thread_exists) {
-		return LESTATUS_IDAT;
+		return -LESTATUS_IDAT;
 	}
 
 	memset(thread_id_repr, 0, sizeof(thread_id_repr));
@@ -270,7 +270,7 @@ char * token_load() {
 
 
 	if (!g_active_thread_exists) {
-		return LESTATUS_IDAT;
+		return -LESTATUS_IDAT;
 	}
 
 	memset(thread_id_repr, 0, sizeof(thread_id_repr));
@@ -278,8 +278,8 @@ char * token_load() {
 	snprintf(thread_id_repr, sizeof(thread_id_repr), "%llu", g_active_thread_id);
 	file = get_leclient_file(thread_id_repr, "r", FALSE);
 
-	if (file == LESTATUS_NSFD) {
-		return LESTATUS_NSFD;
+	if (file == -LESTATUS_NSFD) {
+		return -LESTATUS_NSFD;
 	}
 
 	token = calloc(sizeof(char), TOKEN_SIZE + 1);
@@ -334,7 +334,7 @@ void cmd_server_connect() {
 
 	port = atoi(tmp_port);
 
-	if (__server_connect(tmp_addr, port) != LESTATUS_OK)
+	if (__server_connect(tmp_addr, port) != -LESTATUS_OK)
 		return;
 
 	server_addr_save(tmp_addr, port);
@@ -654,7 +654,7 @@ void cmd_thread_send_message() {
 	newline();
 
 	token = token_load();
-	if (token == LESTATUS_IDAT || token == LESTATUS_NSFD)
+	if (token == -LESTATUS_IDAT || token == -LESTATUS_NSFD)
 		token = nullptr;
 
 	qdata = gen_query_CMSG(g_active_thread_id, user_message, size, token);
@@ -784,7 +784,7 @@ status_t cleanup() {
 		g_server_queries = nullptr;
 	}
 		
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 void stop_program_handle(const int signum) {
@@ -812,5 +812,5 @@ status_t main(size_t argc, char **argv) {
 
 	cleanup();
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }

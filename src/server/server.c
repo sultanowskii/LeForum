@@ -81,7 +81,7 @@ void * leauthor_query_manage() {
 }
 
 status_t leclientinfo_delete(LeClientInfo *clinfo) {
-	NULLPTR_PREVENT(clinfo, LESTATUS_NPTR)
+	NULLPTR_PREVENT(clinfo, -LESTATUS_NPTR)
 
 	free(clinfo);
 	clinfo = nullptr;
@@ -101,7 +101,7 @@ SharedPtr * lethread_get_by_id(uint64_t lethread_id) {
 		node = node->next;
 	}
 
-	NULLPTR_PREVENT(lethread_found, LESTATUS_NFND)
+	NULLPTR_PREVENT(lethread_found, -LESTATUS_NFND)
 
 	if (lethread_found->messages->first == nullptr && lethread_message_count(lethread_found) != 0) {
 		lemessages_load(lethread_found);
@@ -120,7 +120,7 @@ Queue * lethread_find(char *topic_part, size_t topic_part_size) {
 	Queue              *lethreads_match;
 
 
-	NULLPTR_PREVENT(topic_part, LESTATUS_NPTR)
+	NULLPTR_PREVENT(topic_part, -LESTATUS_NPTR)
 
 	lethreads_match = queue_create(sharedptr_delete);
 
@@ -135,38 +135,38 @@ Queue * lethread_find(char *topic_part, size_t topic_part_size) {
 }
 
 status_t s_lethread_save(SharedPtr *sharedptr_lethread) {
-	NULLPTR_PREVENT(sharedptr_lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
 	queue_push(lethread_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 status_t s_lemessages_save(SharedPtr *sharedptr_lethread) {
-	NULLPTR_PREVENT(sharedptr_lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
 	queue_push(lemessages_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 status_t s_lemessage_save(LeMessage *lemessage) {
-	NULLPTR_PREVENT(lemessage, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lemessage, -LESTATUS_NPTR)
 
 	queue_push(lemessage_query_queue, lemessage, sizeof(LeMessage));
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
-	NULLPTR_PREVENT(sharedptr_lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
 	queue_push(leauthor_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
 	SharedPtr          *sharedptr_lethread;
 
 
-	NULLPTR_PREVENT(topic, LESTATUS_NPTR)
+	NULLPTR_PREVENT(topic, -LESTATUS_NPTR)
 
 	/* Here we fill lethread_id independently on the argument, 
 	 * because we want to keep all the lethreads stay in the right order without collisions. 
@@ -229,7 +229,7 @@ size_t startup() {
 	srcdir = opendir(DATA_DIR);
 	if (srcdir == NULL) {
 		perror("opendir() failed");
-		return LESTATUS_CLIB;
+		return -LESTATUS_CLIB;
 	}
 
 	lethread_query_queue = queue_create(sharedptr_delete);
@@ -259,7 +259,7 @@ size_t startup() {
 
 			lethread_id = strtoull(dent->d_name, dent->d_name + strlen(dent->d_name), 10);
 
-			if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
+			if (lethread_load(lethread, lethread_id) != -LESTATUS_OK) {
 				if (lethread != nullptr) {
 					free(lethread);
 					lethread = nullptr;
@@ -343,7 +343,7 @@ void * handle_client(void *arg) {
 	char               *lestatus_representation;
 
 
-	NULLPTR_PREVENT(arg, LESTATUS_NPTR)
+	NULLPTR_PREVENT(arg, -LESTATUS_NPTR)
 
 	cl_data = malloc(MAX_PACKET_SIZE + 1);
 	client_info = (LeClientInfo *)arg;
@@ -444,12 +444,12 @@ status_t main(int argc, char *argv[]) {
 
 	if (arguments.port < 0 || arguments.port > 0xffff) {
 		puts("invalid port provided");
-		return LESTATUS_IDAT;
+		return -LESTATUS_IDAT;
 	}
 
 	if (arguments.max_connections <= 0) {
 		puts("invalid connection limit");
-		return LESTATUS_IDAT;
+		return -LESTATUS_IDAT;
 	}
 
 	startup();
@@ -459,19 +459,19 @@ status_t main(int argc, char *argv[]) {
 
 	if (pthread_create(&lethread_query_manager_thread, NULL, lethread_query_manage, NULL) != 0) {
 		perror("failed to start lethread query manager");
-		return LESTATUS_CLIB;
+		return -LESTATUS_CLIB;
 	}
 	pthread_detach(lethread_query_manager_thread);
 
 	if (pthread_create(&lemessage_query_manager_thread, NULL, lemessage_query_manage, NULL) != 0) {
 		perror("failed to start lemessage query manager");
-		return LESTATUS_CLIB;
+		return -LESTATUS_CLIB;
 	}
 	pthread_detach(lemessage_query_manager_thread);
 
 	if (pthread_create(&leauthor_query_manager_thread, NULL, leauthor_query_manage, NULL) != 0) {
 		perror("failed to start leauthor query manager");
-		return LESTATUS_CLIB;
+		return -LESTATUS_CLIB;
 	}
 	pthread_detach(leauthor_query_manager_thread);
 
@@ -479,7 +479,7 @@ status_t main(int argc, char *argv[]) {
 
 	if (server_fd < 0) {
 		perror("socket() failed");
-		return LESTATUS_CLIB;
+		return -LESTATUS_CLIB;
 	}
 
 	server_addr.sin_addr.s_addr = inet_addr(arguments.host);
@@ -488,12 +488,12 @@ status_t main(int argc, char *argv[]) {
 
 	if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) != 0) {
 		perror("bind() failed");
-		return LESTATUS_CLIB;
+		return -LESTATUS_CLIB;
 	}
 
 	if (listen(server_fd, arguments.max_connections) != 0) {
 		perror("listen() failed");
-		return LESTATUS_CLIB;
+		return -LESTATUS_CLIB;
 	}
 
 	printf("Server is listening on %s:%d\n", arguments.host, arguments.port);
@@ -503,7 +503,7 @@ status_t main(int argc, char *argv[]) {
 
 		if (client_fd < 0) {
 			perror("accept() failed");
-			return LESTATUS_CLIB;
+			return -LESTATUS_CLIB;
 		}
 
 		leclientinfo = malloc(sizeof(LeClientInfo));
@@ -511,20 +511,20 @@ status_t main(int argc, char *argv[]) {
 
 		if (getpeername(client_fd, &leclientinfo->addr, &socakddr_in_len) < 0) {
 			perror("getpeername()");
-			return LESTATUS_CLIB;
+			return -LESTATUS_CLIB;
 		}
 
 		if (setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&arguments.timeout, sizeof(arguments.timeout)) < 0) {
 			perror("setsockopt() failed");
-			return LESTATUS_CLIB;
+			return -LESTATUS_CLIB;
 		}
 
 		if (pthread_create(&client_handler_thread, NULL, handle_client, (void *)leclientinfo) != 0) {
 			perror("failed to create client handle");
-			return LESTATUS_CLIB;
+			return -LESTATUS_CLIB;
 		}
 		pthread_detach(client_handler_thread);
 	}
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }

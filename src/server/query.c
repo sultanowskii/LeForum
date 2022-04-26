@@ -29,16 +29,16 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	char               *response_start;
 	size_t              response_size;
 
-	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
+	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
 
 
 	if (size < strlen("THRID") + sizeof(lethread_id)) {
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 
 	if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0) {
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 	data_ptr += strlen("THRID");
@@ -47,8 +47,8 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 
 	sharedptr_lethread = lethread_get_by_id(lethread_id);
 
-	if (sharedptr_lethread == LESTATUS_NFND) {
-		result.status = LESTATUS_NFND;
+	if (sharedptr_lethread == -LESTATUS_NFND) {
+		result.status = -LESTATUS_NFND;
 		return result;
 	}
 
@@ -126,7 +126,7 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 
 	result.data = response_start;
 	result.size = response - response_start;
-	result.status = LESTATUS_OK;
+	result.status = -LESTATUS_OK;
 
 	return result;
 }
@@ -142,16 +142,16 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	char               *response;
 	size_t              response_size           = strlen("OKTHRID") + sizeof(uint64_t) + strlen("TKN") + TOKEN_SIZE;
 
-	LeCommandResult     result                = {0, LESTATUS_OK, NULL};
+	LeCommandResult     result                = {0, -LESTATUS_OK, NULL};
 
 
 	if (size < strlen("TPCSZ") + sizeof(topic_size) + strlen("TPC")) {
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 
 	if (strncmp(data_ptr, "TPCSZ", strlen("TPCSZ")) != 0) {
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 	data_ptr += strlen("TPCSZ");
@@ -160,12 +160,12 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	data_ptr += sizeof(size_t);
 
 	if (topic_size > MAX_TOPIC_SIZE || topic_size < MIN_TOPIC_SIZE) {
-		result.status = LESTATUS_IDAT;
+		result.status = -LESTATUS_IDAT;
 		return result;
 	}
 
 	if (strncmp(data_ptr, "TPC", strlen("TPC")) != 0) {
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 	data_ptr += strlen("TPC");
@@ -198,7 +198,7 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 
 	result.data = response_start;
 	result.size = response_size;
-	result.status = LESTATUS_OK;
+	result.status = -LESTATUS_OK;
 
 	return result;
 }
@@ -223,11 +223,11 @@ LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	char               *response_start;
 	size_t              response_size;
 
-	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
+	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
 
 
 	if (strncmp(data_ptr, "TPCPSZ", strlen("TPCPSZ")) != 0) {
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 	data_ptr += strlen("TPCPSZ");
@@ -236,12 +236,12 @@ LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	data_ptr += sizeof(topic_part_size);
 
 	if (topic_part_size > MAX_TOPIC_SIZE || topic_part_size < MIN_TOPIC_SIZE) {
-		result.status = LESTATUS_IDAT;
+		result.status = -LESTATUS_IDAT;
 		return result;
 	}
 
 	if (strncmp(data_ptr, "TPCP", strlen("TPCP")) != 0) {
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 	data_ptr += strlen("TPCP");
@@ -309,7 +309,7 @@ FTHR_SUCCESS:
 
 	result.data = response_start;
 	result.size = response - response_start;
-	result.status = LESTATUS_OK;
+	result.status = -LESTATUS_OK;
 
 	return result;
 }
@@ -326,16 +326,16 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	size_t              text_size;
 	bool_t              is_author;
 
-	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
+	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
 
 
 	if (size < strlen("THRID") + sizeof(lethread_id) + strlen("TXTSZ") + sizeof(text_size) + strlen("TXT")) {
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 
 	if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0) {
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 	data_ptr += strlen("THRID");
@@ -345,8 +345,8 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	sharedptr_lethread = lethread_get_by_id(lethread_id);
 
-	if (sharedptr_lethread == LESTATUS_NFND) {
-		result.status = LESTATUS_NFND;
+	if (sharedptr_lethread == -LESTATUS_NFND) {
+		result.status = -LESTATUS_NFND;
 		return result;
 	}
 
@@ -355,7 +355,7 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	if (strncmp(data_ptr, "TXTSZ", strlen("TXTSZ")) != 0) {
 		sharedptr_delete(sharedptr_lethread);
 		sharedptr_lethread = nullptr;
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 	data_ptr += strlen("TXTSZ");
@@ -366,14 +366,14 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	if (text_size > MAX_MESSAGE_SIZE || text_size < MIN_MESSAGE_SIZE) {
 		sharedptr_delete(sharedptr_lethread);
 		sharedptr_lethread = nullptr;
-		result.status = LESTATUS_IDAT;
+		result.status = -LESTATUS_IDAT;
 		return result;
 	}
 
 	if (strncmp(data_ptr, "TXT", strlen("TXT")) != 0) {
 		sharedptr_delete(sharedptr_lethread);
 		sharedptr_lethread = nullptr;
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 	data_ptr += strlen("TXT");
@@ -403,13 +403,13 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	result.data = NULL;
 	result.size = 0;
-	result.status = LESTATUS_OK;
+	result.status = -LESTATUS_OK;
 
 	return result;
 }
 
 LeCommandResult cmd_meta(char *raw_data, size_t size) {
-	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
+	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
 
 	char               *response;
 	char               *response_start;
@@ -468,25 +468,25 @@ LeCommandResult cmd_meta(char *raw_data, size_t size) {
 
 	result.data = response_start;
 	result.size = response - response_start;
-	result.status = LESTATUS_OK;
+	result.status = -LESTATUS_OK;
 
 	return result;
 }
 
 LeCommandResult cmd_alive(char *raw_data, size_t size) {
-	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
+	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
 
 	return result;
 }
 
 LeCommandResult query_process(char *raw_data, size_t size) {
 	LeCommand           cmd            = {NULL, NULL};
-	LeCommandResult     result         = {0, LESTATUS_OK, NULL};
+	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
 	size_t              cmd_name_size;
 
 
 	if (raw_data == nullptr) {
-		result.status = LESTATUS_NPTR;
+		result.status = -LESTATUS_NPTR;
 		return result;
 	}
 
@@ -499,7 +499,7 @@ LeCommandResult query_process(char *raw_data, size_t size) {
 	}
 
 	if (cmd.name == nullptr || cmd.process == nullptr) {
-		result.status = LESTATUS_ISYN;
+		result.status = -LESTATUS_ISYN;
 		return result;
 	}
 

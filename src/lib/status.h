@@ -2,16 +2,20 @@
 
 #include <stdint.h>
 
-#define LESTATUS_OK          (0)  /* Ok */
-#define LESTATUS_CLIB        (-1) /* C Library Call Error */
-#define LESTATUS_NSFD        (-2) /* No Such File or Directory */
-#define LESTATUS_EXST        (-3) /* Already Exists */
-#define LESTATUS_NFND        (-4) /* Not found */
-#define LESTATUS_ISYN        (-5) /* Invalid Syntax */
-#define LESTATUS_IDAT        (-6) /* Invalid Data */
-#define LESTATUS_NPTR        (-7) /* Null pointer */
-
 typedef int8_t status_t;
+
+enum LeStatus {
+	LESTATUS_OK,   /* Ok */ 
+	LESTATUS_CLIB, /* C Library Call Error */
+	LESTATUS_NSFD, /* No Such File or Directory */
+	LESTATUS_EXST, /* Already Exists */
+	LESTATUS_NFND, /* Not found */
+	LESTATUS_ISYN, /* Invalid Syntax */
+	LESTATUS_IDAT, /* Invalid Data */
+	LESTATUS_NPTR, /* Null pointer */
+};
+
+const char *SREPR_LESTATUS[LESTATUS_NPTR - LESTATUS_OK + 1];
 
 /**
  * @brief Get the lestatus string representation 

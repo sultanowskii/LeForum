@@ -6,7 +6,7 @@ LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	FILE*               lethread_file;
 
 
-	NULLPTR_PREVENT(topic, LESTATUS_NPTR)
+	NULLPTR_PREVENT(topic, -LESTATUS_NPTR)
 
 	new_lethread = (LeThread *)malloc(sizeof(LeThread));
 	topic_size = strlen(topic);
@@ -24,7 +24,7 @@ LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 }
 
 status_t lethread_delete(LeThread *lethread) {
-	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
 	if (lethread->messages != nullptr) {
 		queue_delete(lethread->messages);
@@ -44,11 +44,11 @@ status_t lethread_delete(LeThread *lethread) {
 	free(lethread);
 	lethread = nullptr;
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 uint64_t lethread_message_count(LeThread *lethread) {
-	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
 	return lethread->next_message_id - lethread->first_message_id;
 }
@@ -58,14 +58,14 @@ LeMessage * lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_
 	size_t              length;
 
 
-	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
-	NULLPTR_PREVENT(lethread->messages, LESTATUS_NPTR)
-	NULLPTR_PREVENT(text, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->messages, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(text, -LESTATUS_NPTR)
 
 	length = strlen(text);
 
 	if (length < MIN_MESSAGE_SIZE || length > MAX_MESSAGE_SIZE)
-		return LESTATUS_IDAT;
+		return -LESTATUS_IDAT;
 
 	new_lemessage = (LeMessage *)malloc(sizeof(LeMessage));
 
@@ -85,7 +85,7 @@ LeMessage * lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_
 }
 
 status_t lemessage_delete(LeMessage *message) {
-	NULLPTR_PREVENT(message, LESTATUS_NPTR)
+	NULLPTR_PREVENT(message, -LESTATUS_NPTR)
 
 	if (message->text != nullptr) {
 		 free(message->text);
@@ -95,14 +95,14 @@ status_t lemessage_delete(LeMessage *message) {
 	free(message);
 	message = nullptr;
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 LeAuthor * leauthor_create(LeThread *lethread, bool_t create_token) {
 	LeAuthor           *new_leauthor;
 
 
-	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
 	new_leauthor = (LeAuthor *)malloc(sizeof(LeAuthor));
 	new_leauthor->id = rand_uint64_t() % 0xffffffff;
@@ -118,7 +118,7 @@ LeAuthor * leauthor_create(LeThread *lethread, bool_t create_token) {
 }
 
 status_t leauthor_delete(LeAuthor *author) {
-	NULLPTR_PREVENT(author, LESTATUS_NPTR)
+	NULLPTR_PREVENT(author, -LESTATUS_NPTR)
 
 	if (author->token != nullptr) {
 		free(author->token);
@@ -128,7 +128,7 @@ status_t leauthor_delete(LeAuthor *author) {
 	free(author);
 	author = nullptr;
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 FILE * get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t create) {
@@ -139,8 +139,8 @@ FILE * get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t creat
 	struct stat         st             = {0};
 
 
-	NULLPTR_PREVENT(mode, LESTATUS_NPTR)
-	NULLPTR_PREVENT(filename, LESTATUS_NPTR)
+	NULLPTR_PREVENT(mode, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(filename, -LESTATUS_NPTR)
 
 	memset(id_str, 0, sizeof(id_str));
 	memset(path, 0, sizeof(path));
@@ -150,7 +150,7 @@ FILE * get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t creat
 	/* Check if the directory exists */
 	if (stat(path, &st) == -1) {
 		if (!create)
-			return LESTATUS_NSFD;
+			return -LESTATUS_NSFD;
 		mkdir(path, 0700);
 	}
 
@@ -158,7 +158,7 @@ FILE * get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t creat
 
 	/* Check if the file exists */
 	if (stat(path, &st) == -1 && !create)
-		return LESTATUS_NSFD;
+		return -LESTATUS_NSFD;
 
 	file = fopen(path, mode);
 
@@ -170,9 +170,9 @@ status_t lethread_save(LeThread *lethread) {
 	FILE               *lethread_info_file;
 
 
-	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
-	NULLPTR_PREVENT(lethread->author, LESTATUS_IDAT)
-	NULLPTR_PREVENT(lethread->topic, LESTATUS_IDAT)
+	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->author, -LESTATUS_IDAT)
+	NULLPTR_PREVENT(lethread->topic, -LESTATUS_IDAT)
 
 	topic_size = strlen(lethread->topic);
 	/* This trick clears the file so we don't have to have a headache with all these overwriting file stuff */
@@ -190,7 +190,7 @@ status_t lethread_save(LeThread *lethread) {
 
 	fclose(lethread_info_file);
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
@@ -199,11 +199,11 @@ status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
 	uint64_t            leauthor_id;
 
 
-	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
 	lethread_info_file = get_lefile(lethread_id, "rb", FILENAME_LETHREAD, FALSE);
 
-	if (lethread_info_file == LESTATUS_NSFD || lethread_info_file == LESTATUS_NPTR)
+	if (lethread_info_file == -LESTATUS_NSFD || lethread_info_file == -LESTATUS_NPTR)
 		return lethread_info_file;
 
 	lethread->messages = queue_create(lemessage_delete);
@@ -223,7 +223,7 @@ status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
 
 	fclose(lethread_info_file);
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 status_t lemessages_save(LeThread *lethread) {
@@ -236,9 +236,9 @@ status_t lemessages_save(LeThread *lethread) {
 	status_t            result;
 
 
-	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
-	result = LESTATUS_OK;
+	result = -LESTATUS_OK;
 	node = lethread->messages->first;
 	/* This trick clears the file so we don't have to have a headache with all these overwriting file stuff */
 	lemessages_file = get_lefile(lethread->id, "wb", FILENAME_LEMESSAGES, TRUE);
@@ -249,7 +249,7 @@ status_t lemessages_save(LeThread *lethread) {
 	while (node != NULL) {
 		lemessage = node->data;
 		if (lemessage == nullptr || lemessage->text == nullptr) {
-			result = LESTATUS_NPTR;
+			result = -LESTATUS_NPTR;
 			continue;
 		}
 
@@ -271,8 +271,8 @@ status_t lemessage_save(LeMessage *lemessage) {
 	FILE               *lemessages_file;
 
 
-	NULLPTR_PREVENT(lemessage, LESTATUS_NPTR)
-	NULLPTR_PREVENT(lemessage->text, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lemessage, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(lemessage->text, -LESTATUS_NPTR)
 
 	text_size = strlen(lemessage->text);
 	lemessages_file = get_lefile(lemessage->lethread->id, "ab", FILENAME_LEMESSAGES, TRUE);
@@ -284,7 +284,7 @@ status_t lemessage_save(LeMessage *lemessage) {
 
 	fclose(lemessages_file);
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 status_t lemessages_load(LeThread *lethread) {
@@ -294,11 +294,11 @@ status_t lemessages_load(LeThread *lethread) {
 	size_t             text_size;
 
 
-	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
-	NULLPTR_PREVENT(lethread->messages, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->messages, -LESTATUS_NPTR)
 
 	lemessages_file = get_lefile(lethread->id, "rb", FILENAME_LEMESSAGES, FALSE);
-	if (lemessages_file == LESTATUS_NSFD || lemessages_file == LESTATUS_NPTR)
+	if (lemessages_file == -LESTATUS_NSFD || lemessages_file == -LESTATUS_NPTR)
 		return lemessages_file;
 
 	for (size_t i = 0; i < lethread_message_count(lethread); ++i) {
@@ -318,7 +318,7 @@ status_t lemessages_load(LeThread *lethread) {
 
 	fclose(lemessages_file);
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 status_t leauthor_load(LeThread *lethread) {
@@ -326,11 +326,11 @@ status_t leauthor_load(LeThread *lethread) {
 	FILE               *leauthor_file;
 
 
-	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
 	leauthor_file = get_lefile(lethread->id, "rb", FILENAME_LEAUTHOR, FALSE);
-	if (leauthor_file == LESTATUS_NSFD)
-		return LESTATUS_NSFD;
+	if (leauthor_file == -LESTATUS_NSFD)
+		return -LESTATUS_NSFD;
 
 	leauthor = leauthor_create(lethread, FALSE);
 
@@ -339,16 +339,16 @@ status_t leauthor_load(LeThread *lethread) {
 
 	fclose(leauthor_file);
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 status_t leauthor_save(LeThread *lethread) {
 	FILE               *leauthor_file;
 
 
-	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
-	NULLPTR_PREVENT(lethread->author, LESTATUS_NPTR)
-	NULLPTR_PREVENT(lethread->author->token, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->author, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->author->token, -LESTATUS_NPTR)
 
 	leauthor_file = get_lefile(lethread->id, "wb", FILENAME_LEAUTHOR, TRUE);
 	fclose(leauthor_file);
@@ -360,14 +360,14 @@ status_t leauthor_save(LeThread *lethread) {
 
 	fclose(leauthor_file);
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 bool_t is_token_valid(LeThread *lethread, const char *token) {
-	NULLPTR_PREVENT(lethread, LESTATUS_NPTR)
-	NULLPTR_PREVENT(lethread->author, LESTATUS_NPTR)
-	NULLPTR_PREVENT(lethread->author->token, LESTATUS_NPTR)
-	NULLPTR_PREVENT(token, LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->author, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(lethread->author->token, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(token, -LESTATUS_NPTR)
 
 	if (strncmp(lethread->author->token, token, TOKEN_SIZE) != 0)
 		return FALSE;

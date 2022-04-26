@@ -6,7 +6,7 @@ ssize_t sendf(int fd, char *str, ...) {
 	int                      result          = 0;
 
 
-	NULLPTR_PREVENT(str, LESTATUS_NPTR)
+	NULLPTR_PREVENT(str, -LESTATUS_NPTR)
 
 	va_start(args, str);
 

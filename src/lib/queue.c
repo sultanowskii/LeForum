@@ -4,7 +4,7 @@ Queue * queue_create(status_t (*destruct)(void *)) {
 	Queue         *new_queue;
 
 
-	NULLPTR_PREVENT(destruct, LESTATUS_NPTR)
+	NULLPTR_PREVENT(destruct, -LESTATUS_NPTR)
 
 	new_queue = (Queue *)malloc(sizeof(Queue));
 
@@ -21,7 +21,7 @@ status_t queue_delete(Queue *queue) {
 	QueueNode     *next;
 
 
-	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
+	NULLPTR_PREVENT(queue, -LESTATUS_NPTR)
 
 	node = queue->first;
 
@@ -44,15 +44,15 @@ status_t queue_delete(Queue *queue) {
 	free(queue);
 	queue = nullptr;
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 };
 
 status_t queue_push(Queue *queue, void *data, size_t size) {
 	QueueNode     *new_node;
 
 
-	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
-	NULLPTR_PREVENT(data, LESTATUS_NPTR)
+	NULLPTR_PREVENT(queue, -LESTATUS_NPTR)
+	NULLPTR_PREVENT(data, -LESTATUS_NPTR)
 
 	new_node = (QueueNode *)malloc(sizeof(QueueNode));
 	new_node->data = data;
@@ -70,7 +70,7 @@ status_t queue_push(Queue *queue, void *data, size_t size) {
 
 	queue->size++;
 
-	return LESTATUS_OK;
+	return -LESTATUS_OK;
 }
 
 void * queue_pop(Queue *queue) {
@@ -78,7 +78,7 @@ void * queue_pop(Queue *queue) {
 	void          *data;
 
 
-	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
+	NULLPTR_PREVENT(queue, -LESTATUS_NPTR)
 
 	first = queue->first;
 
@@ -104,7 +104,7 @@ void * queue_pop(Queue *queue) {
 }
 
 bool_t queue_is_empty(Queue *queue) {
-	NULLPTR_PREVENT(queue, LESTATUS_NPTR)
+	NULLPTR_PREVENT(queue, -LESTATUS_NPTR)
 
 	return queue->size == 0;
 }
