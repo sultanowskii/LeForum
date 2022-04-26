@@ -7,7 +7,6 @@
 - Tests for most of the features
 
 ### Mini-tasks
-#### Server
 - [x] Clean up lib/query.c
 - [x] Make lethread_get_by_id work with lethread_queue (then remove free(lethread) from query.c)
 - [x] Query manager for LeMessage. Current problem is that all the "*_save()" functions take only LeThread, and lemessage_save() takes 2 arguments. How should they be stored?
@@ -28,16 +27,14 @@
 - [x] NULLing pointers on free(): Either by passing void** arguments to delete_X() functions or manually.
 - [x] Test for messages
 
-#### Client
-
 ### Global features
 #### Server
 - [x] Query processing
 - [x] Arguments
 - [x] Documentation
 #### Client
-- [ ] Query processing
-- [ ] Arguments
-- [ ] Tokens logic
+- [x] Query processing
+- [x] Arguments
+- [x] Tokens logic
 - [ ] Customisation
-- [ ] Tests
+- [ ] Settings
