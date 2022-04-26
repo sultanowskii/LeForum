@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <string.h>
 
 #include "lib/forum.h"
 #include "lib/queue.h"
@@ -66,10 +67,10 @@ status_t query_delete(ServerQuery *query);
  * @brief Generates CTHR query. 
  * 
  * @param topic Thread topic 
- * @param topic_size Thread topic size
+ * @param size Thread topic size
  * @return Pointer to the generated raw data that is ready to be sent 
  */ 
-LeData gen_query_CTHR(const char *topic, size_t topic_size);
+LeData gen_query_CTHR(const char *topic, size_t size);
 
 /**
  * @brief Generates GTHR query. 
