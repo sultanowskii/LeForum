@@ -681,12 +681,8 @@ void query_loop() {
 			if (g_server_queries->size != 0) {
 				tmp_query = (ServerQuery *)queue_pop(g_server_queries);
 
-				/* send packet part by part in order not to exceed send() max size */
-				for (size_t i = 0; i < tmp_query->raw_request_data_size / MAX_PACKET_SIZE + 1; i++) {
-					part_size = tmp_query->raw_request_data + (MAX_PACKET_SIZE * i);
-					send(g_server_fd, part_size, tmp_query->raw_request_data_size, NULL);
-				}
-
+				send(g_server_fd, tmp_query->raw_request_data, tmp_query->raw_request_data_size, NULL);
+				
 				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
 				raw_response = malloc(response_size);
 				recv(g_server_fd, raw_response, response_size, NULL);

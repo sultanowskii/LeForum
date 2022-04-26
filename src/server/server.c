@@ -461,16 +461,19 @@ status_t main(int argc, char *argv[]) {
 		perror("failed to start lethread query manager");
 		return LESTATUS_CLIB;
 	}
+	pthread_detach(lethread_query_manager_thread);
 
 	if (pthread_create(&lemessage_query_manager_thread, NULL, lemessage_query_manage, NULL) != 0) {
 		perror("failed to start lemessage query manager");
 		return LESTATUS_CLIB;
 	}
+	pthread_detach(lemessage_query_manager_thread);
 
 	if (pthread_create(&leauthor_query_manager_thread, NULL, leauthor_query_manage, NULL) != 0) {
 		perror("failed to start leauthor query manager");
 		return LESTATUS_CLIB;
 	}
+	pthread_detach(leauthor_query_manager_thread);
 
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -520,6 +523,7 @@ status_t main(int argc, char *argv[]) {
 			perror("failed to create client handle");
 			return LESTATUS_CLIB;
 		}
+		pthread_detach(client_handler_thread);
 	}
 
 	return LESTATUS_OK;
