@@ -103,6 +103,14 @@ inline void print_prefix_main() {
 }
 
 status_t __server_connect(const char *addr, uint16_t port) {
+	LeMeta         *tmp_lemeta;
+	LeData          tmp_ledata;
+	ServerQuery    *tmp_query;
+
+
+	if (g_server_connected)
+		return -LESTATUS_EXST;
+
 	if (port < 0 || port > 0xffff) {
 		puts("Invalid port. Aborted.");
 		return -LESTATUS_IDAT;
@@ -125,6 +133,44 @@ status_t __server_connect(const char *addr, uint16_t port) {
 		perror("Error occured during connect()");
 		return -LESTATUS_CLIB;
 	}
+
+	server_addr_save(addr, port);
+
+	g_server_connected = TRUE;
+
+	tmp_ledata = gen_query_META();
+	tmp_query = query_create(parse_response_META, tmp_ledata.data, tmp_ledata.size);
+	queue_push(g_server_queries, tmp_query, sizeof(tmp_query));
+	while (tmp_query->completed == FALSE) {
+
+	}
+	tmp_lemeta = (LeMeta *)tmp_query->parsed_data;
+
+	query_delete(tmp_query);
+	tmp_query = nullptr;
+
+	g_server_meta.max_message_size = tmp_lemeta->max_message_size;
+	g_server_meta.min_message_size = tmp_lemeta->min_message_size;
+	g_server_meta.max_topic_size = tmp_lemeta->max_topic_size;
+	g_server_meta.min_topic_size = tmp_lemeta->min_topic_size;
+	g_server_meta.version = tmp_lemeta->version;
+	g_server_meta.thread_count = tmp_lemeta->thread_count;
+
+	free(tmp_lemeta);
+	tmp_lemeta = nullptr;
+
+	return -LESTATUS_OK;
+}
+
+status_t __server_disconnect() {
+	if (!g_server_connected)
+		return -LESTATUS_NFND;
+
+	close(g_server_fd);
+	g_server_connected = FALSE;
+
+	g_active_thread_exists = FALSE;
+	g_active_thread_id = 0;
 
 	return -LESTATUS_OK;
 }
@@ -334,39 +380,19 @@ void cmd_server_connect() {
 
 	port = atoi(tmp_port);
 
-	if (__server_connect(tmp_addr, port) != -LESTATUS_OK)
+	if (__server_connect(tmp_addr, port) != -LESTATUS_OK) {
+		newline();
 		return;
-
-	server_addr_save(tmp_addr, port);
-
-	g_server_connected = TRUE;
-
-	tmp_ledata = gen_query_META();
-	tmp_query = query_create(parse_response_META, tmp_ledata.data, tmp_ledata.size);
-	queue_push(g_server_queries, tmp_query, sizeof(tmp_query));
-	while (tmp_query->completed == FALSE) {
-
 	}
-	tmp_lemeta = (LeMeta *)tmp_query->parsed_data;
-
-	query_delete(tmp_query);
-	tmp_query = nullptr;
-
-	g_server_meta.max_message_size = tmp_lemeta->max_message_size;
-	g_server_meta.min_message_size = tmp_lemeta->min_message_size;
-	g_server_meta.max_topic_size = tmp_lemeta->max_topic_size;
-	g_server_meta.min_topic_size = tmp_lemeta->min_topic_size;
-	g_server_meta.version = tmp_lemeta->version;
-	g_server_meta.thread_count = tmp_lemeta->thread_count;
-
-	free(tmp_lemeta);
-
-	tmp_lemeta = nullptr;
+	
+	puts("Connected.");
+	newline();
 }
 
 void cmd_server_disconnect() {
-	close(g_server_fd);
-	g_server_connected = FALSE;
+	puts("Disconnected.");
+	newline();
+	__server_disconnect();
 }
 
 void cmd_server_info() {
@@ -387,6 +413,9 @@ void cmd_server_history() {
 	QueueNode     *node;
 	ServerAddress *server_addr_tmp;
 	size_t         i = 1;
+	char           tmp_buf[32];
+	size_t         server_choice_n;
+	size_t         cntr;
 
 
 	server_addr_history_load();
@@ -402,6 +431,38 @@ void cmd_server_history() {
 	}
 
 	newline();
+
+	printf("Choose the server number (1-%zu). Type 'r' or any other number if you don't want to connect to any server:\n", g_server_addr_history->size);
+	print_prefix_thread();
+
+	s_fgets(tmp_buf, sizeof(tmp_buf), stdin);
+
+	server_choice_n = strtoull(tmp_buf, nullptr, 10);
+
+	if (server_choice_n < 1 || server_choice_n > g_server_addr_history->size) {
+		newline();
+		return;
+	}
+	newline();
+
+	node = g_server_addr_history->first;
+	cntr = 1;
+
+	while (cntr < server_choice_n) {
+		cntr++;
+		node = node->next;
+	}
+
+	server_addr_tmp = (ServerAddress *)node->data;
+
+	__server_disconnect();
+	if (__server_connect(server_addr_tmp->addr, server_addr_tmp->port) != -LESTATUS_OK) {
+		newline();
+		return;
+	}
+
+	printf("Connected to %s:%hd\n", server_addr_tmp->addr, server_addr_tmp->port);
+	newline();
 }
 
 void cmd_thread() {
@@ -410,6 +471,7 @@ void cmd_thread() {
 
 	if (!g_server_connected) {
 		puts("To see threads, connect to some server first!");
+		newline();
 		return;
 	}
 
@@ -537,6 +599,7 @@ void cmd_thread_find() {
 		thread_choice_n = strtoull(tmp_buf, nullptr, 10);
 
 		if (thread_choice_n < 1 || thread_choice_n > found_threads->size) {
+			newline();
 			goto THREAD_FIND_EXIT;
 		}
 
@@ -791,7 +854,7 @@ status_t startup() {
 
 status_t cleanup() {
 	if (g_server_connected)
-		close(g_server_fd);
+		__server_disconnect();
 
 	if (g_server_queries != nullptr) {
 		queue_delete(g_server_queries);

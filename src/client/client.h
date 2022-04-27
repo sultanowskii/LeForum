@@ -87,9 +87,17 @@ typedef struct ServerAddress ServerAddress;
  * 
  * @param addr Server addr
  * @param port Server port 
- * @return LESTATUS_OK on success. LESTATUS_CLIB if one of built-in functions failed. LESTATUS_IDAT if bad addr or port provdided 
+ * @return LESTATUS_OK on success. LESTATUS_CLIB if one of built-in functions failed. 
+ * LESTATUS_IDAT if bad addr or port provdided. LESTATUS_EXST if already connected to some server
  */
 status_t __server_connect(const char *addr, uint16_t port);
+
+/**
+ * @brief Disconnects from the current server
+ * 
+ * @return LESTATUS_OK on success. LESTATUS_NFND if not connected to server 
+ */
+status_t __server_disconnect();
 
 
 /* ---- Command string representators ----- */
