@@ -8,15 +8,16 @@ struct sockaddr_in g_server_addr            = {0};
 int                g_server_fd              = nullptr;
 LeMeta             g_server_meta            = {0};
 Queue             *g_server_addr_history    = nullptr;
+HAddress           g_server_haddr           = {0};
 
 Queue             *g_server_queries         = nullptr;
 
 bool_t             g_active_thread_exists   = FALSE;
 uint64_t           g_active_thread_id       = 0;
 
-pthread_t          g_query_loop_pthread;
+pthread_t          g_query_loop_pthread     = 0;
 
-char              *g_home_dir = nullptr;
+char              *g_home_dir               = nullptr;
 
 
 const char *MainCmdID_REPR(enum MainCmdIDs id) {
@@ -149,6 +150,9 @@ status_t __server_connect(const char *addr, uint16_t port) {
 	query_delete(tmp_query);
 	tmp_query = nullptr;
 
+	strncpy(g_server_haddr.addr, addr, sizeof(g_server_haddr.addr));
+	g_server_haddr.port = port;
+
 	g_server_meta.max_message_size = tmp_lemeta->max_message_size;
 	g_server_meta.min_message_size = tmp_lemeta->min_message_size;
 	g_server_meta.max_topic_size = tmp_lemeta->max_topic_size;
@@ -236,14 +240,40 @@ FILE * get_leclient_file(const char *filename, const char *mode, bool_t create) 
 
 status_t server_addr_save(const char *addr, uint16_t port) {
 	FILE          *file;
+	char           formatted_address[64];
+	bool_t         contains = FALSE;
+	char          *line = nullptr;
+	size_t         line_size = 0;
 
+
+	memset(formatted_address, 0, sizeof(formatted_address));
+	sprintf(formatted_address, "%s %hd", addr, port);
+
+	file = get_leclient_file(FILENAME_SERVERS, "r", FALSE);
+
+	/* if file exists, then we have to check if it already contains gieven address */
+	if (file != -LESTATUS_NSFD) {
+		while (getline(&line, &line_size, file) != -1) {
+			line[strcspn(line, "\n")] = '\0';
+			if (!strcmp(line, formatted_address)) {
+				contains = TRUE;
+				break;
+			}
+		}
+		fclose(file);
+	}
+
+	if (contains) {
+		return -LESTATUS_EXST;
+	}
 
 	file = get_leclient_file(FILENAME_SERVERS, "a+", TRUE);
 
 	if (file < 0)
 		return -LESTATUS_CLIB;
 
-	fprintf(file, "%s %hd\n", addr, port);
+	fputs(formatted_address, file);
+	fprintf(file, "\n");
 
 	fclose(file);
 
@@ -260,7 +290,7 @@ status_t server_addr_history_load() {
 
 	size_t         bytes_read;
 
-	ServerAddress *tmp_server_addr;
+	HAddress      *tmp_server_haddr;
 
 
 	file = get_leclient_file(FILENAME_SERVERS, "r", FALSE);
@@ -277,12 +307,12 @@ status_t server_addr_history_load() {
 	while ((int64_t)(bytes_read = s_fgets(tmp, 64, file)) > 0) {
 		sscanf(tmp, "%s %hd", addr, &port);
 
-		tmp_server_addr = (ServerAddress *)malloc(sizeof(*tmp_server_addr));
+		tmp_server_haddr = (HAddress *)malloc(sizeof(*tmp_server_haddr));
 
-		strncpy(tmp_server_addr->addr, addr, 32);
-		tmp_server_addr->port = port;
+		strncpy(tmp_server_haddr->addr, addr, 32);
+		tmp_server_haddr->port = port;
 
-		queue_push(g_server_addr_history, tmp_server_addr, sizeof(tmp_server_addr));
+		queue_push(g_server_addr_history, tmp_server_haddr, sizeof(tmp_server_haddr));
 	}
 
 	fclose(file);
@@ -402,7 +432,7 @@ void cmd_server_info() {
 		return;
 	}
 
-	// printf("Server address: %s:%hd\n", g_server_ip, g_server_port);
+	printf("Server address: %s:%hd\n", g_server_haddr.addr, g_server_haddr.port);
 	printf("Server version: %s\n", g_server_meta.version);
 	printf("Threads on a server: %llu\n", g_server_meta.thread_count);
 
@@ -411,21 +441,25 @@ void cmd_server_info() {
 
 void cmd_server_history() {
 	QueueNode     *node;
-	ServerAddress *server_addr_tmp;
+	HAddress      *tmp_server_haddr;
 	size_t         i = 1;
 	char           tmp_buf[32];
 	size_t         server_choice_n;
 	size_t         cntr;
 
 
-	server_addr_history_load();
+	if (server_addr_history_load() != LESTATUS_OK) {
+		puts("You haven't connected to any server yet.");
+		newline();
+		return;
+	}
 
 	node = g_server_addr_history->first;
 
 	while (node != nullptr) {
-		server_addr_tmp = (ServerAddress *)node->data;
+		tmp_server_haddr = (HAddress *)node->data;
 
-		printf("%zu. %s:%hd\n", i++, server_addr_tmp->addr, server_addr_tmp->port);
+		printf("%zu. %s:%hd\n", i++, tmp_server_haddr->addr, tmp_server_haddr->port);
 
 		node = node->next;
 	}
@@ -453,15 +487,15 @@ void cmd_server_history() {
 		node = node->next;
 	}
 
-	server_addr_tmp = (ServerAddress *)node->data;
+	tmp_server_haddr = (HAddress *)node->data;
 
 	__server_disconnect();
-	if (__server_connect(server_addr_tmp->addr, server_addr_tmp->port) != -LESTATUS_OK) {
+	if (__server_connect(tmp_server_haddr->addr, tmp_server_haddr->port) != -LESTATUS_OK) {
 		newline();
 		return;
 	}
 
-	printf("Connected to %s:%hd\n", server_addr_tmp->addr, server_addr_tmp->port);
+	printf("Connected to %s:%hd\n", tmp_server_haddr->addr, tmp_server_haddr->port);
 	newline();
 }
 

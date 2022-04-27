@@ -75,13 +75,6 @@ enum SettingsCmdIDs {
 	_stgcid_END,
 };
 
-
-struct ServerAddress {
-	char      addr[32];
-	uint16_t  port;
-};
-typedef struct ServerAddress ServerAddress;
-
 /**
  * @brief Inner connection to the server. 
  * 

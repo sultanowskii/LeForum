@@ -12,6 +12,16 @@
 #define MAX_PACKET_SIZE      64 * 1024
 
 /**
+ * @brief Human-readable IPv4 address
+ * 
+ */
+struct HAddress {
+	char      addr[32];
+	uint16_t  port;
+};
+typedef struct HAddress HAddress;
+
+/**
  * @brief Does the same thing as printf() except it
  * prints the result to the socket.
  * 
