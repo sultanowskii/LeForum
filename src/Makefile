@@ -1,4 +1,5 @@
-CFLAGS = -I.
+CFLAGS = -I. -Wno-incompatible-pointer-types -Wno-incompatible-pointer-types -Wno-int-conversion
+CFLAGS_G = -I. -g
 
 LIBS_SERVER = -pthread
 LIBS_CLIENT = -pthread
@@ -13,6 +14,12 @@ c-server: server/server.c $(LIB_FILES_SERVER)
 
 c-client: client/client.c $(LIB_FILES_CLIENT)
 	$(CC) $(CFLAGS) $^ $(LIBS_CLIENT) -o LeForumClient
+
+g-c-server: server/server.c $(LIB_FILES_SERVER)
+	$(CC) $(CFLAGS_G) $^ $(LIBS_SERVER) -o LeForumServer
+
+g-c-client: client/client.c $(LIB_FILES_CLIENT)
+	$(CC) $(CFLAGS_G) $^ $(LIBS_CLIENT) -o LeForumClient
 
 c-test-forum-core: test/test-forum-core.c $(LIB_FILES_TEST_FORUM_CORE)
 	$(CC) $(CFLAGS) $^ $(LIBS_SERVER) -g -o test/LeForumCoreTest

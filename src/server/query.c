@@ -414,7 +414,7 @@ LeCommandResult cmd_meta(char *raw_data, size_t size) {
 	char               *response;
 	char               *response_start;
 
-	char               *tmp;
+	const char         *tmp;
 	size_t              tmp_size;
 
 

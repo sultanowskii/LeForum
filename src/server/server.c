@@ -340,7 +340,7 @@ void * handle_client(void *arg) {
 
 	char                tmp[64];
 
-	char               *lestatus_representation;
+	const char         *lestatus_representation;
 
 
 	NULLPTR_PREVENT(arg, -LESTATUS_NPTR)
