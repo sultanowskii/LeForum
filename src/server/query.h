@@ -1,21 +1,14 @@
 #ifndef LEFORUM_SERVER_QUERY_H_
 #define LEFORUM_SERVER_QUERY_H_
 
-#include <string.h>
-#include <inttypes.h>
+#include <stdlib.h>
 
 #include "lib/forum.h"
-
-#include "server/conf.h"
-
-#include "lib/constants.h"
-#include "lib/queue.h"
-#include "lib/security.h"
 #include "lib/shared_ptr.h"
 #include "lib/status.h"
+#include "lib/queue.h"
 
 #define CMD_COUNT 6
-
 
 struct LeCommand {
 	char                    *name;

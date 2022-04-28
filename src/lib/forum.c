@@ -1,5 +1,21 @@
 #include "lib/forum.h"
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include "lib/constants.h"
+#include "lib/queue.h"
+#include "lib/security.h"
+#include "lib/status.h"
+#include "lib/util.h"
+
+/* TODO: get rid of this */
+#include "server/conf.h"
+
 LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 	LeThread           *new_lethread;
 	size_t              topic_size;

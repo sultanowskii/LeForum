@@ -1,8 +1,6 @@
 #ifndef LEFORUM_SERVER_ARG_H_
 #define LEFORUM_SERVER_ARG_H_
 
-#include <stdlib.h>
-#include <stdint.h>
 #include <argp.h>
 #include <sys/time.h>
 

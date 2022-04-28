@@ -1,5 +1,13 @@
 #include "client/query.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "lib/forum.h"
+#include "lib/queue.h"
+#include "lib/security.h"
+
 ServerQuery * query_create(void * (*parser)(char *raw_data), char *request_data, size_t size) {
 	ServerQuery        *query;
 

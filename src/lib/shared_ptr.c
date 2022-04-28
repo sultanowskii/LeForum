@@ -1,5 +1,11 @@
 #include "lib/shared_ptr.h"
 
+#include <stdlib.h>
+
+#include "lib/constants.h"
+#include "lib/security.h"
+#include "lib/status.h"
+
 SharedPtr * sharedptr_create(void *data, status_t (*destruct)(void *)) {
 	SharedPtr     *new_sharedptr;
 

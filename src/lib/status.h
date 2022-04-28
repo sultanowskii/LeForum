@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef int8_t status_t;
+typedef int status_t;
 
 enum LeStatus {
 	LESTATUS_OK,   /* Ok */ 

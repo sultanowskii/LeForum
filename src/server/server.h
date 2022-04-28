@@ -1,39 +1,15 @@
 #ifndef LEFORUM_SERVER_SERVER_H_
 #define LEFORUM_SERVER_SERVER_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stdint.h>
-
-#include <unistd.h>
-#include <sys/time.h>
-
-#include <pthread.h>
-
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#include <signal.h>
-
-#include <dirent.h>
-
-#include "server/arg.h"
-
 #include "lib/forum.h"
-#include "server/query.h"
-
-#include "lib/communication.h"
-#include "lib/constants.h"
-#include "lib/queue.h"
-#include "lib/security.h"
-#include "lib/shared_ptr.h"
 #include "lib/status.h"
-#include "lib/util.h"
-
+#include "lib/shared_ptr.h"
 
 #define FILENAME_LEMETA      "lemeta"
-
 
 /*
  * handle_client() argument 

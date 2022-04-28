@@ -1,26 +1,12 @@
 #ifndef LEFORUM_CLIENT_CLIENT_H_
 #define LEFORUM_CLIENT_CLIENT_H_
 
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stdint.h>
-#include <signal.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
+#include <stdio.h>
 
-#include "lib/communication.h"
-#include "lib/constants.h"
-#include "lib/forum.h"
-#include "lib/queue.h"
-#include "lib/status.h"
-#include "lib/util.h"
-
-#include "client/arg.h"
 #include "client/query.h"
+#include "lib/constants.h"
+#include "lib/status.h"
 
 #define FILENAME_SERVERS "servers"
 #define CLIENT_DIR ".lefourm/"

@@ -1,5 +1,7 @@
 #include "client/arg.h"
 
+#include <argp.h>
+
 const char *argp_program_version = "LeForum Client v0.1";
 const char *argp_program_bug_address = "github.com/sultanowskii";
 

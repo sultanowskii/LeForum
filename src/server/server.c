@@ -1,5 +1,28 @@
 #include "server/server.h"
 
+#include <arpa/inet.h>
+#include <dirent.h>
+#include <pthread.h>
+#include <signal.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+
+#include "server/arg.h"
+#include "server/query.h"
+#include "lib/communication.h"
+#include "lib/constants.h"
+#include "lib/forum.h"
+#include "lib/queue.h"
+#include "lib/security.h"
+#include "lib/shared_ptr.h"
+#include "lib/status.h"
+#include "lib/util.h"
 
 struct arguments arguments;
 

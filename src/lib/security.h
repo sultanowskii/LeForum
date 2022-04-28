@@ -1,11 +1,9 @@
 #ifndef LEFORUM_LIB_SECURITY_H_
 #define LEFORUM_LIB_SECURITY_H_
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
-#include "lib/constants.h"
 #include "lib/status.h"
 
 #define NULLPTR_PREVENT(ptr, LESTATUS) if (ptr == nullptr) {return LESTATUS;}

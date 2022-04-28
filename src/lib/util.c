@@ -1,5 +1,11 @@
 #include "lib/util.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "lib/status.h"
+
 size_t s_fgets(char *s, size_t n, FILE* fd) {
 	if (fgets(s, n, fd) == NULL) {
 		/* Here we're preventing infinite loops if CTRL+D (aka EOF) is pressed */

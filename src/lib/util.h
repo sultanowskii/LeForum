@@ -1,11 +1,8 @@
 #ifndef LEFORUM_LIB_UTIL_H_
 #define LEFORUM_LIB_UTIL_H_
 
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-
-#include "lib/status.h"
+#include <stdlib.h>
 
 #define newline() printf("\n")
 

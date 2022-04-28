@@ -1,5 +1,16 @@
 #include "server/query.h"
 
+#include <string.h>
+#include <inttypes.h>
+
+#include "lib/constants.h"
+#include "lib/forum.h"
+#include "lib/queue.h"
+#include "lib/security.h"
+#include "lib/shared_ptr.h"
+#include "lib/status.h"
+#include "server/conf.h"
+
 LeCommand CMDS[CMD_COUNT] = {
 	{"GTHR", cmd_lethread_get},
 	{"CTHR", cmd_lethread_create},

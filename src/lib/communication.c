@@ -1,5 +1,14 @@
 #include "lib/communication.h"
 
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+#include <sys/socket.h>
+
+#include "lib/constants.h"
+#include "lib/security.h"
+#include "lib/status.h"
+
 ssize_t sendf(int fd, char *str, ...) {
 	va_list                  args;
 	char                     buffer[4096];

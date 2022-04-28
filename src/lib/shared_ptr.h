@@ -1,10 +1,9 @@
 #ifndef LEFORUM_LIB_SHARED_PTR_H_
 #define LEFORUM_LIB_SHARED_PTR_H_
 
+#include <stdint.h>
 #include <stdlib.h>
 
-#include "lib/constants.h"
-#include "lib/security.h"
 #include "lib/status.h"
 
 struct SharedPtr{

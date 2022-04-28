@@ -1,5 +1,12 @@
 #include "lib/security.h"
 
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "lib/constants.h"
+#include "lib/status.h"
+
 #define ALLOWED_SYMBOLS     (0x7e - 0x20)
 #define MIN_SYMBOL           0x21
 

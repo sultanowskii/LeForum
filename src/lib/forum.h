@@ -1,20 +1,11 @@
 #ifndef LEFORUM_LIB_FORUM_H
 #define LEFORUM_LIB_FORUM_H
 
-#include <string.h>
-#include <stdlib.h>
 #include <stdint.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <stdio.h>
 
 #include "lib/constants.h"
-#include "lib/queue.h"
-#include "lib/security.h"
 #include "lib/status.h"
-#include "lib/util.h"
-
-#include "server/conf.h"
 
 #define TOKEN_SIZE           24
 

@@ -1,14 +1,8 @@
 #ifndef LEFORUM_LIB_COMMUNICATION_H_
 #define LEFORUM_LIB_COMMUNICATION_H_
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
+#include <stdint.h>
 #include <sys/socket.h>
-
-#include "lib/constants.h"
-#include "lib/security.h"
-#include "lib/status.h"
 
 #define MAX_PACKET_SIZE      64 * 1024
 

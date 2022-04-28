@@ -1,5 +1,10 @@
 #include "server/arg.h"
 
+#include <argp.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <sys/time.h>
+
 const char *argp_program_version = "LeForum Server v0.1";
 const char *argp_program_bug_address = "github.com/sultanowskii";
 

@@ -1,5 +1,25 @@
 #include "client/client.h"
 
+#include <arpa/inet.h>
+#include <pthread.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include "client/arg.h"
+#include "client/query.h"
+#include "lib/communication.h"
+#include "lib/constants.h"
+#include "lib/forum.h"
+#include "lib/queue.h"
+#include "lib/status.h"
+#include "lib/util.h"
+
 bool_t             g_working                = TRUE;
 struct arguments   arguments;
 

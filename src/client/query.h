@@ -1,11 +1,12 @@
 #ifndef LEFORUM_CLIENT_QUERY_H_
 #define LEFORUM_CLIENT_QUERY_H_
 
-#include <stdio.h>
-#include <string.h>
+#include <stdint.h>
 
+#include "lib/constants.h"
 #include "lib/forum.h"
 #include "lib/queue.h"
+#include "lib/status.h"
 
 /**
  * @brief Meta information about server 
