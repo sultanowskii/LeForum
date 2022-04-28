@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_LIB_CONSTANTS_H
+#define LEFORUM_LIB_CONSTANTS_H
 
 #ifndef FALSE
 #define FALSE   0
@@ -11,3 +12,5 @@
 #define nullptr NULL
 
 typedef int8_t bool_t;
+
+#endif

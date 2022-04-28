@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_LIB_QUEUE_H_
+#define LEFORUM_LIB_QUEUE_H_
 
 #include <stdlib.h>
 #include <string.h>
@@ -64,3 +65,5 @@ void *             queue_pop(Queue *queue);
  * @return TRUE if queue is empty, otherwise ELSE 
  */
 bool_t             queue_is_empty(Queue *queue);
+
+#endif

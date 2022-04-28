@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_LIB_UTIL_H_
+#define LEFORUM_LIB_UTIL_H_
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -53,3 +54,5 @@ size_t s_fgets(char *s, size_t n, FILE* fd);
  * @return Size of read data on success. LESTATUS_IDAT if s_fgets() failed  
  */
 size_t s_fgets_range(char *s, size_t _min, size_t _max, FILE* fd);
+
+#endif

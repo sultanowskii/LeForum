@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_SERVER_SERVER_H_
+#define LEFORUM_SERVER_SERVER_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -212,3 +213,5 @@ void                    signal_handler(const int signum);
  * @return The value of next_lethread_id_value before the increment 
  */
 uint64_t                next_lethread_id();
+
+#endif

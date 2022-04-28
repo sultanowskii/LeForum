@@ -1,4 +1,5 @@
-#pragma ocnce
+#ifndef LEFORUM_CLIENT_CLIENT_H_
+#define LEFORUM_CLIENT_CLIENT_H_
 
 #include <pthread.h>
 #include <stdio.h>
@@ -355,3 +356,5 @@ status_t cleanup();
 
 status_t main(size_t argc, char **argv);
 /* ---------------------------------------- */
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_LIB_FORUM_H
+#define LEFORUM_LIB_FORUM_H
 
 #include <string.h>
 #include <stdlib.h>
@@ -194,3 +195,5 @@ status_t                leauthor_save(LeThread *lethread);
  * @return TRUE if the token is valid, FALSE if not 
  */
 bool_t                  is_token_valid(LeThread *lethread, const char *token);
+
+#endif

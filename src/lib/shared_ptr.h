@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_LIB_SHARED_PTR_H_
+#define LEFORUM_LIB_SHARED_PTR_H_
 
 #include <stdlib.h>
 
@@ -38,3 +39,5 @@ SharedPtr *        sharedptr_add(SharedPtr * sharedptr);
  * @return LESTATUS_OK on success 
  */
 status_t           sharedptr_delete(SharedPtr * sharedptr);
+
+#endif

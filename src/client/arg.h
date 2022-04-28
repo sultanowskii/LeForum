@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_CLIENT_ARG_H_
+#define LEFORUM_CLIENT_ARG_H_
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -24,3 +25,5 @@ struct arguments {
  * @return Status 
  */
 error_t parse_opt(int key, char *arg, struct argp_state *state);
+
+#endif

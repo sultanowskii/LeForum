@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_CLIENT_QUERY_H_
+#define LEFORUM_CLIENT_QUERY_H_
 
 #include <stdio.h>
 #include <string.h>
@@ -168,3 +169,5 @@ LeMeta * parse_response_META(char *raw_data, size_t size);
  * @return LESTATUS_OK on success   
  */
 status_t parse_response_LIVE(char *raw_data, size_t size);
+
+#endif

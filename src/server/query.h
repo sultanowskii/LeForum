@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_SERVER_QUERY_H_
+#define LEFORUM_SERVER_QUERY_H_
 
 #include <string.h>
 #include <inttypes.h>
@@ -177,3 +178,5 @@ LeCommandResult         cmd_meta(char *raw_data, size_t size);
  * @return Result of the specific query processor that was called if the requested command is valid. Otherwise, returns LeCommandReuslt with status==LESTATUS_ISYN  
  */
 LeCommandResult         query_process(char *raw_data, size_t size);
+
+#endif

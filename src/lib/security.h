@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_LIB_SECURITY_H_
+#define LEFORUM_LIB_SECURITY_H_
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -24,3 +25,5 @@ status_t            rand_string(char *str, size_t size);
  * @return Random unsigned long long 
  */
 uint64_t           rand_uint64_t();
+
+#endif

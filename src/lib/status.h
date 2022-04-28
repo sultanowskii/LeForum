@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_LIB_STATUS_H_
+#define LEFORUM_LIB_STATUS_H_
 
 #include <stdint.h>
 
@@ -24,3 +25,5 @@ const char *SREPR_LESTATUS[LESTATUS_NPTR - LESTATUS_OK + 1];
  * @return String representation of the status code 
  */
 const char *get_lestatus_string_repr(status_t status);
+
+#endif

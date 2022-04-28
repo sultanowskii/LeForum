@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LEFORUM_LIB_COMMUNICATION_H_
+#define LEFORUM_LIB_COMMUNICATION_H_
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -31,3 +32,5 @@ typedef struct HAddress HAddress;
  * @return The number of bytes sent
  */
 ssize_t sendf(int fd, char *str, ...);
+
+#endif
