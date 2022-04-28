@@ -9,7 +9,7 @@
 #include "lib/status.h"
 #include "lib/shared_ptr.h"
 
-#define FILENAME_LEMETA      "lemeta"
+#define FILE_LEMETA        "lemeta"
 
 /*
  * handle_client() argument 

@@ -8,20 +8,20 @@
 #include "lib/constants.h"
 #include "lib/status.h"
 
-#define FILENAME_SERVERS "servers"
-#define CLIENT_DIR ".lefourm/"
+#define FILE_SERVER_HISTORY  "servers"
+#define DIR_CLIENT           ".lefourm/"
 
 /**
  * @brief Main command list. 
  * 
  */
 enum MainCmdIDs {
-	_mcid_BEGIN,
-	mcid_SERVER,
-	mcid_THREAD,
-	mcid_SETTINGS,
-	mcid_EXIT,
-	_mcid_END,
+	_MCID_BEGIN,
+	MCID_SERVER,
+	MCID_THREAD,
+	MCID_SETTINGS,
+	MCID_EXIT,
+	_MCID_END,
 };
 
 /**
@@ -29,12 +29,12 @@ enum MainCmdIDs {
  * 
  */
 enum ServerCmdIDs {
-	_scid_BEGIN,
-	scid_CONNECT_DISCONNECT,
-	scid_INFO,
-	scid_HISTORY,
-	scid_BACK,
-	_scid_END,
+	_SCID_BEGIN,
+	SCID_CONNECT_DISCONNECT,
+	SCID_INFO,
+	SCID_HISTORY,
+	SCID_BACK,
+	_SCID_END,
 };
 
 /**
@@ -42,14 +42,14 @@ enum ServerCmdIDs {
  * 
  */
 enum ThreadCmdIDs {
-	_tcid_BEGIN,
-	tcid_CREATE,
-	tcid_FIND,
-	tcid_INFO,
-	tcid_MESSAGES,
-	tcid_SEND_MESSAGE,
-	tcid_BACK,
-	_tcid_END,
+	_TCID_BEGIN,
+	TCID_CREATE,
+	TCID_FIND,
+	TCID_INFO,
+	TCID_MESSAGES,
+	TCID_SEND_MESSAGE,
+	TCID_BACK,
+	_TCID_END,
 };
 
 /**
@@ -57,9 +57,9 @@ enum ThreadCmdIDs {
  * 
  */
 enum SettingsCmdIDs {
-	_stgcid_BEGIN,
-	stgcid_BACK,
-	_stgcid_END,
+	_STGCID_BEGIN,
+	STGCID_BACK,
+	_STGCID_END,
 };
 
 /**

@@ -9,10 +9,10 @@
 
 #define TOKEN_SIZE           24
 
-#define DATA_DIR             ".data"
-#define FILENAME_LETHREAD    "lethreadinfo"
-#define FILENAME_LEMESSAGES  "lemessages"
-#define FILENAME_LEAUTHOR    "leauthor"
+#define DIR_SERVER           ".data"
+#define FILE_LETHREAD        "lethreadinfo"
+#define FILE_LEMESSAGES      "lemessages"
+#define FILE_LEAUTHOR        "leauthor"
 
 
 struct LeMessage {
@@ -38,7 +38,6 @@ struct LeThread {
 	struct LeAuthor    *author;
 };
 typedef struct LeThread LeThread;
-
 
 /**
  * @brief Creates new LeThread, if there is no information files with the same id. 

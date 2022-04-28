@@ -6,13 +6,12 @@
 
 #include "lib/status.h"
 
-struct SharedPtr{
+struct SharedPtr {
 	int64_t       *ref_count;
 	void          *data;
 	status_t     (*destruct)(void *);
 };
 typedef struct SharedPtr SharedPtr;
-
 
 /**
  * @brief Creates SharedPtr (the first one, aka origin). 

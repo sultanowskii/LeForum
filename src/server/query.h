@@ -23,7 +23,6 @@ struct LeCommandResult {
 };
 typedef struct LeCommandResult LeCommandResult;
 
-
 /* =============================================================================== 
  * 
  * Following functions (in this section) have to implemented 

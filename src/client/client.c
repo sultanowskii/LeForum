@@ -42,65 +42,65 @@ char              *g_home_dir               = nullptr;
 
 inline const char *MainCmdID_REPR(enum MainCmdIDs id) {
 	switch (id) {
-		case mcid_SERVER:              return "Server";
-		case mcid_THREAD:              return "Thread";
-		case mcid_SETTINGS:            return "Settings";
-		case mcid_EXIT:                return "Exit";
+		case MCID_SERVER:              return "Server";
+		case MCID_THREAD:              return "Thread";
+		case MCID_SETTINGS:            return "Settings";
+		case MCID_EXIT:                return "Exit";
 		default:                       return -LESTATUS_NFND;
 	}
 };
 
 inline const char *ServerCmdID_REPR(enum ServerCmdIDs id) {
 	switch (id) {
-		case scid_CONNECT_DISCONNECT:  return g_server_connected ? "Disconnect" : "Connect";
-		case scid_INFO:                return "Server information";
-		case scid_HISTORY:             return "Server history";
-		case scid_BACK:                return "Back";
+		case SCID_CONNECT_DISCONNECT:  return g_server_connected ? "Disconnect" : "Connect";
+		case SCID_INFO:                return "Server information";
+		case SCID_HISTORY:             return "Server history";
+		case SCID_BACK:                return "Back";
 		default:                       return -LESTATUS_NFND;
 	}
 };
 
 inline const char *ThreadCmdID_REPR(enum ThreadCmdIDs id) {
 	switch (id) {
-		case tcid_CREATE:              return "Create thread";
-		case tcid_FIND:                return "Find thread";
-		case tcid_INFO:                return "Thread info";
-		case tcid_MESSAGES:            return "Message history";
-		case tcid_SEND_MESSAGE:        return "Post message";
-		case tcid_BACK:                return "Back";
+		case TCID_CREATE:              return "Create thread";
+		case TCID_FIND:                return "Find thread";
+		case TCID_INFO:                return "Thread info";
+		case TCID_MESSAGES:            return "Message history";
+		case TCID_SEND_MESSAGE:        return "Post message";
+		case TCID_BACK:                return "Back";
 		default:                       return -LESTATUS_NFND;
 	}
 };
 
 inline const char *SettingsCmdID_REPR(enum SettingsCmdIDs id) {
 	switch (id) {
-		case stgcid_BACK:              return "Back";
+		case STGCID_BACK:              return "Back";
 		default:                       return -LESTATUS_NFND;
 	}
 };
 
 inline void print_menu_server() {
 	puts("Available server commands:");
-	for (enum ServerCmdIDs scid = _scid_BEGIN + 1; scid < _scid_END; scid++)
-		printf("%d - %s\n", scid, ServerCmdID_REPR(scid));
+	for (enum ServerCmdIDs SCID = _SCID_BEGIN + 1; SCID < _SCID_END; SCID++)
+		printf("%d - %s\n", SCID, ServerCmdID_REPR(SCID));
 }
 
 inline void print_menu_thread() {
 	puts("Available thread commands:");
-	for (enum ThreadCmdIDs tcid = _tcid_BEGIN + 1; tcid < _tcid_END; tcid++)
-		printf("%d - %s\n", tcid, ThreadCmdID_REPR(tcid));
+	for (enum ThreadCmdIDs TCID = _TCID_BEGIN + 1; TCID < _TCID_END; TCID++)
+		printf("%d - %s\n", TCID, ThreadCmdID_REPR(TCID));
 }
 
 inline void print_menu_settings() {
 	puts("Available settings commands:");
-	for (enum SettingsCmdIDs stgcid = _stgcid_BEGIN + 1; stgcid < _stgcid_END; stgcid++)
-		printf("%d - %s\n", stgcid, SettingsCmdID_REPR(stgcid));
+	for (enum SettingsCmdIDs STGCID = _STGCID_BEGIN + 1; STGCID < _STGCID_END; STGCID++)
+		printf("%d - %s\n", STGCID, SettingsCmdID_REPR(STGCID));
 }
 
 inline void print_menu_main() {
 	puts("Available commands:");
-	for (enum MainCmdIDs mcid = _mcid_BEGIN + 1; mcid < _mcid_END; mcid++)
-		printf("%d - %s\n", mcid, MainCmdID_REPR(mcid));
+	for (enum MainCmdIDs MCID = _MCID_BEGIN + 1; MCID < _MCID_END; MCID++)
+		printf("%d - %s\n", MCID, MainCmdID_REPR(MCID));
 }
 
 inline void print_prefix_server() {
@@ -243,7 +243,7 @@ FILE * get_leclient_file(const char *filename, const char *mode, bool_t create) 
 	tmp = calloc(sizeof(char), tmp_size + strlen(filename) + 8);
 
 	strncpy(tmp, g_home_dir, tmp_size);
-	strcat(tmp, "/" CLIENT_DIR);
+	strcat(tmp, "/" DIR_CLIENT);
 	strcat(tmp, filename);
 
 	if (stat(tmp, &st) < 0 && !create) {
@@ -269,7 +269,7 @@ status_t server_addr_save(const char *addr, uint16_t port) {
 	memset(formatted_address, 0, sizeof(formatted_address));
 	sprintf(formatted_address, "%s %hd", addr, port);
 
-	file = get_leclient_file(FILENAME_SERVERS, "r", FALSE);
+	file = get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE);
 
 	/* if file exists, then we have to check if it already contains gieven address */
 	if (file != -LESTATUS_NSFD) {
@@ -287,7 +287,7 @@ status_t server_addr_save(const char *addr, uint16_t port) {
 		return -LESTATUS_EXST;
 	}
 
-	file = get_leclient_file(FILENAME_SERVERS, "a+", TRUE);
+	file = get_leclient_file(FILE_SERVER_HISTORY, "a+", TRUE);
 
 	if (file < 0)
 		return -LESTATUS_CLIB;
@@ -313,7 +313,7 @@ status_t server_addr_history_load() {
 	HAddress      *tmp_server_haddr;
 
 
-	file = get_leclient_file(FILENAME_SERVERS, "r", FALSE);
+	file = get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE);
 
 	if (file == -LESTATUS_NSFD)
 		return -LESTATUS_NSFD;
@@ -388,17 +388,17 @@ char * token_load() {
 }
 
 void cmd_server() {
-	enum ServerCmdIDs   cmd_id = _scid_BEGIN;
+	enum ServerCmdIDs   cmd_id = _SCID_BEGIN;
 
 
-	while (cmd_id != scid_BACK) {
+	while (cmd_id != SCID_BACK) {
 		cmd_id = leclient_loop_process(print_menu_server, print_prefix_server);
 
 		switch (cmd_id) {
-			case scid_CONNECT_DISCONNECT:   g_server_connected ? cmd_server_disconnect() : cmd_server_connect(); continue;
-			case scid_HISTORY:              cmd_server_history(); continue;
-			case scid_INFO:                 cmd_server_info(); break;
-			case scid_BACK:                 break;
+			case SCID_CONNECT_DISCONNECT:   g_server_connected ? cmd_server_disconnect() : cmd_server_connect(); continue;
+			case SCID_HISTORY:              cmd_server_history(); continue;
+			case SCID_INFO:                 cmd_server_info(); break;
+			case SCID_BACK:                 break;
 			default:                        puts("Command not found."); continue;
 		}
 	}
@@ -520,7 +520,7 @@ void cmd_server_history() {
 }
 
 void cmd_thread() {
-	enum ThreadCmdIDs   cmd_id = _tcid_BEGIN;
+	enum ThreadCmdIDs   cmd_id = _TCID_BEGIN;
 
 
 	if (!g_server_connected) {
@@ -529,16 +529,16 @@ void cmd_thread() {
 		return;
 	}
 
-	while (cmd_id != tcid_BACK) {
+	while (cmd_id != TCID_BACK) {
 		cmd_id = leclient_loop_process(print_menu_thread, print_prefix_thread);
 
 		switch (cmd_id) {
-			case tcid_CREATE:               cmd_thread_create(); continue;
-			case tcid_FIND:                 cmd_thread_find(); continue;
-			case tcid_INFO:                 cmd_thread_info(); continue;
-			case tcid_MESSAGES:             cmd_thread_message_history(); continue;
-			case tcid_SEND_MESSAGE:         cmd_thread_send_message(); continue;
-			case tcid_BACK:                 break;
+			case TCID_CREATE:               cmd_thread_create(); continue;
+			case TCID_FIND:                 cmd_thread_find(); continue;
+			case TCID_INFO:                 cmd_thread_info(); continue;
+			case TCID_MESSAGES:             cmd_thread_message_history(); continue;
+			case TCID_SEND_MESSAGE:         cmd_thread_send_message(); continue;
+			case TCID_BACK:                 break;
 			default:                        puts("Command not found."); continue;
 		}
 	}
@@ -812,14 +812,14 @@ THREAD_SEND_MESSAGE_EXIT:
 }
 
 void cmd_settings() {
-	enum SettingsCmdIDs cmd_id = _stgcid_BEGIN;
+	enum SettingsCmdIDs cmd_id = _STGCID_BEGIN;
 
 
-	while (cmd_id != stgcid_BACK) {
+	while (cmd_id != STGCID_BACK) {
 		cmd_id = leclient_loop_process(print_menu_settings, print_prefix_settings);
 
 		switch (cmd_id) {
-			case stgcid_BACK:               break;
+			case STGCID_BACK:               break;
 			default:                        puts("Command not found."); continue;
 		}
 	}
@@ -888,9 +888,9 @@ status_t startup() {
 	
 	g_home_dir = getenv("HOME");
 
-	tmp = calloc(sizeof(char), strlen(g_home_dir) + strlen(CLIENT_DIR) + 1);
+	tmp = calloc(sizeof(char), strlen(g_home_dir) + strlen(DIR_CLIENT) + 1);
 	strncpy(tmp, g_home_dir, strlen(g_home_dir));
-	strcat(tmp, "/" CLIENT_DIR);
+	strcat(tmp, "/" DIR_CLIENT);
 
 	/* Check if the directory exists, creates if not */
 	if (stat(tmp, &st) == -1) {
@@ -934,10 +934,10 @@ status_t main(size_t argc, char **argv) {
 		cmd_id = leclient_loop_process(print_menu_main, print_prefix_main);
 
 		switch (cmd_id) {
-			case mcid_SERVER:     cmd_server(); continue;
-			case mcid_THREAD:     cmd_thread(); continue;
-			case mcid_SETTINGS:   cmd_settings(); continue;
-			case mcid_EXIT:       cmd_exit(); continue;
+			case MCID_SERVER:     cmd_server(); continue;
+			case MCID_THREAD:     cmd_thread(); continue;
+			case MCID_SETTINGS:   cmd_settings(); continue;
+			case MCID_EXIT:       cmd_exit(); continue;
 		}
 	}
 

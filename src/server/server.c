@@ -214,11 +214,11 @@ inline void lemeta_load() {
 	struct stat         st                  = {0};
 
 
-	if (stat(DATA_DIR "/" FILENAME_LEMETA, &st) == -1) {
+	if (stat(DIR_SERVER "/" FILE_LEMETA, &st) == -1) {
 		next_lethread_id_value = 0;
 	}
 	else {
-		metafile = fopen(DATA_DIR "/" FILENAME_LEMETA, "rb");
+		metafile = fopen(DIR_SERVER "/" FILE_LEMETA, "rb");
 		fread(&next_lethread_id_value, sizeof(next_lethread_id_value), 1, metafile);
 		fclose(metafile);
 	}
@@ -228,7 +228,7 @@ inline void lemeta_save() {
 	FILE               *metafile;
 
 
-	metafile = fopen(DATA_DIR "/" FILENAME_LEMETA, "wb");
+	metafile = fopen(DIR_SERVER "/" FILE_LEMETA, "wb");
 	fwrite(&next_lethread_id_value, sizeof(next_lethread_id_value), 1, metafile);
 	fclose(metafile);
 }
@@ -245,11 +245,11 @@ size_t startup() {
 
 
 	/* Check if the directory exists, creates if not */
-	if (stat(DATA_DIR, &st) == -1) {
-		mkdir(DATA_DIR, 0700);
+	if (stat(DIR_SERVER, &st) == -1) {
+		mkdir(DIR_SERVER, 0700);
 	}
 
-	srcdir = opendir(DATA_DIR);
+	srcdir = opendir(DIR_SERVER);
 	if (srcdir == NULL) {
 		perror("opendir() failed");
 		return -LESTATUS_CLIB;
