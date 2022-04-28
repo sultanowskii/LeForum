@@ -19,7 +19,7 @@ size_t s_fgets(char *s, size_t n, FILE* fd) {
 }
 
 size_t s_fgets_range(char *s, size_t _min, size_t _max, FILE* fd) {
-	size_t tmp = 0;
+	size_t tmp  = 0;
 	size_t size = 0;
 
 	while (size < _min) {

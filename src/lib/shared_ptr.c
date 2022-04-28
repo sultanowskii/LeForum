@@ -7,8 +7,7 @@
 #include "lib/status.h"
 
 SharedPtr * sharedptr_create(void *data, status_t (*destruct)(void *)) {
-	SharedPtr     *new_sharedptr;
-
+	SharedPtr *new_sharedptr;
 
 	NULLPTR_PREVENT(data, -LESTATUS_NPTR)
 	NULLPTR_PREVENT(destruct, -LESTATUS_NPTR)
@@ -25,9 +24,8 @@ SharedPtr * sharedptr_create(void *data, status_t (*destruct)(void *)) {
 	return new_sharedptr;
 }
 
-SharedPtr * sharedptr_add(SharedPtr * sharedptr) {
-	SharedPtr     *new_sharedptr;
-
+SharedPtr * sharedptr_add(SharedPtr *sharedptr) {
+	SharedPtr *new_sharedptr;
 
 	NULLPTR_PREVENT(sharedptr, -LESTATUS_NPTR)
 
@@ -40,11 +38,10 @@ SharedPtr * sharedptr_add(SharedPtr * sharedptr) {
 	return new_sharedptr;
 }
 
-status_t sharedptr_delete(SharedPtr * sharedptr) {
+status_t sharedptr_delete(SharedPtr *sharedptr) {
 	NULLPTR_PREVENT(sharedptr, -LESTATUS_NPTR)
 
 	(*sharedptr->ref_count)--;
-
 
 	if (sharedptr->ref_count != nullptr && sharedptr->destruct != nullptr && *sharedptr->ref_count <= 0) {
 		sharedptr->destruct(sharedptr->data);

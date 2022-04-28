@@ -11,9 +11,8 @@
 #define MIN_SYMBOL           0x21
 
 inline status_t rand_string(char *str, size_t size) {
-	FILE *              f;
-	unsigned char       tmp;
-
+	FILE          *f;
+	unsigned char  tmp;
 
 	NULLPTR_PREVENT(str, -LESTATUS_NPTR)
 
@@ -32,8 +31,7 @@ inline status_t rand_string(char *str, size_t size) {
 }
 
 inline uint64_t rand_uint64_t() {
-	uint64_t            tmp;
-
+	uint64_t tmp;
 
 	FILE *f = fopen("/dev/urandom", "r");
 

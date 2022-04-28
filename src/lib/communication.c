@@ -10,10 +10,9 @@
 #include "lib/status.h"
 
 ssize_t sendf(int fd, char *str, ...) {
-	va_list                  args;
-	char                     buffer[4096];
-	int                      result          = 0;
-
+	va_list args;
+	char    buffer[4096];
+	int     result        = 0;
 
 	NULLPTR_PREVENT(str, -LESTATUS_NPTR)
 

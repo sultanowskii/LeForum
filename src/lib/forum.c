@@ -17,10 +17,9 @@
 #include "server/conf.h"
 
 LeThread * lethread_create(char *topic, uint64_t lethread_id) {
-	LeThread           *new_lethread;
-	size_t              topic_size;
-	FILE*               lethread_file;
-
+	LeThread *new_lethread;
+	size_t    topic_size;
+	FILE*     lethread_file;
 
 	NULLPTR_PREVENT(topic, -LESTATUS_NPTR)
 
@@ -70,9 +69,8 @@ uint64_t lethread_message_count(LeThread *lethread) {
 }
 
 LeMessage * lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_author) {
-	LeMessage          *new_lemessage;
-	size_t              length;
-
+	LeMessage *new_lemessage;
+	size_t     length;
 
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 	NULLPTR_PREVENT(lethread->messages, -LESTATUS_NPTR)
@@ -115,8 +113,7 @@ status_t lemessage_delete(LeMessage *message) {
 }
 
 LeAuthor * leauthor_create(LeThread *lethread, bool_t create_token) {
-	LeAuthor           *new_leauthor;
-
+	LeAuthor *new_leauthor;
 
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
@@ -148,17 +145,13 @@ status_t leauthor_delete(LeAuthor *author) {
 }
 
 FILE * get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t create) {
-	char                path[256];
-	char                id_str[32];
-
-	FILE               *file;
-	struct stat         st             = {0};
-
+	char         path[256];
+	FILE        *file;
+	struct stat  st             = {0};
 
 	NULLPTR_PREVENT(mode, -LESTATUS_NPTR)
 	NULLPTR_PREVENT(filename, -LESTATUS_NPTR)
 
-	memset(id_str, 0, sizeof(id_str));
 	memset(path, 0, sizeof(path));
 
 	sprintf(path, DIR_SERVER "/%llu/", lethread_id);
@@ -182,9 +175,8 @@ FILE * get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t creat
 }
 
 status_t lethread_save(LeThread *lethread) {
-	size_t              topic_size;
-	FILE               *lethread_info_file;
-
+	size_t  topic_size;
+	FILE   *lethread_info_file;
 
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 	NULLPTR_PREVENT(lethread->author, -LESTATUS_IDAT)
@@ -210,10 +202,9 @@ status_t lethread_save(LeThread *lethread) {
 }
 
 status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
-	FILE               *lethread_info_file;
-	size_t              topic_size;
-	uint64_t            leauthor_id;
-
+	FILE     *lethread_info_file;
+	size_t    topic_size;
+	uint64_t  leauthor_id;
 
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
@@ -243,14 +234,11 @@ status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
 }
 
 status_t lemessages_save(LeThread *lethread) {
-	FILE               *lemessages_file;
-
-	QueueNode          *node;
-
-	LeMessage          *lemessage;
-	size_t              text_size;
-	status_t            result;
-
+	FILE      *lemessages_file;
+	QueueNode *node;
+	LeMessage *lemessage;
+	size_t     text_size;
+	status_t   result;
 
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
@@ -283,9 +271,8 @@ status_t lemessages_save(LeThread *lethread) {
 }
 
 status_t lemessage_save(LeMessage *lemessage) {
-	size_t              text_size;
-	FILE               *lemessages_file;
-
+	size_t  text_size;
+	FILE   *lemessages_file;
 
 	NULLPTR_PREVENT(lemessage, -LESTATUS_NPTR)
 	NULLPTR_PREVENT(lemessage->text, -LESTATUS_NPTR)
@@ -304,11 +291,9 @@ status_t lemessage_save(LeMessage *lemessage) {
 }
 
 status_t lemessages_load(LeThread *lethread) {
-	FILE               *lemessages_file;
-
-	LeMessage          *lemessage;
-	size_t             text_size;
-
+	FILE      *lemessages_file;
+	LeMessage *lemessage;
+	size_t     text_size;
 
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 	NULLPTR_PREVENT(lethread->messages, -LESTATUS_NPTR)
@@ -338,9 +323,8 @@ status_t lemessages_load(LeThread *lethread) {
 }
 
 status_t leauthor_load(LeThread *lethread) {
-	LeAuthor           *leauthor;
-	FILE               *leauthor_file;
-
+	LeAuthor *leauthor;
+	FILE     *leauthor_file;
 
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
@@ -359,8 +343,7 @@ status_t leauthor_load(LeThread *lethread) {
 }
 
 status_t leauthor_save(LeThread *lethread) {
-	FILE               *leauthor_file;
-
+	FILE *leauthor_file;
 
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 	NULLPTR_PREVENT(lethread->author, -LESTATUS_NPTR)

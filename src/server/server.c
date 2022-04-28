@@ -24,42 +24,42 @@
 #include "lib/status.h"
 #include "lib/util.h"
 
-struct arguments arguments;
+struct arguments  arguments;
 
 /*
  * Flag for threads
  */
-bool_t             program_on_finish        = FALSE;
+bool_t            g_program_on_finish       = FALSE;
 
 /* 
  * Stores the value of the next created LeThread id
  */
-uint64_t           next_lethread_id_value   = 0;
+uint64_t          g_next_lethread_id_value  = 0;
 
 /*
  * Pthread mutexes
  */
-pthread_mutex_t    next_lethread_id_mutex;
+pthread_mutex_t   g_next_lethread_id_mutex;
 
 /*
  * Save file query queues with the purpose of prevention data race. SharedPtr is stored here.
  */
-Queue             *lethread_query_queue;
-Queue             *lemessages_query_queue;
-Queue             *lemessage_query_queue;
-Queue             *leauthor_query_queue;
+Queue            *g_lethread_query_queue;
+Queue            *g_lemessages_query_queue;
+Queue            *g_lemessage_query_queue;
+Queue            *g_leauthor_query_queue;
 
 /*
  * Here we store SharedPtrs to all the LeThreads
  */
-Queue             *lethread_queue;
+Queue            *g_lethread_queue;
 
 void * lethread_query_manage() {
-	SharedPtr          *sharedptr_lethread;
+	SharedPtr *sharedptr_lethread;
 
-	while (!program_on_finish) {
-		while (!queue_is_empty(lethread_query_queue) && !program_on_finish) {
-			sharedptr_lethread = (SharedPtr *)queue_pop(lethread_query_queue);
+	while (!g_program_on_finish) {
+		while (!queue_is_empty(g_lethread_query_queue) && !g_program_on_finish) {
+			sharedptr_lethread = (SharedPtr *)queue_pop(g_lethread_query_queue);
 			lethread_save(sharedptr_lethread->data);
 			sharedptr_delete(sharedptr_lethread);
 			sharedptr_lethread = nullptr;
@@ -68,11 +68,11 @@ void * lethread_query_manage() {
 }
 
 void * lemessages_query_manage() {
-	SharedPtr          *sharedptr_lethread;
+	SharedPtr *sharedptr_lethread;
 
-	while (!program_on_finish) {
-		while (!queue_is_empty(lemessages_query_queue) && !program_on_finish) {
-			sharedptr_lethread = (SharedPtr *)queue_pop(lemessages_query_queue);
+	while (!g_program_on_finish) {
+		while (!queue_is_empty(g_lemessages_query_queue) && !g_program_on_finish) {
+			sharedptr_lethread = (SharedPtr *)queue_pop(g_lemessages_query_queue);
 			lemessages_save(sharedptr_lethread->data);
 			sharedptr_delete(sharedptr_lethread);
 			sharedptr_lethread = nullptr;
@@ -81,21 +81,21 @@ void * lemessages_query_manage() {
 }
 
 void * lemessage_query_manage() {
-	LeMessage          *lemessage;
+	LeMessage *lemessage;
 
-	while (!program_on_finish) {
-		while (!queue_is_empty(lemessage_query_queue) && !program_on_finish) {
-			lemessage_save(queue_pop(lemessage_query_queue));
+	while (!g_program_on_finish) {
+		while (!queue_is_empty(g_lemessage_query_queue) && !g_program_on_finish) {
+			lemessage_save(queue_pop(g_lemessage_query_queue));
 		}
 	}
 }
 
 void * leauthor_query_manage() {
-	SharedPtr          *sharedptr_lethread;
+	SharedPtr *sharedptr_lethread;
 
-	while (!program_on_finish) {
-		while (!queue_is_empty(leauthor_query_queue) && !program_on_finish) {
-			sharedptr_lethread = (SharedPtr *)queue_pop(leauthor_query_queue);
+	while (!g_program_on_finish) {
+		while (!queue_is_empty(g_leauthor_query_queue) && !g_program_on_finish) {
+			sharedptr_lethread = (SharedPtr *)queue_pop(g_leauthor_query_queue);
 			leauthor_save(sharedptr_lethread->data);
 			sharedptr_delete(sharedptr_lethread);
 			sharedptr_lethread = nullptr;
@@ -111,9 +111,9 @@ status_t leclientinfo_delete(LeClientInfo *clinfo) {
 }
 
 SharedPtr * lethread_get_by_id(uint64_t lethread_id) {
-	LeThread           *lethread       = nullptr;
-	LeThread           *lethread_found = nullptr;
-	QueueNode          *node           = lethread_queue->first;
+	LeThread  *lethread       = nullptr;
+	LeThread  *lethread_found = nullptr;
+	QueueNode *node           = g_lethread_queue->first;
 
 	while (node != NULL) {
 		lethread = (LeThread *)((SharedPtr *)node->data)->data;
@@ -137,11 +137,9 @@ SharedPtr * lethread_get_by_id(uint64_t lethread_id) {
 }
 
 Queue * lethread_find(char *topic_part, size_t topic_part_size) {
-	LeThread           *lethread;
-	QueueNode          *node           = lethread_queue->first;
-
-	Queue              *lethreads_match;
-
+	LeThread  *lethread;
+	QueueNode *node             = g_lethread_queue->first;
+	Queue     *lethreads_match;
 
 	NULLPTR_PREVENT(topic_part, -LESTATUS_NPTR)
 
@@ -160,34 +158,33 @@ Queue * lethread_find(char *topic_part, size_t topic_part_size) {
 inline status_t s_lethread_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
-	queue_push(lethread_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
+	queue_push(g_lethread_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
 	return -LESTATUS_OK;
 }
 
 inline status_t s_lemessages_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
-	queue_push(lemessages_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
+	queue_push(g_lemessages_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
 	return -LESTATUS_OK;
 }
 
 inline status_t s_lemessage_save(LeMessage *lemessage) {
 	NULLPTR_PREVENT(lemessage, -LESTATUS_NPTR)
 
-	queue_push(lemessage_query_queue, lemessage, sizeof(LeMessage));
+	queue_push(g_lemessage_query_queue, lemessage, sizeof(LeMessage));
 	return -LESTATUS_OK;
 }
 
 inline status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
-	queue_push(leauthor_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
+	queue_push(g_leauthor_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
 	return -LESTATUS_OK;
 }
 
 SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
-	SharedPtr          *sharedptr_lethread;
-
+	SharedPtr *sharedptr_lethread;
 
 	NULLPTR_PREVENT(topic, -LESTATUS_NPTR)
 
@@ -196,13 +193,13 @@ SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
 	 */
 	sharedptr_lethread  = sharedptr_create(lethread_create(topic, next_lethread_id()), lethread_delete);
 
-	queue_push(lethread_queue, sharedptr_lethread, sizeof(SharedPtr));
+	queue_push(g_lethread_queue, sharedptr_lethread, sizeof(SharedPtr));
 
 	return sharedptr_add(sharedptr_lethread); 
 }
 
 inline size_t get_lethread_count() {
-	return lethread_queue->size;
+	return g_lethread_queue->size;
 }
 
 inline const char * get_version() {
@@ -210,16 +207,15 @@ inline const char * get_version() {
 }
 
 inline void lemeta_load() {
-	FILE               *metafile;
-	struct stat         st                  = {0};
-
+	FILE        *metafile;
+	struct stat  st                  = {0};
 
 	if (stat(DIR_SERVER "/" FILE_LEMETA, &st) == -1) {
-		next_lethread_id_value = 0;
+		g_next_lethread_id_value = 0;
 	}
 	else {
 		metafile = fopen(DIR_SERVER "/" FILE_LEMETA, "rb");
-		fread(&next_lethread_id_value, sizeof(next_lethread_id_value), 1, metafile);
+		fread(&g_next_lethread_id_value, sizeof(g_next_lethread_id_value), 1, metafile);
 		fclose(metafile);
 	}
 }
@@ -229,20 +225,17 @@ inline void lemeta_save() {
 
 
 	metafile = fopen(DIR_SERVER "/" FILE_LEMETA, "wb");
-	fwrite(&next_lethread_id_value, sizeof(next_lethread_id_value), 1, metafile);
+	fwrite(&g_next_lethread_id_value, sizeof(g_next_lethread_id_value), 1, metafile);
 	fclose(metafile);
 }
 
 size_t startup() {
-	LeThread           *lethread;
-	uint64_t            lethread_id;
-
-	DIR                *srcdir;
-	struct dirent      *dent;
-	size_t              dir_cnt             = 0;
-
-	struct stat         st                  = {0};
-
+	LeThread      *lethread;
+	uint64_t       lethread_id;
+	DIR           *srcdir;
+	struct dirent *dent;
+	size_t         dir_cnt      = 0;
+	struct stat    st           = {0};
 
 	/* Check if the directory exists, creates if not */
 	if (stat(DIR_SERVER, &st) == -1) {
@@ -255,11 +248,11 @@ size_t startup() {
 		return -LESTATUS_CLIB;
 	}
 
-	lethread_query_queue = queue_create(sharedptr_delete);
-	lemessages_query_queue = queue_create(sharedptr_delete);
-	lemessage_query_queue = queue_create(lemessage_delete);
-	leauthor_query_queue = queue_create(sharedptr_delete);
-	lethread_queue = queue_create(sharedptr_delete);
+	g_lethread_query_queue = queue_create(sharedptr_delete);
+	g_lemessages_query_queue = queue_create(sharedptr_delete);
+	g_lemessage_query_queue = queue_create(lemessage_delete);
+	g_leauthor_query_queue = queue_create(sharedptr_delete);
+	g_lethread_queue = queue_create(sharedptr_delete);
 
 	atexit(cleanup);
 	signal(SIGTERM, cleanup);
@@ -292,7 +285,7 @@ size_t startup() {
 
 			leauthor_load(lethread);
 
-			queue_push(lethread_queue, sharedptr_create(lethread, lethread_delete), sizeof(SharedPtr));
+			queue_push(g_lethread_queue, sharedptr_create(lethread, lethread_delete), sizeof(SharedPtr));
 
 			dir_cnt++;
 		}
@@ -302,36 +295,34 @@ size_t startup() {
 
 	lemeta_load();
 
-	pthread_mutex_init(&next_lethread_id_mutex, NULL);
+	pthread_mutex_init(&g_next_lethread_id_mutex, NULL);
 
 	return dir_cnt;
 }
 
 void cleanup() {
-	static bool_t       cleaned        = FALSE;
+	static bool_t  cleaned   = FALSE;
+	FILE          *metafile;
 
-	FILE               *metafile;
-
-
-	program_on_finish = TRUE;
+	g_program_on_finish = TRUE;
 
 	if (!cleaned) {
 		cleaned = TRUE;
 
 		lemeta_save();
 
-		queue_delete(lethread_query_queue);
-		lethread_query_queue = nullptr;
-		queue_delete(lemessages_query_queue);
-		lemessages_query_queue = nullptr;
-		queue_delete(lemessage_query_queue);
-		lemessage_query_queue = nullptr;
-		queue_delete(leauthor_query_queue);
-		leauthor_query_queue = nullptr;
-		queue_delete(lethread_queue);
-		lethread_queue = nullptr;
+		queue_delete(g_lethread_query_queue);
+		g_lethread_query_queue = nullptr;
+		queue_delete(g_lemessages_query_queue);
+		g_lemessages_query_queue = nullptr;
+		queue_delete(g_lemessage_query_queue);
+		g_lemessage_query_queue = nullptr;
+		queue_delete(g_leauthor_query_queue);
+		g_leauthor_query_queue = nullptr;
+		queue_delete(g_lethread_queue);
+		g_lethread_queue = nullptr;
 
-		pthread_mutex_destroy(&next_lethread_id_mutex);
+		pthread_mutex_destroy(&g_next_lethread_id_mutex);
 	}
 }
 
@@ -341,30 +332,24 @@ void signal_handler(const int signum) {
 }
 
 uint64_t next_lethread_id() {
-	uint64_t            value;
+	uint64_t value;
 
-
-	pthread_mutex_lock(&next_lethread_id_mutex);
-	value = next_lethread_id_value++;
+	pthread_mutex_lock(&g_next_lethread_id_mutex);
+	value = g_next_lethread_id_value++;
 	lemeta_save(); /* Not really sure if it is necessary or not */
-	pthread_mutex_unlock(&next_lethread_id_mutex);
+	pthread_mutex_unlock(&g_next_lethread_id_mutex);
 
 	return value;
 }
 
 void * handle_client(void *arg) {
-	LeClientInfo       *client_info;
-	LeCommandResult     query_result;
-
-	char               *cl_data;
-
-	size_t              cl_expected_data_size    = 0;
-	size_t              cl_data_size             = 0;
-
-	char                tmp[64];
-
-	const char         *lestatus_representation;
-
+	LeClientInfo    *client_info;
+	LeCommandResult  query_result;
+	char            *cl_data;
+	size_t           cl_expected_data_size    = 0;
+	size_t           cl_data_size             = 0;
+	char             tmp[64];
+	const char      *lestatus_representation;
 
 	NULLPTR_PREVENT(arg, -LESTATUS_NPTR)
 
@@ -383,7 +368,7 @@ void * handle_client(void *arg) {
 
 	/* ================================= Example end ==================================== */
 
-	while (!program_on_finish) {
+	while (!g_program_on_finish) {
 		recv(client_info->fd, &cl_expected_data_size, sizeof(cl_expected_data_size), NULL);
 		/* Explicitly prevent overflowing and */
 		if (cl_expected_data_size > MAX_PACKET_SIZE)
@@ -439,22 +424,16 @@ CLIENT_HANDLER_ERR:
 
 status_t main(int argc, char *argv[]) {
 	LeClientInfo       *leclientinfo;
-
 	int                 client_fd;
 	int                 server_fd;
-
 	struct sockaddr_in  server_addr;
-
 	struct sockaddr     client_addr;
 	socklen_t           client_addr_len;
-
-	socklen_t           socakddr_in_len     = sizeof(struct sockaddr_in);
-
+	socklen_t           socakddr_in_len                 = sizeof(struct sockaddr_in);
 	pthread_t           client_handler_thread;
 	pthread_t           lethread_query_manager_thread;
 	pthread_t           lemessage_query_manager_thread;
 	pthread_t           leauthor_query_manager_thread;
-
 
 	arguments.host = "0.0.0.0";
 	arguments.port = 7431;

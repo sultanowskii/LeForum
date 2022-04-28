@@ -21,27 +21,20 @@ LeCommand CMDS[CMD_COUNT] = {
 };
 
 LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
-	char               *data_ptr       = raw_data;
-
-	LeThread           *lethread       = NULL;
-	uint64_t            lethread_id;
-	SharedPtr          *sharedptr_lethread;
-	size_t              topic_size;
-	size_t              message_cnt;
-
-	QueueNode          *node;
-
-	LeMessage          *lemessage;
-	size_t              text_size;
-
-	size_t              chunk_size;
-
-	char               *response;
-	char               *response_start;
-	size_t              response_size;
-
-	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
-
+	char            *data_ptr            = raw_data;
+	LeThread        *lethread            = NULL;
+	uint64_t         lethread_id;
+	SharedPtr       *sharedptr_lethread;
+	size_t           topic_size;
+	size_t           message_cnt;
+	QueueNode       *node;
+	LeMessage       *lemessage;
+	size_t           text_size;
+	size_t           chunk_size;
+	char            *response;
+	char            *response_start;
+	size_t           response_size;
+	LeCommandResult  result              = {0, -LESTATUS_OK, NULL};
 
 	if (size < strlen("THRID") + sizeof(lethread_id)) {
 		result.status = -LESTATUS_ISYN;
@@ -143,18 +136,14 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 }
 
 LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
-	char               *data_ptr              = raw_data;
-
-	LeThread           *new_lethread;
-	size_t              topic_size;
-	SharedPtr          *sharedptr_lethread;
-
-	char               *response_start;
-	char               *response;
-	size_t              response_size           = strlen("OKTHRID") + sizeof(uint64_t) + strlen("TKN") + TOKEN_SIZE;
-
-	LeCommandResult     result                = {0, -LESTATUS_OK, NULL};
-
+	char            *data_ptr            = raw_data;
+	LeThread        *new_lethread;
+	size_t           topic_size;
+	SharedPtr       *sharedptr_lethread;
+	char            *response_start;
+	char            *response;
+	size_t           response_size       = strlen("OKTHRID") + sizeof(uint64_t) + strlen("TKN") + TOKEN_SIZE;
+	LeCommandResult  result              = {0, -LESTATUS_OK, NULL};
 
 	if (size < strlen("TPCSZ") + sizeof(topic_size) + strlen("TPC")) {
 		result.status = -LESTATUS_ISYN;
@@ -215,27 +204,20 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 }
 
 LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
-	char               *data_ptr       = raw_data;
-
-	Queue              *lethreads;
-	LeThread           *lethread       = NULL;
-	uint64_t            lethread_id;
-	SharedPtr          *sharedptr_lethread;
-	size_t              topic_size;
-
-	QueueNode          *node;
-
-	char               *topic_part;
-	size_t              topic_part_size;
-
-	size_t              chunk_size;
-
-	char               *response;
-	char               *response_start;
-	size_t              response_size;
-
-	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
-
+	char            *data_ptr            = raw_data;
+	Queue           *lethreads;
+	LeThread        *lethread            = NULL;
+	uint64_t         lethread_id;
+	SharedPtr       *sharedptr_lethread;
+	size_t           topic_size;
+	QueueNode       *node;
+	char            *topic_part;
+	size_t           topic_part_size;
+	size_t           chunk_size;
+	char            *response;
+	char            *response_start;
+	size_t           response_size;
+	LeCommandResult  result              = {0, -LESTATUS_OK, NULL};
 
 	if (strncmp(data_ptr, "TPCPSZ", strlen("TPCPSZ")) != 0) {
 		result.status = -LESTATUS_ISYN;
@@ -326,19 +308,15 @@ FTHR_SUCCESS:
 }
 
 LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
-	char               *data_ptr       = raw_data;
-
-	LeThread           *lethread;
-	uint64_t            lethread_id;
-	SharedPtr          *sharedptr_lethread;
-
-	LeMessage          *lemessage;
-	char               *text;
-	size_t              text_size;
-	bool_t              is_author;
-
-	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
-
+	char            *data_ptr            = raw_data;
+	LeThread        *lethread;
+	uint64_t         lethread_id;
+	SharedPtr       *sharedptr_lethread;
+	LeMessage       *lemessage;
+	char            *text;
+	size_t           text_size;
+	bool_t           is_author;
+	LeCommandResult  result              = {0, -LESTATUS_OK, NULL};
 
 	if (size < strlen("THRID") + sizeof(lethread_id) + strlen("TXTSZ") + sizeof(text_size) + strlen("TXT")) {
 		result.status = -LESTATUS_ISYN;
@@ -420,14 +398,11 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 }
 
 LeCommandResult cmd_meta(char *raw_data, size_t size) {
-	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
-
-	char               *response;
-	char               *response_start;
-
-	const char         *tmp;
-	size_t              tmp_size;
-
+	LeCommandResult  result          = {0, -LESTATUS_OK, NULL};
+	char            *response;
+	char            *response_start;
+	const char      *tmp;
+	size_t           tmp_size;
 
 	response = malloc(128);
 	response_start = response;
@@ -485,16 +460,15 @@ LeCommandResult cmd_meta(char *raw_data, size_t size) {
 }
 
 LeCommandResult cmd_alive(char *raw_data, size_t size) {
-	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
+	LeCommandResult result = {0, -LESTATUS_OK, NULL};
 
 	return result;
 }
 
 LeCommandResult query_process(char *raw_data, size_t size) {
-	LeCommand           cmd            = {NULL, NULL};
-	LeCommandResult     result         = {0, -LESTATUS_OK, NULL};
-	size_t              cmd_name_size;
-
+	LeCommand       cmd            = {NULL, NULL};
+	LeCommandResult result         = {0, -LESTATUS_OK, NULL};
+	size_t          cmd_name_size;
 
 	if (raw_data == nullptr) {
 		result.status = -LESTATUS_NPTR;
