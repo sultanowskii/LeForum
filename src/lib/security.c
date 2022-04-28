@@ -3,7 +3,7 @@
 #define ALLOWED_SYMBOLS     (0x7e - 0x20)
 #define MIN_SYMBOL           0x21
 
-status_t rand_string(char *str, size_t size) {
+inline status_t rand_string(char *str, size_t size) {
 	FILE *              f;
 	unsigned char       tmp;
 
@@ -24,7 +24,7 @@ status_t rand_string(char *str, size_t size) {
 	return -LESTATUS_OK;
 }
 
-uint64_t rand_uint64_t() {
+inline uint64_t rand_uint64_t() {
 	uint64_t            tmp;
 
 

@@ -1,10 +1,7 @@
 #ifndef LEFORUM_CLIENT_ARG_H_
 #define LEFORUM_CLIENT_ARG_H_
 
-#include <stdlib.h>
-#include <stdint.h>
 #include <argp.h>
-#include <sys/time.h>
 
 #include "lib/constants.h"
 

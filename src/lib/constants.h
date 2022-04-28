@@ -11,6 +11,6 @@
 
 #define nullptr NULL
 
-typedef int8_t bool_t;
+typedef int bool_t;
 
 #endif

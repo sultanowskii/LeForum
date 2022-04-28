@@ -103,7 +103,7 @@ void * queue_pop(Queue *queue) {
 	return data;
 }
 
-bool_t queue_is_empty(Queue *queue) {
+inline bool_t queue_is_empty(Queue *queue) {
 	NULLPTR_PREVENT(queue, -LESTATUS_NPTR)
 
 	return queue->size == 0;

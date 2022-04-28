@@ -134,28 +134,28 @@ Queue * lethread_find(char *topic_part, size_t topic_part_size) {
 	return lethreads_match;
 }
 
-status_t s_lethread_save(SharedPtr *sharedptr_lethread) {
+inline status_t s_lethread_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
 	queue_push(lethread_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
 	return -LESTATUS_OK;
 }
 
-status_t s_lemessages_save(SharedPtr *sharedptr_lethread) {
+inline status_t s_lemessages_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
 	queue_push(lemessages_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
 	return -LESTATUS_OK;
 }
 
-status_t s_lemessage_save(LeMessage *lemessage) {
+inline status_t s_lemessage_save(LeMessage *lemessage) {
 	NULLPTR_PREVENT(lemessage, -LESTATUS_NPTR)
 
 	queue_push(lemessage_query_queue, lemessage, sizeof(LeMessage));
 	return -LESTATUS_OK;
 }
 
-status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
+inline status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
 	queue_push(leauthor_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
@@ -178,7 +178,7 @@ SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
 	return sharedptr_add(sharedptr_lethread); 
 }
 
-size_t get_lethread_count() {
+inline size_t get_lethread_count() {
 	return lethread_queue->size;
 }
 
@@ -186,7 +186,7 @@ inline const char * get_version() {
 	return argp_program_version;
 }
 
-void lemeta_load() {
+inline void lemeta_load() {
 	FILE               *metafile;
 	struct stat         st                  = {0};
 
@@ -201,7 +201,7 @@ void lemeta_load() {
 	}
 }
 
-void lemeta_save() {
+inline void lemeta_save() {
 	FILE               *metafile;
 
 

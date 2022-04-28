@@ -20,7 +20,7 @@ pthread_t          g_query_loop_pthread     = 0;
 char              *g_home_dir               = nullptr;
 
 
-const char *MainCmdID_REPR(enum MainCmdIDs id) {
+inline const char *MainCmdID_REPR(enum MainCmdIDs id) {
 	switch (id) {
 		case mcid_SERVER:              return "Server";
 		case mcid_THREAD:              return "Thread";
@@ -30,7 +30,7 @@ const char *MainCmdID_REPR(enum MainCmdIDs id) {
 	}
 };
 
-const char *ServerCmdID_REPR(enum ServerCmdIDs id) {
+inline const char *ServerCmdID_REPR(enum ServerCmdIDs id) {
 	switch (id) {
 		case scid_CONNECT_DISCONNECT:  return g_server_connected ? "Disconnect" : "Connect";
 		case scid_INFO:                return "Server information";
@@ -40,7 +40,7 @@ const char *ServerCmdID_REPR(enum ServerCmdIDs id) {
 	}
 };
 
-const char *ThreadCmdID_REPR(enum ThreadCmdIDs id) {
+inline const char *ThreadCmdID_REPR(enum ThreadCmdIDs id) {
 	switch (id) {
 		case tcid_CREATE:              return "Create thread";
 		case tcid_FIND:                return "Find thread";
@@ -52,7 +52,7 @@ const char *ThreadCmdID_REPR(enum ThreadCmdIDs id) {
 	}
 };
 
-const char *SettingsCmdID_REPR(enum SettingsCmdIDs id) {
+inline const char *SettingsCmdID_REPR(enum SettingsCmdIDs id) {
 	switch (id) {
 		case stgcid_BACK:              return "Back";
 		default:                       return -LESTATUS_NFND;
@@ -208,7 +208,7 @@ status_t load_args(int argc, char **argv) {
  * You should delete query by yourself after it is complete.
  * Don't delete it until query->completed==TRUE, otherwise it might cause null pointer dereference.
  */
-void server_query_add(ServerQuery *query) {
+inline void server_query_add(ServerQuery *query) {
 	queue_push(g_server_queries, query, sizeof(ServerQuery));
 }
 

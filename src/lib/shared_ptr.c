@@ -16,7 +16,6 @@ SharedPtr * sharedptr_create(void *data, status_t (*destruct)(void *)) {
 
 	new_sharedptr->destruct = destruct;
 
-
 	return new_sharedptr;
 }
 
