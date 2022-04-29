@@ -226,7 +226,7 @@ status_t load_args(int argc, char **argv) {
  * Don't delete it until query->completed==TRUE, otherwise it might cause null pointer dereference.
  */
 inline void server_query_add(ServerQuery *query) {
-	queue_push(g_server_queries, query, sizeof(ServerQuery));
+	queue_push(g_server_queries, query, sizeof(query));
 }
 
 FILE * get_leclient_file(const char *filename, const char *mode, bool_t create) {
@@ -815,11 +815,10 @@ void query_loop() {
 				query = (ServerQuery *)queue_pop(g_server_queries);
 				request_size = query->raw_request_data_size;
 
-				send(g_server_fd, &request_size, sizeof(size_t), NULL);
+				send(g_server_fd, &request_size, sizeof(request_size), NULL);
 				send(g_server_fd, query->raw_request_data, request_size, NULL);
 				
 				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
-
 				raw_response = calloc(sizeof(char), response_size + 1);
 				bytes_read = recv(g_server_fd, raw_response, response_size, NULL);
 				
@@ -833,7 +832,7 @@ void query_loop() {
 				send(g_server_fd, buf, sizeof(size_t), NULL);
 				send(g_server_fd, "LIVE", buf, NULL);
 				
-				recv(g_server_fd, &response_size, sizeof(size_t), NULL);
+				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
 				raw_response = calloc(sizeof(char), response_size + 1);
 				recv(g_server_fd, raw_response, response_size, NULL);
 				/* TODO: Sanity check */

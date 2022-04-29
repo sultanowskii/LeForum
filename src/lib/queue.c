@@ -12,7 +12,7 @@ Queue * queue_create(status_t (*destruct)(void *)) {
 
 	NULLPTR_PREVENT(destruct, -LESTATUS_NPTR)
 
-	new_queue = (Queue *)malloc(sizeof(Queue));
+	new_queue = (Queue *)malloc(sizeof(*new_queue));
 
 	new_queue->size = 0;
 	new_queue->first = nullptr;
@@ -58,7 +58,7 @@ status_t queue_push(Queue *queue, void *data, size_t size) {
 	NULLPTR_PREVENT(queue, -LESTATUS_NPTR)
 	NULLPTR_PREVENT(data, -LESTATUS_NPTR)
 
-	new_node = (QueueNode *)malloc(sizeof(QueueNode));
+	new_node = (QueueNode *)malloc(sizeof(*new_node));
 	new_node->data = data;
 
 	new_node->next = nullptr;

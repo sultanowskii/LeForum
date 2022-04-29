@@ -23,7 +23,7 @@ LeThread * lethread_create(char *topic, uint64_t lethread_id) {
 
 	NULLPTR_PREVENT(topic, -LESTATUS_NPTR)
 
-	new_lethread = (LeThread *)malloc(sizeof(LeThread));
+	new_lethread = (LeThread *)malloc(sizeof(*new_lethread));
 	topic_size = strlen(topic);
 
 	new_lethread->id = lethread_id;
@@ -81,7 +81,7 @@ LeMessage * lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_
 	if (length < MIN_MESSAGE_SIZE || length > MAX_MESSAGE_SIZE)
 		return -LESTATUS_IDAT;
 
-	new_lemessage = (LeMessage *)malloc(sizeof(LeMessage));
+	new_lemessage = (LeMessage *)malloc(sizeof(*new_lemessage));
 
 	new_lemessage->id = lethread->next_message_id++;
 	new_lemessage->by_lethread_author = by_lethread_author;
@@ -91,7 +91,7 @@ LeMessage * lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_
 	new_lemessage->text[length] = '\0';
 	new_lemessage->lethread = lethread;
 
-	queue_push(lethread->messages, new_lemessage, sizeof(LeMessage));
+	queue_push(lethread->messages, new_lemessage, sizeof(new_lemessage));
 
 	new_lemessage = nullptr;
 
@@ -117,7 +117,7 @@ LeAuthor * leauthor_create(LeThread *lethread, bool_t create_token) {
 
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
-	new_leauthor = (LeAuthor *)malloc(sizeof(LeAuthor));
+	new_leauthor = (LeAuthor *)malloc(sizeof(*new_leauthor));
 	new_leauthor->id = rand_uint64_t() % 0xffffffff;
 	new_leauthor->token = calloc(sizeof(char), TOKEN_SIZE + 1);
 
@@ -303,7 +303,7 @@ status_t lemessages_load(LeThread *lethread) {
 		return lemessages_file;
 
 	for (size_t i = 0; i < lethread_message_count(lethread); ++i) {
-		lemessage = (LeMessage *)malloc(sizeof(LeMessage));
+		lemessage = (LeMessage *)malloc(sizeof(*lemessage));
 		fread(&lemessage->id, sizeof(lemessage->id), 1, lemessages_file);
 		fread(&lemessage->by_lethread_author, sizeof(lemessage->by_lethread_author), 1, lemessages_file);
 		fread(&text_size, sizeof(text_size), 1, lemessages_file);
@@ -312,7 +312,7 @@ status_t lemessages_load(LeThread *lethread) {
 		lemessage->text = calloc(sizeof(char), text_size + 1);
 		fread(lemessage->text, 1, text_size, lemessages_file);
 
-		queue_push(lethread->messages, lemessage, sizeof(LeMessage));
+		queue_push(lethread->messages, lemessage, sizeof(lemessage));
 
 		lemessage = nullptr;
 	}

@@ -12,9 +12,9 @@ SharedPtr * sharedptr_create(void *data, status_t (*destruct)(void *)) {
 	NULLPTR_PREVENT(data, -LESTATUS_NPTR)
 	NULLPTR_PREVENT(destruct, -LESTATUS_NPTR)
 
-	new_sharedptr = malloc(sizeof(SharedPtr));
+	new_sharedptr = malloc(sizeof(*new_sharedptr));
 
-	new_sharedptr->ref_count = malloc(sizeof(int64_t));
+	new_sharedptr->ref_count = malloc(sizeof(new_sharedptr->ref_count));
 	*new_sharedptr->ref_count = 1;
 
 	new_sharedptr->data = data;
@@ -29,7 +29,7 @@ SharedPtr * sharedptr_add(SharedPtr *sharedptr) {
 
 	NULLPTR_PREVENT(sharedptr, -LESTATUS_NPTR)
 
-	new_sharedptr = malloc(sizeof(SharedPtr));
+	new_sharedptr = malloc(sizeof(*new_sharedptr));
 	new_sharedptr->ref_count = sharedptr->ref_count;
 	(*new_sharedptr->ref_count)++;
 	new_sharedptr->data = sharedptr->data;

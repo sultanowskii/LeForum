@@ -97,7 +97,7 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 
 		text_size = strlen(lemessage->text);
 
-		while (response_size + strlen("MSG") + sizeof(uint8_t) + sizeof(size_t) + text_size + strlen("MSGEND") >= chunk_size) {
+		while (response_size + strlen("MSG") + sizeof(lemessage->by_lethread_author) + sizeof(lemessage->id) + sizeof(text_size) + text_size + strlen("MSGEND") >= chunk_size) {
 			chunk_size *= 2;
 			response_start = realloc(response_start, chunk_size);
 			response = response_start + response_size;
@@ -110,10 +110,10 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 		response += sizeof(lemessage->by_lethread_author);
 	
 		*(uint64_t *)response = lemessage->id;
-		response += sizeof(uint64_t);
+		response += sizeof(lemessage->id);
 
 		*(size_t *)response = text_size;
-		response += sizeof(size_t);
+		response += sizeof(text_size);
 
 		strncpy(response, lemessage->text, text_size);
 		response += text_size;
@@ -142,7 +142,7 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	SharedPtr       *sharedptr_lethread;
 	char            *response_start;
 	char            *response;
-	size_t           response_size       = strlen("OKTHRID") + sizeof(uint64_t) + strlen("TKN") + TOKEN_SIZE;
+	size_t           response_size       = strlen("OKTHRID") + sizeof(new_lethread->id) + strlen("TKN") + TOKEN_SIZE;
 	LeCommandResult  result              = {0, -LESTATUS_OK, NULL};
 
 	if (size < strlen("TPCSZ") + sizeof(topic_size) + strlen("TPC")) {
@@ -157,7 +157,7 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	data_ptr += strlen("TPCSZ");
 
 	topic_size = *(size_t *)data_ptr;
-	data_ptr += sizeof(size_t);
+	data_ptr += sizeof(topic_size);
 
 	if (topic_size > MAX_TOPIC_SIZE || topic_size < MIN_TOPIC_SIZE) {
 		result.status = -LESTATUS_IDAT;
@@ -185,7 +185,7 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	response += strlen("THRID");
 
 	*(uint64_t*)response = new_lethread->id;
-	response += sizeof(uint64_t);
+	response += sizeof(new_lethread->id);
 
 	strncpy(response, "TKN", strlen("TKN"));
 	response += strlen("TKN");

@@ -172,7 +172,7 @@ inline status_t s_lemessages_save(SharedPtr *sharedptr_lethread) {
 inline status_t s_lemessage_save(LeMessage *lemessage) {
 	NULLPTR_PREVENT(lemessage, -LESTATUS_NPTR)
 
-	queue_push(g_lemessage_query_queue, lemessage, sizeof(LeMessage));
+	queue_push(g_lemessage_query_queue, lemessage, sizeof(lemessage));
 	return -LESTATUS_OK;
 }
 
@@ -193,7 +193,7 @@ SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
 	 */
 	sharedptr_lethread  = sharedptr_create(lethread_create(topic, next_lethread_id()), lethread_delete);
 
-	queue_push(g_lethread_queue, sharedptr_lethread, sizeof(SharedPtr));
+	queue_push(g_lethread_queue, sharedptr_lethread, sizeof(sharedptr_lethread));
 
 	return sharedptr_add(sharedptr_lethread); 
 }
@@ -271,7 +271,7 @@ size_t startup() {
 			continue;
 
 		if (S_ISDIR(st.st_mode)) {
-			lethread = (LeThread *)malloc(sizeof(LeThread));
+			lethread = (LeThread *)malloc(sizeof(*lethread));
 
 			lethread_id = strtoull(dent->d_name, dent->d_name + strlen(dent->d_name), 10);
 
@@ -508,7 +508,7 @@ status_t main(int argc, char *argv[]) {
 			return -LESTATUS_CLIB;
 		}
 
-		leclientinfo = malloc(sizeof(LeClientInfo));
+		leclientinfo = malloc(sizeof(*leclientinfo));
 		leclientinfo->fd = client_fd;
 
 		if (getpeername(client_fd, &leclientinfo->addr, &socakddr_in_len) < 0) {
