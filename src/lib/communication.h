@@ -11,8 +11,8 @@
  * 
  */
 struct HAddress {
-	char      addr[32];
-	uint16_t  port;
+	char     addr[32];
+	uint16_t port;
 };
 typedef struct HAddress HAddress;
 

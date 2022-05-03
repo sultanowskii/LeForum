@@ -43,7 +43,6 @@
  */
 size_t s_fgets(char *s, size_t n, FILE* fd);
 
-
 /**
  * @brief s_fgets() wrapper that reads at least _min and at max _max bytes. 
  * 

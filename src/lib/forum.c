@@ -17,7 +17,7 @@
 /* TODO: get rid of this */
 #include "server/conf.h"
 
-LeThread * lethread_create(char *topic, uint64_t lethread_id) {
+LeThread *lethread_create(char *topic, uint64_t lethread_id) {
 	LeThread *new_lethread;
 	size_t    topic_size;
 	FILE*     lethread_file;
@@ -69,7 +69,7 @@ uint64_t lethread_message_count(LeThread *lethread) {
 	return lethread->next_message_id - lethread->first_message_id;
 }
 
-LeMessage * lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_author) {
+LeMessage *lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_author) {
 	LeMessage *new_lemessage;
 	size_t     length;
 
@@ -113,7 +113,7 @@ status_t lemessage_delete(LeMessage *message) {
 	return -LESTATUS_OK;
 }
 
-LeAuthor * leauthor_create(LeThread *lethread, bool_t create_token) {
+LeAuthor *leauthor_create(LeThread *lethread, bool_t create_token) {
 	LeAuthor *new_leauthor;
 
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
@@ -144,7 +144,7 @@ status_t leauthor_delete(LeAuthor *author) {
 	return -LESTATUS_OK;
 }
 
-FILE * get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t create) {
+FILE *get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t create) {
 	char         path[256];
 	FILE        *file;
 	struct stat  st             = {0};

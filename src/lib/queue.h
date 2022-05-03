@@ -7,17 +7,16 @@
 #include "lib/status.h"
 
 struct Queue {
-	size_t              size;
-	struct QueueNode   *first;
-	struct QueueNode   *last;
-	status_t          (*destruct)(void *);
+	size_t             size;
+	struct QueueNode  *first;
+	struct QueueNode  *last;
+	status_t         (*destruct)(void *);
 };
 typedef struct Queue Queue;
 
-
 struct QueueNode {
-	void               *data;
-	struct QueueNode   *next;
+	void             *data;
+	struct QueueNode *next;
 };
 typedef struct QueueNode QueueNode;
 
@@ -28,7 +27,7 @@ typedef struct QueueNode QueueNode;
  * Is called for each object stored in a queue 
  * @return Pointer to created Queue 
  */
-Queue *            queue_create(status_t (*destruct)(void *));
+Queue *queue_create(status_t (*destruct)(void *));
 
 /**
  * @brief Safely deletes the Queue and all the elements. 
@@ -37,7 +36,7 @@ Queue *            queue_create(status_t (*destruct)(void *));
  * @param queue Pointer to Queue to delete 
  * @return LESTATUS_OK on success 
  */
-status_t           queue_delete(Queue *queue);
+status_t queue_delete(Queue *queue);
 
 /**
  * @brief Adds a new element to the end of the Queue. 
@@ -47,7 +46,7 @@ status_t           queue_delete(Queue *queue);
  * @param size Size of the data 
  * @return LESTATUS_OK on success 
  */
-status_t           queue_push(Queue *queue, void *data, size_t size);
+status_t queue_push(Queue *queue, void *data, size_t size);
 
 /**
  * @brief Retrieves the first element and deletes it from the Queue. 
@@ -55,7 +54,7 @@ status_t           queue_push(Queue *queue, void *data, size_t size);
  * @param queue Pointer to Queue to pop element from 
  * @return Pointer to the popped data. nullptr if queue is empty 
  */
-void *             queue_pop(Queue *queue);
+void *queue_pop(Queue *queue);
 
 /**
  * @brief Checks whether queue is empty or not. 
@@ -63,6 +62,6 @@ void *             queue_pop(Queue *queue);
  * @param queue Pointer to Queue to check 
  * @return TRUE if queue is empty, otherwise ELSE 
  */
-bool_t             queue_is_empty(Queue *queue);
+bool_t queue_is_empty(Queue *queue);
 
 #endif

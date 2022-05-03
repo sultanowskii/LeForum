@@ -79,7 +79,6 @@ status_t __server_connect(const char *addr, uint16_t port);
  */
 status_t __server_disconnect();
 
-
 /* ---- Command string representators ----- */
 /**
  * @brief Returns string representation of main command with provided id. 
@@ -128,7 +127,7 @@ const char *SettingsCmdID_REPR(enum SettingsCmdIDs id);
  * @param create To create file if not found or not?
  * @return FD on success. LESTATUS_NSFD if file doesn't exist and create==FALSE 
  */
-FILE * get_leclient_file(const char *filename, const char *mode, bool_t create);
+FILE *get_leclient_file(const char *filename, const char *mode, bool_t create);
 
 /**
  * @brief Saves server addr in the file. 
@@ -160,7 +159,7 @@ status_t token_save(char *token);
  * @return Token on success. 
  * LESTATUS_NSFD if not found. LESTATUS_IDAT no thread is active 
  */
-char * token_load();
+char *token_load();
 /* ---------------------------------------- */
 
 

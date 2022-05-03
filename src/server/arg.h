@@ -9,11 +9,11 @@ extern const char *argp_program_version;
 extern const char *argp_program_bug_address;
 
 struct arguments {
-	char          *host;
-	int            port;
-	char          *hello_message;
-	struct timeval timeout;
-	int            max_connections;
+	char           *host;
+	int             port;
+	char           *hello_message;
+	struct timeval  timeout;
+	int             max_connections;
 };
 
 /**

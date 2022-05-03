@@ -47,7 +47,7 @@ Queue            *g_leauthor_query_queue;
 /* Here we store SharedPtrs to all the LeThreads */
 Queue            *g_lethread_queue;
 
-void * lethread_query_manage() {
+void *lethread_query_manage() {
 	SharedPtr *sharedptr_lethread;
 
 	while (!g_program_on_finish) {
@@ -60,7 +60,7 @@ void * lethread_query_manage() {
 	}
 }
 
-void * lemessages_query_manage() {
+void *lemessages_query_manage() {
 	SharedPtr *sharedptr_lethread;
 
 	while (!g_program_on_finish) {
@@ -73,7 +73,7 @@ void * lemessages_query_manage() {
 	}
 }
 
-void * lemessage_query_manage() {
+void *lemessage_query_manage() {
 	LeMessage *lemessage;
 
 	while (!g_program_on_finish) {
@@ -83,7 +83,7 @@ void * lemessage_query_manage() {
 	}
 }
 
-void * leauthor_query_manage() {
+void *leauthor_query_manage() {
 	SharedPtr *sharedptr_lethread;
 
 	while (!g_program_on_finish) {
@@ -103,7 +103,7 @@ status_t leclientinfo_delete(LeClientInfo *clinfo) {
 	clinfo = nullptr;
 }
 
-SharedPtr * lethread_get_by_id(uint64_t lethread_id) {
+SharedPtr *lethread_get_by_id(uint64_t lethread_id) {
 	LeThread  *lethread       = nullptr;
 	LeThread  *lethread_found = nullptr;
 	QueueNode *node           = g_lethread_queue->first;
@@ -127,7 +127,7 @@ SharedPtr * lethread_get_by_id(uint64_t lethread_id) {
 	return sharedptr_add(node->data);
 }
 
-Queue * lethread_find(char *topic_part, size_t topic_part_size) {
+Queue *lethread_find(char *topic_part, size_t topic_part_size) {
 	LeThread  *lethread;
 	QueueNode *node             = g_lethread_queue->first;
 	Queue     *lethreads_match;
@@ -174,7 +174,7 @@ inline status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
 	return -LESTATUS_OK;
 }
 
-SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
+SharedPtr *s_lethread_create(char *topic, uint64_t lethread_id) {
 	SharedPtr *sharedptr_lethread;
 
 	NULLPTR_PREVENT(topic, -LESTATUS_NPTR)
@@ -194,7 +194,7 @@ inline size_t get_lethread_count() {
 	return g_lethread_queue->size;
 }
 
-inline const char * get_version() {
+inline const char *get_version() {
 	return argp_program_version;
 }
 
@@ -213,8 +213,7 @@ inline void lemeta_load() {
 }
 
 inline void lemeta_save() {
-	FILE               *metafile;
-
+	FILE *metafile;
 
 	metafile = fopen(DIR_SERVER "/" FILE_LEMETA, "wb");
 	fwrite(&g_next_lethread_id_value, sizeof(g_next_lethread_id_value), 1, metafile);
@@ -334,7 +333,7 @@ uint64_t next_lethread_id() {
 	return value;
 }
 
-void * handle_client(void *arg) {
+void *handle_client(void *arg) {
 	LeClientInfo    *client_info;
 	LeCommandResult  query_result;
 	char            *cl_data;

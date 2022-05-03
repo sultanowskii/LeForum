@@ -16,13 +16,13 @@
  * @param size String size 
  * @return LESTATUS_OK on succes 
  */
-status_t            rand_string(char *str, size_t size);
+status_t rand_string(char *str, size_t size);
 
 /**
  * @brief Returns random unsigned 8-byte number. 
  * 
  * @return Random unsigned long long 
  */
-uint64_t           rand_uint64_t();
+uint64_t rand_uint64_t();
 
 #endif

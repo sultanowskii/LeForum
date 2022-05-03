@@ -39,7 +39,6 @@ pthread_t          g_query_loop_pthread     = 0;
 
 char              *g_home_dir               = nullptr;
 
-
 inline const char *MainCmdID_REPR(enum MainCmdIDs id) {
 	switch (id) {
 		case MCID_SERVER:              return "Server";
@@ -230,7 +229,7 @@ inline void server_query_add(ServerQuery *query) {
 	queue_push(g_server_queries, query, sizeof(query));
 }
 
-FILE * get_leclient_file(const char *filename, const char *mode, bool_t create) {
+FILE *get_leclient_file(const char *filename, const char *mode, bool_t create) {
 	FILE        *file;
 	struct stat  st        = {0};
 	char        *filepath;
@@ -351,7 +350,7 @@ status_t token_save(char *token) {
 	fclose(file);
 }
 
-char * token_load() {
+char *token_load() {
 	FILE *file;
 	char  srepr_thread_id[32];
 	char *token;

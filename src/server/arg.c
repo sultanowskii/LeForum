@@ -21,7 +21,6 @@ struct argp_option options[] = {
 
 struct argp le_argp = {options, parse_opt, args_doc, doc, 0, 0, 0};
 
-
 error_t parse_opt(int key, char *arg, struct argp_state *state) {
     struct arguments *arguments = state->input;
 

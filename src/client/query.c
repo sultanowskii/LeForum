@@ -8,7 +8,7 @@
 #include "lib/queue.h"
 #include "lib/security.h"
 
-ServerQuery * query_create(void * (*parser)(char *raw_data), char *request_data, size_t size) {
+ServerQuery *query_create(void * (*parser)(char *raw_data), char *request_data, size_t size) {
 	ServerQuery *query;
 
 	query = malloc(sizeof(*query));
@@ -200,7 +200,7 @@ LeData gen_query_LIVE() {
 	return result;
 }
 
-CreatedThreadInfo * parse_response_CTHR(char *raw_data, size_t size) {
+CreatedThreadInfo *parse_response_CTHR(char *raw_data, size_t size) {
 	char              *data_ptr;
 	CreatedThreadInfo *info;
 	uint64_t           thread_id;
@@ -228,7 +228,7 @@ CreatedThreadInfo * parse_response_CTHR(char *raw_data, size_t size) {
 	return info;
 }
 
-LeThread * parse_response_GTHR(char *raw_data, size_t size) {
+LeThread *parse_response_GTHR(char *raw_data, size_t size) {
 	char     *data_ptr;
 	LeThread *thread;
 	size_t    thread_id;
@@ -312,7 +312,7 @@ LeThread * parse_response_GTHR(char *raw_data, size_t size) {
 	return thread;
 }
 
-Queue * parse_response_FTHR(char *raw_data, size_t size) {
+Queue *parse_response_FTHR(char *raw_data, size_t size) {
 	char     *data_ptr;
 	Queue    *found;
 	LeThread *thread;
@@ -376,7 +376,7 @@ status_t parse_response_CMSG(char *raw_data, size_t size) {
 	return -LESTATUS_OK;
 }
 
-LeMeta * parse_response_META(char *raw_data, size_t size) {
+LeMeta *parse_response_META(char *raw_data, size_t size) {
 	char   *data_ptr;
 	LeMeta *meta;
 	size_t  min_topic_size;

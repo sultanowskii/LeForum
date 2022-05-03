@@ -13,13 +13,13 @@
  * 
  */
 struct LeMeta {
-	size_t    min_message_size;
-	size_t    max_message_size;
-	size_t    min_topic_size;
-	size_t    max_topic_size;
-	char     *version;
-	size_t    version_size;
-	size_t    thread_count;
+	size_t  min_message_size;
+	size_t  max_message_size;
+	size_t  min_topic_size;
+	size_t  max_topic_size;
+	char   *version;
+	size_t  version_size;
+	size_t  thread_count;
 };
 typedef struct LeMeta LeMeta;
 
@@ -28,17 +28,17 @@ typedef struct LeMeta LeMeta;
  * 
  */
 struct ServerQuery {
-	bool_t    completed;
-	void     *raw_request_data;
-	size_t    raw_request_data_size;
-	void *  (*parse_response)(char *raw_data, size_t size);
-	void     *parsed_data;
+	bool_t     completed;
+	void      *raw_request_data;
+	size_t     raw_request_data_size;
+	void   * (*parse_response)(char *raw_data, size_t size);
+	void      *parsed_data;
 };
 typedef struct ServerQuery ServerQuery;
 
 struct LeData {
-	void     *data;
-	size_t    size;
+	void   *data;
+	size_t  size;
 };
 typedef struct LeData LeData;
 
@@ -56,7 +56,7 @@ typedef struct CreatedThreadInfo CreatedThreadInfo;
  * @param size Request data size 
  * @return Pointer to ServerQuery object 
  */ 
-ServerQuery * query_create(void * (*parser)(char *raw_data), char *request_data, size_t size);
+ServerQuery *query_create(void * (*parser)(char *raw_data), char *request_data, size_t size);
 
 /**
  * @brief Deletes ServerQuery object. 
@@ -125,7 +125,7 @@ LeData gen_query_LIVE();
  * @param size Size of the data
  * @return Pointer to the LeThread object with ID, name and token fields filled 
  */
-CreatedThreadInfo * parse_response_CTHR(char *raw_data, size_t size);
+CreatedThreadInfo *parse_response_CTHR(char *raw_data, size_t size);
 
 /**
  * @brief Parses GTHR response. 
@@ -134,7 +134,7 @@ CreatedThreadInfo * parse_response_CTHR(char *raw_data, size_t size);
  * @param size Size of the data
  * @return Pointer to the LeThread object retrieved from the server 
  */
-LeThread * parse_response_GTHR(char *raw_data, size_t size);
+LeThread *parse_response_GTHR(char *raw_data, size_t size);
 
 /**
  * @brief Parses FTHR response. 
@@ -143,7 +143,7 @@ LeThread * parse_response_GTHR(char *raw_data, size_t size);
  * @param size Size of the data
  * @return Pointer to the queue that contains all the match threads  
  */
-Queue * parse_response_FTHR(char *raw_data, size_t size);
+Queue *parse_response_FTHR(char *raw_data, size_t size);
 
 /**
  * @brief Parses CMSG response. 
@@ -161,7 +161,7 @@ status_t parse_response_CMSG(char *raw_data, size_t size);
  * @param size Size of the data
  * @return LESTATUS_OK on success   
  */
-LeMeta * parse_response_META(char *raw_data, size_t size);
+LeMeta *parse_response_META(char *raw_data, size_t size);
 
 /**
  * @brief Parses LIVE response. 

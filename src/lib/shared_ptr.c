@@ -6,7 +6,7 @@
 #include "lib/security.h"
 #include "lib/status.h"
 
-SharedPtr * sharedptr_create(void *data, status_t (*destruct)(void *)) {
+SharedPtr *sharedptr_create(void *data, status_t (*destruct)(void *)) {
 	SharedPtr *new_sharedptr;
 
 	NULLPTR_PREVENT(data, -LESTATUS_NPTR)
@@ -24,7 +24,7 @@ SharedPtr * sharedptr_create(void *data, status_t (*destruct)(void *)) {
 	return new_sharedptr;
 }
 
-SharedPtr * sharedptr_add(SharedPtr *sharedptr) {
+SharedPtr *sharedptr_add(SharedPtr *sharedptr) {
 	SharedPtr *new_sharedptr;
 
 	NULLPTR_PREVENT(sharedptr, -LESTATUS_NPTR)

@@ -7,9 +7,9 @@
 #include "lib/status.h"
 
 struct SharedPtr {
-	int64_t       *ref_count;
-	void          *data;
-	status_t     (*destruct)(void *);
+	int64_t   *ref_count;
+	void      *data;
+	status_t (*destruct)(void *);
 };
 typedef struct SharedPtr SharedPtr;
 
@@ -20,7 +20,7 @@ typedef struct SharedPtr SharedPtr;
  * @param destruct Destructor callback 
  * @return Pointer to the SharedPtr object 
  */
-SharedPtr *        sharedptr_create(void *data, status_t (*destruct)(void *));
+SharedPtr *sharedptr_create(void *data, status_t (*destruct)(void *));
 
 /**
  * @brief Creates another instance of SharedPtr. 
@@ -28,7 +28,7 @@ SharedPtr *        sharedptr_create(void *data, status_t (*destruct)(void *));
  * @param sharedptr Pointer to the origin SharedPtr 
  * @return Pointer to the copy of SharedPtr 
  */
-SharedPtr *        sharedptr_add(SharedPtr * sharedptr);
+SharedPtr *sharedptr_add(SharedPtr * sharedptr);
 
 /**
  * @brief Safely deletes the SharedPtr instance. 
@@ -36,6 +36,6 @@ SharedPtr *        sharedptr_add(SharedPtr * sharedptr);
  * @param sharedptr Pointer to SharedPtr 
  * @return LESTATUS_OK on success 
  */
-status_t           sharedptr_delete(SharedPtr * sharedptr);
+status_t sharedptr_delete(SharedPtr * sharedptr);
 
 #endif

@@ -17,9 +17,9 @@ struct LeCommand {
 typedef struct LeCommand LeCommand;
 
 struct LeCommandResult {
-	void                    *data;
-	size_t                   size;
-	status_t                 status;
+	void     *data;
+	size_t    size;
+	status_t  status;
 };
 typedef struct LeCommandResult LeCommandResult;
 
@@ -39,7 +39,7 @@ typedef struct LeCommandResult LeCommandResult;
  * @param lethread_id ID of LeThread to search for 
  * @return LeThread with the given ID. If not found, LESTATUS_NFND is returned 
  */
-SharedPtr *             lethread_get_by_id(uint64_t lethread_id);
+SharedPtr *lethread_get_by_id(uint64_t lethread_id);
 
 /**
  * @brief Finds a lethread with given parameters, empty data is returned. 
@@ -50,7 +50,7 @@ SharedPtr *             lethread_get_by_id(uint64_t lethread_id);
  * @return Queue containing all the LeThreads that 
  * correspond to the conditions 
  */
-Queue *                 lethread_find(char *topic_part, size_t topic_part_size);
+Queue *lethread_find(char *topic_part, size_t topic_part_size);
 
 /**
  * @brief Multithread-safe lethread_save() function. 
@@ -59,7 +59,7 @@ Queue *                 lethread_find(char *topic_part, size_t topic_part_size);
  * @param lethread LeThread to save information about 
  * @return LESTATUS_OK on success  
  */
-status_t                s_lethread_save(SharedPtr *sharedptr_lethread);
+status_t s_lethread_save(SharedPtr *sharedptr_lethread);
 
 /**
  * @brief Multithread-safe lemessages_save() function. 
@@ -67,7 +67,7 @@ status_t                s_lethread_save(SharedPtr *sharedptr_lethread);
  * @param lethread Pointer to LeThread message history of which will be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                s_lemessages_save(SharedPtr *sharedptr_lethread);
+status_t s_lemessages_save(SharedPtr *sharedptr_lethread);
 
 /**
  * @brief Multithread-safe lemessage_save() function. 
@@ -75,7 +75,7 @@ status_t                s_lemessages_save(SharedPtr *sharedptr_lethread);
  * @param lemessage LeMessage to be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                s_lemessage_save(LeMessage * lemessage);
+status_t s_lemessage_save(LeMessage * lemessage);
 
 /**
  * @brief Multithread-safe leauthor_save() function. 
@@ -83,7 +83,7 @@ status_t                s_lemessage_save(LeMessage * lemessage);
  * @param lethread LeThread, author of which will be saved 
  * @return LESTATUS_OK on success 
  */
-status_t                s_leauthor_save(SharedPtr *sharedptr_lethread);
+status_t s_leauthor_save(SharedPtr *sharedptr_lethread);
 
 /**
  * @brief Multithread-safe lethread_create() function. 
@@ -92,17 +92,17 @@ status_t                s_leauthor_save(SharedPtr *sharedptr_lethread);
  * @param lethread_id The ID of LeThread 
  * @return Pointer to the created LeThread 
  */
-SharedPtr *             s_lethread_create(char *topic, uint64_t lethread_id);
+SharedPtr *s_lethread_create(char *topic, uint64_t lethread_id);
 
-size_t                  get_min_message_size();
-size_t                  get_max_message_size();
+size_t get_min_message_size();
+size_t get_max_message_size();
 
-size_t                  get_min_topic_size();
-size_t                  get_max_topic_size();
+size_t get_min_topic_size();
+size_t get_max_topic_size();
 
-size_t                  get_lethread_count();
+size_t get_lethread_count();
 
-const char *            get_version();
+const char *get_version();
 
 /* =============================================================================== */
 
@@ -116,7 +116,7 @@ const char *            get_version();
  * data==LeThread object, status==LESATATUS_OK on success. 
  * Otherwise corresponding status code is returned the structure 
  */
-LeCommandResult         cmd_lethread_get(char *raw_data, size_t size);
+LeCommandResult cmd_lethread_get(char *raw_data, size_t size);
 
 /**
  * @brief Creates LeThread with given parameters. 
@@ -126,7 +126,7 @@ LeCommandResult         cmd_lethread_get(char *raw_data, size_t size);
  * @return LeCommandResult structure with status==LESATATUS_OK on success. 
  * Otherwise corresponding status code is returned the structure 
  */
-LeCommandResult         cmd_lethread_create(char *raw_data, size_t size);
+LeCommandResult cmd_lethread_create(char *raw_data, size_t size);
 
 /**
  * @brief Parses a query, if valid, finds LeThread by provided parameters. 
@@ -137,7 +137,7 @@ LeCommandResult         cmd_lethread_create(char *raw_data, size_t size);
  * data==Query of the filtered LeThreads, status==LESATATUS_OK on success. 
  * Otherwise corresponding status code is returned the structure 
  */
-LeCommandResult         cmd_lethread_find(char *raw_data, size_t size);
+LeCommandResult cmd_lethread_find(char *raw_data, size_t size);
 
 /**
  * @brief Parses a query, if valid, adds a new message to the specific lethread. 
@@ -147,7 +147,7 @@ LeCommandResult         cmd_lethread_find(char *raw_data, size_t size);
  * @return LeCommandResult structure with status==LESATATUS_OK on success. 
  * Otherwise corresponding status code is returned the structure 
  */
-LeCommandResult         cmd_lemessage_create(char *raw_data, size_t size);
+LeCommandResult cmd_lemessage_create(char *raw_data, size_t size);
 
 /**
  * @brief Assures the connection is not lost. 
@@ -156,7 +156,7 @@ LeCommandResult         cmd_lemessage_create(char *raw_data, size_t size);
  * @param size raw_data size 
  * @return LeCommandResult structure with status==LESATATUS_OK on success 
  */
-LeCommandResult         cmd_alive(char *raw_data, size_t size);
+LeCommandResult cmd_alive(char *raw_data, size_t size);
 
 /**
  * @brief Returns a meta information about the server. 
@@ -165,7 +165,7 @@ LeCommandResult         cmd_alive(char *raw_data, size_t size);
  * @param size raw_data size 
  * @return LeCommandResult with meta information 
  */
-LeCommandResult         cmd_meta(char *raw_data, size_t size);
+LeCommandResult cmd_meta(char *raw_data, size_t size);
 
 /**
  * @brief Tries to find specified command in the data. If command is found, executes its processor. 
@@ -175,6 +175,6 @@ LeCommandResult         cmd_meta(char *raw_data, size_t size);
  * @return Result of the specific query processor. 
  * If size is not valid, returns LeCommandReuslt with status==LESTATUS_ISYN 
  */
-LeCommandResult         query_process(char *raw_data, size_t size);
+LeCommandResult query_process(char *raw_data, size_t size);
 
 #endif
