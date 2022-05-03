@@ -5,7 +5,6 @@ LeForum is an anonymous forum (server&client) working via TCP.
 - Written in C
 - Uses common C UNIX libraries
 - Allows to view thread history, write messages and create your own threads
-- Uses multithreading
 - LeForum Server API allows to easily create your own client
 
 ## Installation
