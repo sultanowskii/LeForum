@@ -7,7 +7,7 @@
 #define MAX_PACKET_SIZE      64 * 1024
 
 /**
- * @brief Human-readable IPv4 address
+ * @brief Human-readable IPv4 address. 
  * 
  */
 struct HAddress {
@@ -18,12 +18,12 @@ typedef struct HAddress HAddress;
 
 /**
  * @brief Does the same thing as printf() except it
- * prints the result to the socket.
+ * prints result to the socket. 
  * 
- * @param fd Socket file descriptor, where the data will be sent
- * @param str Format string
- * @param ... Format arguments
- * @return The number of bytes sent
+ * @param fd Socket file descriptor, where the data will be sent 
+ * @param str Format string 
+ * @param ... Format arguments 
+ * @return The number of bytes sent 
  */
 ssize_t sendf(int fd, char *str, ...);
 

@@ -14,7 +14,6 @@
 #define FILE_LEMESSAGES      "lemessages"
 #define FILE_LEAUTHOR        "leauthor"
 
-
 struct LeMessage {
 	uint64_t            id;
 	char               *text;
@@ -40,7 +39,8 @@ struct LeThread {
 typedef struct LeThread LeThread;
 
 /**
- * @brief Creates new LeThread, if there is no information files with the same id. 
+ * @brief Creates new LeThread 
+ * if there is no information files with the same id. 
  * If there is, then returns LESTATUS_EXST. 
  * 
  * @param topic Topic (aka name) of LeThread 
@@ -146,7 +146,8 @@ status_t                lethread_load(LeThread *lethread, uint64_t id);
 status_t                lemessages_save(LeThread *lethread);
 
 /**
- * @brief Saves one LeMessage to the corresponding file (appending to the end of message history file). 
+ * @brief Saves one LeMessage to the corresponding file 
+ * (appending to the end of message history file). 
  * 
  * @param lemessage Pointer to LeMessage to be saved 
  * @return LESTATUS_OK on success  

@@ -31,7 +31,7 @@ SharedPtr *        sharedptr_create(void *data, status_t (*destruct)(void *));
 SharedPtr *        sharedptr_add(SharedPtr * sharedptr);
 
 /**
- * @brief Safely deletes the SharedPtr instance.
+ * @brief Safely deletes the SharedPtr instance. 
  * 
  * @param sharedptr Pointer to SharedPtr 
  * @return LESTATUS_OK on success 

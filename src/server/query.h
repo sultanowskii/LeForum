@@ -44,9 +44,11 @@ SharedPtr *             lethread_get_by_id(uint64_t lethread_id);
 /**
  * @brief Finds a lethread with given parameters, empty data is returned. 
  * 
- * @param topic_part Part of the LeThread topic, based on which the LeThreads will be filtered 
+ * @param topic_part Part of the LeThread topic, 
+ * based on which the LeThreads will be filtered 
  * @param topic_part_size Size of the topic part 
- * @return Queue containing all the LeThreads that correspond to the conditions 
+ * @return Queue containing all the LeThreads that 
+ * correspond to the conditions 
  */
 Queue *                 lethread_find(char *topic_part, size_t topic_part_size);
 
@@ -104,14 +106,15 @@ const char *            get_version();
 
 /* =============================================================================== */
 
-
-
 /**
- * @brief Parses a query, if valid, retrieves LeThread information, including topic, message history, etc. 
+ * @brief Parses a query, if valid, retrieves LeThread information, including
+ * topic, message history, etc. 
  * 
  * @param raw_data Unparsed data from a client 
  * @param size raw_data size 
- * @return LeCommandResult structure with data==LeThread object, status==LESATATUS_OK on success. Otherwise corresponding status code is returned the structure 
+ * @return LeCommandResult structure with 
+ * data==LeThread object, status==LESATATUS_OK on success. 
+ * Otherwise corresponding status code is returned the structure 
  */
 LeCommandResult         cmd_lethread_get(char *raw_data, size_t size);
 
@@ -120,7 +123,8 @@ LeCommandResult         cmd_lethread_get(char *raw_data, size_t size);
  * 
  * @param raw_data Unparsed data from a client 
  * @param size raw_data size 
- * @return LeCommandResult structure with status==LESATATUS_OK on success. Otherwise corresponding status code is returned the structure 
+ * @return LeCommandResult structure with status==LESATATUS_OK on success. 
+ * Otherwise corresponding status code is returned the structure 
  */
 LeCommandResult         cmd_lethread_create(char *raw_data, size_t size);
 
@@ -129,23 +133,24 @@ LeCommandResult         cmd_lethread_create(char *raw_data, size_t size);
  * 
  * @param raw_data Unparsed data from a client 
  * @param size raw_data size 
- * @return LeCommandResult structure with data==Query of the filtered LeThreads, status==LESATATUS_OK on success. Otherwise corresponding status code is returned the structure 
+ * @return LeCommandResult structure with 
+ * data==Query of the filtered LeThreads, status==LESATATUS_OK on success. 
+ * Otherwise corresponding status code is returned the structure 
  */
 LeCommandResult         cmd_lethread_find(char *raw_data, size_t size);
-
 
 /**
  * @brief Parses a query, if valid, adds a new message to the specific lethread. 
  * 
  * @param raw_data Unparsed data from a client 
  * @param size raw_data size 
- * @return LeCommandResult structure with status==LESATATUS_OK on success. Otherwise corresponding status code is returned the structure 
+ * @return LeCommandResult structure with status==LESATATUS_OK on success. 
+ * Otherwise corresponding status code is returned the structure 
  */
 LeCommandResult         cmd_lemessage_create(char *raw_data, size_t size);
 
-
 /**
- * @brief Assures the connection is not lost.
+ * @brief Assures the connection is not lost. 
  * 
  * @param raw_data Unparsed data from a client 
  * @param size raw_data size 
@@ -154,7 +159,7 @@ LeCommandResult         cmd_lemessage_create(char *raw_data, size_t size);
 LeCommandResult         cmd_alive(char *raw_data, size_t size);
 
 /**
- * @brief Returns a meta information about the server 
+ * @brief Returns a meta information about the server. 
  * 
  * @param raw_data Unparsed data from a client 
  * @param size raw_data size 
@@ -167,7 +172,8 @@ LeCommandResult         cmd_meta(char *raw_data, size_t size);
  * 
  * @param raw_data Unparsed data from a client 
  * @param size raw_data size 
- * @return Result of the specific query processor that was called if the requested command is valid. Otherwise, returns LeCommandReuslt with status==LESTATUS_ISYN  
+ * @return Result of the specific query processor. 
+ * If size is not valid, returns LeCommandReuslt with status==LESTATUS_ISYN 
  */
 LeCommandResult         query_process(char *raw_data, size_t size);
 

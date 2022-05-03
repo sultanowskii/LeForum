@@ -221,7 +221,7 @@ status_t load_args(int argc, char **argv) {
 	argp_parse(&le_argp, argc, argv, 0, 0, &arguments);
 }
 
-/* 
+/** 
  * You should delete query by yourself after it is complete.
  * Don't delete it until query->completed==TRUE,
  * otherwise it might cause null pointer dereference.
@@ -267,7 +267,7 @@ status_t server_addr_save(const char *addr, uint16_t port) {
 
 	file = get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE);
 
-	/* 
+	/** 
 	 * If the file exists, then we have to check
 	 * if it already contains gieven address
 	 */

@@ -17,7 +17,7 @@ struct arguments {
 };
 
 /**
- * @brief Argument parser, required by le_argp here (arhp.h) 
+ * @brief Argument parser, required by le_argp here (arhp.h). 
  * 
  * @param key Argument key 
  * @param arg Argument value 

@@ -179,7 +179,7 @@ SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
 
 	NULLPTR_PREVENT(topic, -LESTATUS_NPTR)
 
-	/* 
+	/** 
 	 * Here we fill lethread_id independently on the argument, 
 	 * because we want to keep all the lethreads stay in the right order without collisions. 
 	 */

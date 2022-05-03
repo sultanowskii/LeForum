@@ -184,7 +184,7 @@ status_t lethread_save(LeThread *lethread) {
 
 	topic_size = strlen(lethread->topic);
 
-	/* 
+	/** 
 	 * This trick clears the file so we don't have to 
 	 * have a headache with all these overwriting file stuff
 	 */

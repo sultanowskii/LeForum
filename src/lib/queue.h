@@ -24,14 +24,15 @@ typedef struct QueueNode QueueNode;
 /**
  * @brief Creates a new Queue object. 
  * 
- * @param destruct Callback that safely deletes one object stored in a queue. Is called for each object stored in a queue 
+ * @param destruct Callback that safely deletes one object stored in a queue. 
+ * Is called for each object stored in a queue 
  * @return Pointer to created Queue 
  */
 Queue *            queue_create(status_t (*destruct)(void *));
 
 /**
  * @brief Safely deletes the Queue and all the elements. 
- * Use this _only_ if you created queue by using `queue_create()`.
+ * Use this _only_ if you created queue by using `queue_create()`. 
  * 
  * @param queue Pointer to Queue to delete 
  * @return LESTATUS_OK on success 

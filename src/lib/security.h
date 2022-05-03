@@ -9,7 +9,8 @@
 #define NULLPTR_PREVENT(ptr, LESTATUS) if (ptr == nullptr) {return LESTATUS;}
 
 /**
- * @brief Generates random string of given size and writes to the place where str points.
+ * @brief Generates random string of given size 
+ * and writes to the place where str points. 
  * 
  * @param str Pointer, which will point to the resulting string 
  * @param size String size 

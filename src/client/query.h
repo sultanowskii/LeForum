@@ -9,7 +9,7 @@
 #include "lib/status.h"
 
 /**
- * @brief Meta information about server 
+ * @brief Meta information about server, 
  * 
  */
 struct LeMeta {
@@ -24,7 +24,7 @@ struct LeMeta {
 typedef struct LeMeta LeMeta;
 
 /**
- * @brief Information about query 
+ * @brief Information about query. 
  * 
  */
 struct ServerQuery {
@@ -51,15 +51,16 @@ typedef struct CreatedThreadInfo CreatedThreadInfo;
 /**
  * @brief Creates ServerQuery object with given parameters. 
  * 
- * @param parser Response parse function
+ * @param parser Response parse function 
  * @param request_data Request data to be sent 
- * @param size Request data size
- * @return Pointer to ServerQuery object
+ * @param size Request data size 
+ * @return Pointer to ServerQuery object 
  */ 
 ServerQuery * query_create(void * (*parser)(char *raw_data), char *request_data, size_t size);
 
 /**
- * @brief Deletes ServerQuery object. Please note it doesn't delete parsed_data as long as it is needed outside.  
+ * @brief Deletes ServerQuery object. 
+ * Please note it doesn't delete parsed_data as long as it is needed outside.  
  * 
  * @param query ServerQuery to delete 
  * @return LESTATUS_OK on success 

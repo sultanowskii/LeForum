@@ -11,8 +11,8 @@
 
 #define FILE_LEMETA        "lemeta"
 
-/*
- * handle_client() argument 
+/**
+ * handle_client() argument, 
  */
 struct LeClientInfo {
 	int32_t             fd;
@@ -22,8 +22,8 @@ struct LeClientInfo {
 typedef struct LeClientInfo LeClientInfo;
 
 /**
- * @brief Main program logic, initialises all the threads, sets callbacks, binds a socket,
- * accepts client connections. 
+ * @brief Main program logic, initialises all the threads, sets callbacks, 
+ * binds a socket, accepts client connections. 
  * 
  * @param argc Number of arguments 
  * @param argv Arguments 
@@ -34,15 +34,15 @@ status_t                main(int argc, char *argv[]);
 /**
  * @brief Communicates with a client, gets and sends queries and requests. 
  * 
- * @param arg LeClientInfo pointer. Has to contain information about client (please refer to 
+ * @param arg LeClientInfo pointer. 
+ * Has to contain information about client (please refer to 
  * the LeClientInfo structure defenition at the top of this file) 
  * @return Nothing 
  */
 void *                  handle_client(void *arg);
 
 /**
- * @brief Loads already existing LeThreads to the queue. \n 
- * \n 
+ * @brief Loads already existing LeThreads to the queue. 
  * Notice that this fucntion doesn't load lemessages - we load them when we are
  * asked to by client for the first time.
  * 
@@ -162,7 +162,7 @@ SharedPtr *             s_lethread_create(char *topic, uint64_t lethread_id);
 
 
 /**
- * @brief Implementation of lethread_get_by_id() required by query.h 
+ * @brief Implementation of lethread_get_by_id() required by query.h. 
  *
  * @param lethread_id ID of LeThread to search for 
  * @return LeThread with the given ID. If not found, LESTATUS_NFND is returned 
@@ -170,14 +170,14 @@ SharedPtr *             s_lethread_create(char *topic, uint64_t lethread_id);
 SharedPtr *             lethread_get_by_id(uint64_t lethread_id);
 
 /**
- * @brief Callback for queue_delete()
+ * @brief Callback for queue_delete(). 
  * 
  * @param clinfo Pointer to LeClientInfo structure
  */
 status_t                leclientinfo_delete(struct LeClientInfo *clinfo);
 
 /**
- * @brief Callback for signal(). Cleans up and exits if some signal occurs 
+ * @brief Callback for signal(). Cleans up and exits if some signal occurs.  
  * 
  * @param signum Signal number 
  */

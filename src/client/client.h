@@ -53,7 +53,7 @@ enum ThreadCmdIDs {
 };
 
 /**
- * @brief Settings command list.  
+ * @brief Settings command list. 
  * 
  */
 enum SettingsCmdIDs {
@@ -73,7 +73,7 @@ enum SettingsCmdIDs {
 status_t __server_connect(const char *addr, uint16_t port);
 
 /**
- * @brief Disconnects from the current server
+ * @brief Disconnects from the current server. 
  * 
  * @return LESTATUS_OK on success. LESTATUS_NFND if not connected to server 
  */
@@ -84,8 +84,9 @@ status_t __server_disconnect();
 /**
  * @brief Returns string representation of main command with provided id. 
  * 
- * @param id Command ID
- * @return Command string representation. LESTATUS_NFND is returned if there is no such command with given id
+ * @param id Command ID 
+ * @return Command string representation. 
+ * LESTATUS_NFND is returned if there is no such command with given id 
  */
 const char *MainCmdID_REPR(enum MainCmdIDs id);
 
@@ -93,7 +94,8 @@ const char *MainCmdID_REPR(enum MainCmdIDs id);
  * @brief Returns string representation of server command with provided id. 
  * 
  * @param id Command ID
- * @return Command string representation. LESTATUS_NFND is returned if there is no such command with given id
+ * @return Command string representation. 
+ * LESTATUS_NFND is returned if there is no such command with given id 
  */
 const char *ServerCmdID_REPR(enum ServerCmdIDs id);
 
@@ -101,7 +103,8 @@ const char *ServerCmdID_REPR(enum ServerCmdIDs id);
  * @brief Returns string representation of thread command with provided id. 
  * 
  * @param id Command ID
- * @return Command string representation. LESTATUS_NFND is returned if there is no such command with given id
+ * @return Command string representation. 
+ * LESTATUS_NFND is returned if there is no such command with given id
  */
 const char *ThreadCmdID_REPR(enum ThreadCmdIDs id);
 
@@ -109,7 +112,8 @@ const char *ThreadCmdID_REPR(enum ThreadCmdIDs id);
  * @brief Returns string representation of settings command with provided id. 
  * 
  * @param id Command ID
- * @return Command string representation. LESTATUS_NFND is returned if there is no such command with given id
+ * @return Command string representation. 
+ * LESTATUS_NFND is returned if there is no such command with given id
  */
 const char *SettingsCmdID_REPR(enum SettingsCmdIDs id);
 /* ---------------------------------------- */
@@ -117,7 +121,7 @@ const char *SettingsCmdID_REPR(enum SettingsCmdIDs id);
 
 /* ------------ File stuff----------------- */
 /**
- * @brief Get the leclient file. Wrapper over fopen 
+ * @brief Get the leclient file. Wrapper over fopen. 
  * 
  * @param filename Filename 
  * @param mode Mode
@@ -131,7 +135,7 @@ FILE * get_leclient_file(const char *filename, const char *mode, bool_t create);
  * 
  * @param addr Server addr 
  * @param port Server port 
- * @return LESTATUS_OK on success  
+ * @return LESTATUS_OK on success 
  */
 status_t server_addr_save(const char *addr, uint16_t port);
 
@@ -153,7 +157,8 @@ status_t token_save(char *token);
 /**
  * @brief Loads token (if exists) from the file. 
  * 
- * @return Token on success. LESTATUS_NSFD if not found. LESTATUS_IDAT no thread is active  
+ * @return Token on success. 
+ * LESTATUS_NSFD if not found. LESTATUS_IDAT no thread is active 
  */
 char * token_load();
 /* ---------------------------------------- */
@@ -163,9 +168,9 @@ char * token_load();
 /**
  * @brief Prints all the menues and stuff, then reads command from user. 
  * 
- * @param print_menu Function that prints menu
- * @param print_prefix Function that prints prefix before user input
- * @return User command
+ * @param print_menu Function that prints menu 
+ * @param print_prefix Function that prints prefix before user input 
+ * @return User command 
  */
 int leclient_loop_process(void (*print_menu)(), void (*print_prefix)());
 
@@ -197,25 +202,25 @@ void print_menu_main();
 
 /* ---------------- Prefix ---------------- */
 /**
- * @brief Prints server prefix before user input
+ * @brief Prints server prefix before user input, 
  * 
  */
 void print_prefix_server();
 
 /**
- * @brief Prints thread prefix before user input
+ * @brief Prints thread prefix before user input. 
  * 
  */
 void print_prefix_thread();
 
 /**
- * @brief Prints settings prefix before user input
+ * @brief Prints settings prefix before user input. 
  * 
  */
 void print_prefix_settings();
 
 /**
- * @brief Prints main prefix before user input
+ * @brief Prints main prefix before user input. 
  * 
  */
 void print_prefix_main();
@@ -230,13 +235,13 @@ void print_prefix_main();
 void cmd_server();
 
 /**
- * @brief Connects to the server
+ * @brief Connects to the server. 
  * 
  */
 void cmd_server_connect();
 
 /**
- * @brief Disconnects from the current server
+ * @brief Disconnects from the current server. 
  * 
  */
 void cmd_server_disconnect();
@@ -248,7 +253,7 @@ void cmd_server_disconnect();
 void cmd_server_info();
 
 /**
- * @brief Prints server addresses history 
+ * @brief Prints server addresses history. 
  * 
  */
 void cmd_server_history();
@@ -307,7 +312,8 @@ void cmd_exit();
 /* -------------- Main flow --------------- */
 
 /**
- * @brief Loop that communicates with the server. If query queue is empty, sends LIVE to keep the connection.
+ * @brief Loop that communicates with the server. 
+ * If query queue is empty, sends LIVE to keep the connection.
  *  
  */
 void query_loop();
@@ -322,12 +328,12 @@ void server_query_add(ServerQuery *query);
 /**
  * @brief Program termination handler. Simply modifies g_working value. 
  * 
- * @param Signum
+ * @param Signum 
  */
 void stop_program_handle(const int signum);
 
 /**
- * @brief Initialises program, 
+ * @brief Initialises program.  
  * 
  * @return LESTATUS_OK on success 
  */
