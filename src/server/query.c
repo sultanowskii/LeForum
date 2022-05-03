@@ -374,7 +374,9 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	is_author = FALSE;
 
-	/* TOKEN is an optional argument. If not presented/not correct, then the message  will be posted anonymously. */
+	/* TOKEN is an optional argument. If not presented/not correct,
+	 * then the message will be posted anonymously.
+	 */
 	if (strncmp(data_ptr, "TKN", strlen("TKN")) == 0) {
 		data_ptr += strlen("TKN");
 		is_author = is_token_valid(lethread, data_ptr);

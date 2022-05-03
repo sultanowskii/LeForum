@@ -1,6 +1,7 @@
 #include "lib/forum.h"
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -121,9 +122,8 @@ LeAuthor * leauthor_create(LeThread *lethread, bool_t create_token) {
 	new_leauthor->id = rand_uint64_t() % 0xffffffff;
 	new_leauthor->token = calloc(sizeof(char), TOKEN_SIZE + 1);
 
-	if (create_token) {
+	if (create_token)
 		rand_string(new_leauthor->token, TOKEN_SIZE);
-	}
 
 	lethread->author = new_leauthor;
 
@@ -183,7 +183,11 @@ status_t lethread_save(LeThread *lethread) {
 	NULLPTR_PREVENT(lethread->topic, -LESTATUS_IDAT)
 
 	topic_size = strlen(lethread->topic);
-	/* This trick clears the file so we don't have to have a headache with all these overwriting file stuff */
+
+	/* 
+	 * This trick clears the file so we don't have to 
+	 * have a headache with all these overwriting file stuff
+	 */
 	lethread_info_file = get_lefile(lethread->id, "wb", FILE_LETHREAD, TRUE);
 	fclose(lethread_info_file);
 
@@ -244,7 +248,7 @@ status_t lemessages_save(LeThread *lethread) {
 
 	result = -LESTATUS_OK;
 	node = lethread->messages->first;
-	/* This trick clears the file so we don't have to have a headache with all these overwriting file stuff */
+
 	lemessages_file = get_lefile(lethread->id, "wb", FILE_LEMESSAGES, TRUE);
 	fclose(lemessages_file);
 

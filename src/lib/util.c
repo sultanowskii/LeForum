@@ -23,9 +23,8 @@ size_t s_fgets_range(char *s, size_t _min, size_t _max, FILE* fd) {
 	size_t size = 0;
 
 	while (size < _min) {
-		if ((tmp = s_fgets(s + size, _max + 1 - size, stdin)) == -LESTATUS_CLIB) {
+		if ((tmp = s_fgets(s + size, _max + 1 - size, stdin)) == -LESTATUS_CLIB)
 			return -LESTATUS_IDAT;
-		}
 		size += tmp;
 	}
 

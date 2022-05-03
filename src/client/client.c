@@ -223,7 +223,8 @@ status_t load_args(int argc, char **argv) {
 
 /* 
  * You should delete query by yourself after it is complete.
- * Don't delete it until query->completed==TRUE, otherwise it might cause null pointer dereference.
+ * Don't delete it until query->completed==TRUE,
+ * otherwise it might cause null pointer dereference.
  */
 inline void server_query_add(ServerQuery *query) {
 	queue_push(g_server_queries, query, sizeof(query));
@@ -266,7 +267,10 @@ status_t server_addr_save(const char *addr, uint16_t port) {
 
 	file = get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE);
 
-	/* if file exists, then we have to check if it already contains gieven address */
+	/* 
+	 * If the file exists, then we have to check
+	 * if it already contains gieven address
+	 */
 	if (file != -LESTATUS_NSFD) {
 		while (getline(&line, &line_size, file) != -1) {
 			line[strcspn(line, "\n")] = '\0';
@@ -352,18 +356,16 @@ char * token_load() {
 	char  srepr_thread_id[32];
 	char *token;
 
-	if (!g_active_thread_exists) {
+	if (!g_active_thread_exists)
 		return -LESTATUS_IDAT;
-	}
 
 	memset(srepr_thread_id, 0, sizeof(srepr_thread_id));
 
 	snprintf(srepr_thread_id, sizeof(srepr_thread_id), "%llu", g_active_thread_id);
 	file = get_leclient_file(srepr_thread_id, "r", FALSE);
 
-	if (file == -LESTATUS_NSFD) {
+	if (file == -LESTATUS_NSFD)
 		return -LESTATUS_NSFD;
-	}
 
 	token = calloc(sizeof(char), TOKEN_SIZE + 1);
 
@@ -859,9 +861,8 @@ status_t startup() {
 	strcat(dirpath, "/" DIR_CLIENT);
 
 	/* Check if the directory exists, creates if not */
-	if (stat(dirpath, &st) == -1) {
+	if (stat(dirpath, &st) == -1)
 		mkdir(dirpath, 0700);
-	}
 
 	free(dirpath);
 

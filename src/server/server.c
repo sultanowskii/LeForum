@@ -26,32 +26,25 @@
 
 struct arguments  arguments;
 
-/*
- * Flag for threads
- */
+/* Flag for threads*/
 bool_t            g_program_on_finish       = FALSE;
 
-/* 
- * Stores the value of the next created LeThread id
- */
+/* Stores the value of the next created LeThread id */
 uint64_t          g_next_lethread_id_value  = 0;
 
-/*
- * Pthread mutexes
- */
+/* Pthread mutexes */
 pthread_mutex_t   g_next_lethread_id_mutex;
 
 /*
- * Save file query queues with the purpose of prevention data race. SharedPtr is stored here.
+ * Save file query queues with the purpose of prevention data race.
+ * SharedPtr is stored here.
  */
 Queue            *g_lethread_query_queue;
 Queue            *g_lemessages_query_queue;
 Queue            *g_lemessage_query_queue;
 Queue            *g_leauthor_query_queue;
 
-/*
- * Here we store SharedPtrs to all the LeThreads
- */
+/* Here we store SharedPtrs to all the LeThreads */
 Queue            *g_lethread_queue;
 
 void * lethread_query_manage() {
@@ -126,12 +119,10 @@ SharedPtr * lethread_get_by_id(uint64_t lethread_id) {
 
 	NULLPTR_PREVENT(lethread_found, -LESTATUS_NFND)
 
-	if (lethread_found->messages->first == nullptr && lethread_message_count(lethread_found) != 0) {
+	if (lethread_found->messages->first == nullptr && lethread_message_count(lethread_found) != 0)
 		lemessages_load(lethread_found);
-	}
-	if (lethread_found->author == nullptr || lethread_found->author->token == nullptr) {
+	if (lethread_found->author == nullptr || lethread_found->author->token == nullptr)
 		leauthor_load(lethread_found);
-	}
 
 	return sharedptr_add(node->data);
 }
@@ -188,7 +179,8 @@ SharedPtr * s_lethread_create(char *topic, uint64_t lethread_id) {
 
 	NULLPTR_PREVENT(topic, -LESTATUS_NPTR)
 
-	/* Here we fill lethread_id independently on the argument, 
+	/* 
+	 * Here we fill lethread_id independently on the argument, 
 	 * because we want to keep all the lethreads stay in the right order without collisions. 
 	 */
 	sharedptr_lethread  = sharedptr_create(lethread_create(topic, next_lethread_id()), lethread_delete);
@@ -238,9 +230,8 @@ size_t startup() {
 	struct stat    st           = {0};
 
 	/* Check if the directory exists, creates if not */
-	if (stat(DIR_SERVER, &st) == -1) {
+	if (stat(DIR_SERVER, &st) == -1)
 		mkdir(DIR_SERVER, 0700);
-	}
 
 	srcdir = opendir(DIR_SERVER);
 	if (srcdir == NULL) {
@@ -336,7 +327,8 @@ uint64_t next_lethread_id() {
 
 	pthread_mutex_lock(&g_next_lethread_id_mutex);
 	value = g_next_lethread_id_value++;
-	lemeta_save(); /* Not really sure if it is necessary or not */
+	/* Not really sure if it is necessary or not */
+	lemeta_save();
 	pthread_mutex_unlock(&g_next_lethread_id_mutex);
 
 	return value;
@@ -355,18 +347,6 @@ void * handle_client(void *arg) {
 
 	cl_data = malloc(MAX_PACKET_SIZE + 1);
 	client_info = (LeClientInfo *)arg;
-
-	/* =================================== Example ====================================== */
-
-	// char client_ip[128];
-
-	// uint16_t client_port = ntohs(client_info->addr.sin_port);
-	// inet_ntop(AF_INET, &(client_info->addr.sin_addr), client_ip, 128);
-
-	// sendf(client_info->fd, "Hi! You are fd=%d, addr=%s:%hu\n", client_info->fd, client_ip, client_port);
-	// printf("Connection from fd=%d, addr=%s:%hu\n", client_info->fd, client_ip, client_port);
-
-	/* ================================= Example end ==================================== */
 
 	while (!g_program_on_finish) {
 		recv(client_info->fd, &cl_expected_data_size, sizeof(cl_expected_data_size), NULL);
@@ -387,21 +367,24 @@ void * handle_client(void *arg) {
 		memset(cl_data, 0, MIN(cl_data_size + 1, MAX_PACKET_SIZE));
 
 		if (query_result.size == 0) {
+			/* Status without description */
 			lestatus_representation = get_lestatus_string_repr(query_result.status);
 			*(size_t *)tmp = strlen(lestatus_representation);
 			send(client_info->fd, &tmp, sizeof(size_t), NULL);
-			send(client_info->fd, lestatus_representation, *(size_t *)tmp, NULL); /* Status without description */
+			send(client_info->fd, lestatus_representation, *(size_t *)tmp, NULL);
 		}
 		else {
 			if (query_result.data != NULL) {
+				/* Sends the query result */
 				send(client_info->fd, &query_result.size, sizeof(size_t), NULL);
-				send(client_info->fd, query_result.data, query_result.size, NULL); /* Sends the query result */
+				send(client_info->fd, query_result.data, query_result.size, NULL);
 			}
 			else {
 CLIENT_HANDLER_ERR:
+				/* Unexpected, sends error without description */
 				*(size_t *)tmp = 3;
 				send(client_info->fd, tmp, sizeof(size_t), NULL);
-				send(client_info->fd, "ERR", 3, NULL); /* Unexpected, sends error without description */
+				send(client_info->fd, "ERR", 3, NULL);
 			}
 		}
 

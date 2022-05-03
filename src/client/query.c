@@ -208,17 +208,15 @@ CreatedThreadInfo * parse_response_CTHR(char *raw_data, size_t size) {
 	/* TODO: check size */
 	data_ptr = raw_data;
 
-	if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0) {
+	if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0)
 		return -LESTATUS_IDAT;
-	}
 	data_ptr += strlen("THRID");
 
 	thread_id = *(uint64_t *)data_ptr;
 	data_ptr += sizeof(thread_id);
 
-	if (strncmp(data_ptr, "TKN", strlen("TKN")) != 0) {
+	if (strncmp(data_ptr, "TKN", strlen("TKN")) != 0)
 		return -LESTATUS_IDAT;
-	}
 	data_ptr += strlen("TKN");
 
 	info = (CreatedThreadInfo *)malloc(sizeof(*info));
@@ -325,9 +323,8 @@ Queue * parse_response_FTHR(char *raw_data, size_t size) {
 	found = queue_create(lethread_delete);
 	data_ptr = raw_data;
 
-	if (strncmp(data_ptr, "NFND", strlen("NFND")) == 0) {
+	if (strncmp(data_ptr, "NFND", strlen("NFND")) == 0)
 		return found;
-	}
 
 	while ((size_t)(data_ptr - raw_data) < size) {
 		if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0) {
@@ -371,9 +368,9 @@ status_t parse_response_CMSG(char *raw_data, size_t size) {
 	char *data_ptr;
 
 	data_ptr = raw_data;
-	if (strncmp(data_ptr, "OK", strlen("OK")) != 0) {
+
+	if (strncmp(data_ptr, "OK", strlen("OK")) != 0)
 		return -LESTATUS_IDAT;
-	}
 	data_ptr += strlen("OK");
 
 	return -LESTATUS_OK;
@@ -392,58 +389,52 @@ LeMeta * parse_response_META(char *raw_data, size_t size) {
 	
 
 	data_ptr = raw_data;
-	if (strncmp(data_ptr, "MINTPCSZ", strlen("MINTPCSZ")) != 0) {
+
+	if (strncmp(data_ptr, "MINTPCSZ", strlen("MINTPCSZ")) != 0)
 		return -LESTATUS_IDAT;
-	}
 	data_ptr += strlen("MINTPCSZ");
 
 	min_topic_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(min_topic_size);
 
-	if (strncmp(data_ptr, "MAXTPCSZ", strlen("MAXTPCSZ")) != 0) {
+	if (strncmp(data_ptr, "MAXTPCSZ", strlen("MAXTPCSZ")) != 0)
 		return -LESTATUS_IDAT;
-	}
 	data_ptr += strlen("MAXTPCSZ");
 
 	max_topic_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(max_topic_size);
 
-	if (strncmp(data_ptr, "MINMSGSZ", strlen("MINMSGSZ")) != 0) {
+	if (strncmp(data_ptr, "MINMSGSZ", strlen("MINMSGSZ")) != 0)
 		return -LESTATUS_IDAT;
-	}
 	data_ptr += strlen("MINMSGSZ");
 
 	min_message_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(min_message_size);
 	
-	if (strncmp(data_ptr, "MAXMSGSZ", strlen("MAXMSGSZ")) != 0) {
+	if (strncmp(data_ptr, "MAXMSGSZ", strlen("MAXMSGSZ")) != 0)
 		return -LESTATUS_IDAT;
-	}
 	data_ptr += strlen("MAXMSGSZ");
 
 	max_message_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(max_message_size);
 	
-	if (strncmp(data_ptr, "THRN", strlen("THRN")) != 0) {
+	if (strncmp(data_ptr, "THRN", strlen("THRN")) != 0)
 		return -LESTATUS_IDAT;
-	}
 	data_ptr += strlen("THRN");
 
 	thread_count = *(size_t *)data_ptr;
 	data_ptr += sizeof(thread_count);
 
 	
-	if (strncmp(data_ptr, "VERSZ", strlen("VERSZ")) != 0) {
+	if (strncmp(data_ptr, "VERSZ", strlen("VERSZ")) != 0)
 		return -LESTATUS_IDAT;
-	}
 	data_ptr += strlen("VERSZ");
 
 	version_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(version_size);
 	
-	if (strncmp(data_ptr, "VER", strlen("VER")) != 0) {
+	if (strncmp(data_ptr, "VER", strlen("VER")) != 0)
 		return -LESTATUS_IDAT;
-	}
 	data_ptr += strlen("VER");
 
 	version = malloc(version_size + 1);
@@ -467,9 +458,9 @@ status_t parse_response_LIVE(char *raw_data, size_t size) {
 	char *data_ptr;
 
 	data_ptr = raw_data;
-	if (strncmp(data_ptr, "OK", strlen("OK")) != 0) {
+
+	if (strncmp(data_ptr, "OK", strlen("OK")) != 0)
 		return -LESTATUS_IDAT;
-	}
 	data_ptr += strlen("OK");
 
 	return -LESTATUS_OK;
