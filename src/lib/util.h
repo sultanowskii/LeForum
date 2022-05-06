@@ -33,6 +33,16 @@
 #define cyclic_dec(x, min, max) x = ((x - 1) >= (min)) ? (x - 1) : (max)
 
 /**
+ * @brief Naive data with size container. 
+ *
+ */
+struct LeData {
+	void   *data;
+	size_t  size;
+};
+typedef struct LeData LeData;
+
+/**
  * @brief fgets() wrapper that sets '\0' instead of '\n'. 
  * 
  * @param s Data pointer where input will be stored

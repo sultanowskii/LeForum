@@ -7,6 +7,7 @@
 #include "client/query.h"
 #include "lib/constants.h"
 #include "lib/status.h"
+#include "lib/util.h"
 
 #define FILE_SERVER_HISTORY  "servers"
 #define DIR_CLIENT           ".lefourm/"

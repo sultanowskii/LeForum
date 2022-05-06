@@ -39,6 +39,21 @@ struct LeThread {
 typedef struct LeThread LeThread;
 
 /**
+ * @brief Meta information about server, 
+ * 
+ */
+struct LeMeta {
+	size_t  min_message_size;
+	size_t  max_message_size;
+	size_t  min_topic_size;
+	size_t  max_topic_size;
+	char   *version;
+	size_t  version_size;
+	size_t  thread_count;
+};
+typedef struct LeMeta LeMeta;
+
+/**
  * @brief Creates new LeThread 
  * if there is no information files with the same id. 
  * If there is, then returns LESTATUS_EXST. 

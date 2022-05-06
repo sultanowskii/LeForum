@@ -7,21 +7,7 @@
 #include "lib/forum.h"
 #include "lib/queue.h"
 #include "lib/status.h"
-
-/**
- * @brief Meta information about server, 
- * 
- */
-struct LeMeta {
-	size_t  min_message_size;
-	size_t  max_message_size;
-	size_t  min_topic_size;
-	size_t  max_topic_size;
-	char   *version;
-	size_t  version_size;
-	size_t  thread_count;
-};
-typedef struct LeMeta LeMeta;
+#include "lib/util.h"
 
 /**
  * @brief Information about query. 
@@ -35,12 +21,6 @@ struct ServerQuery {
 	void      *parsed_data;
 };
 typedef struct ServerQuery ServerQuery;
-
-struct LeData {
-	void   *data;
-	size_t  size;
-};
-typedef struct LeData LeData;
 
 struct CreatedThreadInfo {
 	uint64_t  thread_id;
