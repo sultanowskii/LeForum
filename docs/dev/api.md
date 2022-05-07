@@ -37,7 +37,7 @@ Then the actual request that you should expect/send is:
 CNT{4}BYE
 ```
 
-### List of API endpoints:
+#### List of API endpoints:
 - [GTHR](#GTHR) - get lethread by ID
 - [CTHR](#CTHR) - create lethread
 - [FTHR](#FTHR) - find lethread by topic part
@@ -45,7 +45,7 @@ CNT{4}BYE
 - [META](#META) - get meta-information about the server
 - [LIVE](#LIVE) - alive (used to make sure the connection is still established)
 
-### GTHR
+#### GTHR
 **Description**:
 Get LeThread by ID.
 
@@ -96,7 +96,7 @@ THRID{8}TPCSZ{8}TPC...MSGCNT{8}MSG{1}{8}{8}...MSGENDMSG{1}{8}{8}...MSGEND
 
 ---
 
-## CTHR
+#### CTHR
 **Description**:
 Create LeThread.
 
@@ -132,7 +132,7 @@ THRID{8}TKN{TOKEN_SIZE}
 
 ---
 
-## FTHR
+#### FTHR
 **Description**:
 Find LeThreads by topic.
 
@@ -177,7 +177,7 @@ THRID{8}TPCSZ{8}TPC...THRID{8}TPCSZ{8}TPC...
 
 ---
 
-## CMSG
+#### CMSG
 **Description**:
 Create (post) LeMessage in the LeThread with given ID.
 
@@ -213,7 +213,7 @@ OK
 
 ---
 
-## META
+#### META
 **Description**:
 Get meta information about server.
 
@@ -255,7 +255,7 @@ MINTPCSZ{8}MAXTPCSZ{8}MINMSGSZ{8}MAXMSGSZ{8}THRN{8}VERSZ{8}VER...
 
 ---
 
-## LIVE
+#### LIVE
 **Description**:
 Assures the connection between client and server is established.
 

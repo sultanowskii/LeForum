@@ -5,6 +5,9 @@ LeForumClient
 LeForumCoreTest
 QueueTest
 .data/
+.leforum_client/
+.leforum_server/
+.data/
 .gdb*
 core
 !core/

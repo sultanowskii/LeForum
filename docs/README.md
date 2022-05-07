@@ -1,6 +1,8 @@
 # LeForum Documentation
 LeForum is an anonymous forum (server&client) working via TCP written in C.
 
+Usage is presented in [User docs](user/README.md)
+
 This file contains general information about the project. For deeper explanations, please refere to [Developer docs](dev/README.md).
 
 Known issues are [here](issues.md).

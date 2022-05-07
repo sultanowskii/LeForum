@@ -1,8 +1,7 @@
 # LeForum Developer Documentation
 ## Tests
 The only test you should use now is [test-server-queries](/src/test/test-server-queries.py).
-
-### test-server-queries
+#### test-server-queries
 **Description**:
 It basically tests all the API queries. Before running it, you should run server first (on port 7431, the default one).
 
