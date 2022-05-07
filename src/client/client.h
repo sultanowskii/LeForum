@@ -10,7 +10,7 @@
 #include "lib/util.h"
 
 #define FILE_SERVER_HISTORY  "servers"
-#define DIR_CLIENT           ".lefourm/"
+#define DIR_CLIENT           ".leforum_client"
 
 /**
  * @brief Main command list. 

@@ -9,7 +9,7 @@
 
 #define TOKEN_SIZE      24
 
-#define DIR_SERVER      ".data"
+#define DIR_SERVER      ".leforum_server"
 #define FILE_LETHREAD   "lethreadinfo"
 #define FILE_LEMESSAGES "lemessages"
 #define FILE_LEAUTHOR   "leauthor"
