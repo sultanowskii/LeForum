@@ -5,9 +5,11 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include "global/conf.h"
 #include "lib/forum.h"
 #include "lib/status.h"
 #include "lib/shared_ptr.h"
+#include "server/forum_io.h"
 
 #define FILE_LEMETA "lemeta"
 

@@ -5,12 +5,12 @@
 #include <stdio.h>
 
 #include "client/query.h"
+#include "global/conf.h"
 #include "lib/constants.h"
 #include "lib/status.h"
 #include "lib/util.h"
 
-#define FILE_SERVER_HISTORY  "servers"
-#define DIR_CLIENT           ".leforum_client"
+#define FILE_SERVER_HISTORY "servers"
 
 /**
  * @brief Main command list. 
