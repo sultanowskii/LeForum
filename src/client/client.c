@@ -888,7 +888,7 @@ void stop_program_handle(const int signum) {
 	g_working = FALSE;
 }
 
-status_t main(size_t argc, char **argv) {
+status_t main(int argc, char **argv) {
 	enum MainCmdIDs cmd_id;
 
 	load_args(argc, argv);

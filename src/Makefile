@@ -16,10 +16,10 @@ c-client: client/client.c $(LIB_FILES_CLIENT)
 	$(CC) $(CFLAGS) $^ $(LIBS_CLIENT) -o LeForumClient
 
 g-c-server: server/server.c $(LIB_FILES_SERVER)
-	$(CC) $(CFLAGS_G) $^ $(LIBS_SERVER) -o LeForumServer
+	$(CC) $(CFLAGS_G) $^ $(LIBS_SERVER) -Wall -o LeForumServer
 
 g-c-client: client/client.c $(LIB_FILES_CLIENT)
-	$(CC) $(CFLAGS_G) $^ $(LIBS_CLIENT) -o LeForumClient
+	$(CC) $(CFLAGS_G) $^ $(LIBS_CLIENT) -Wall -o LeForumClient
 
 c-test-forum-core: test/test-forum-core.c $(LIB_FILES_TEST_FORUM_CORE)
 	$(CC) $(CFLAGS) $^ $(LIBS_SERVER) -g -o test/LeForumCoreTest

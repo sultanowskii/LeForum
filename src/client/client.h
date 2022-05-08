@@ -346,7 +346,7 @@ status_t startup();
  */
 status_t cleanup();
 
-status_t main(size_t argc, char **argv);
+status_t main(int argc, char **argv);
 /* ---------------------------------------- */
 
 #endif
