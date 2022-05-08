@@ -73,3 +73,13 @@ There are several sections of the program, here is the list of them:
     - **Back**: Go back
 - **Settings section**:
     - **Back**: Go back
+
+---
+
+#### Command line arguments
+Short exaplanation of all the arguments is available by running program with `--help` flag.
+
+List of arguments (aka flags):
+    - `-?, --help` - Print help message.
+    - `--usage` - Print short usage message.
+    - `-V, --version` - Print program version.
