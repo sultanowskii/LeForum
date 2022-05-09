@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <sys/socket.h>
 
-#define MAX_PACKET_SIZE      64 * 1024
+#define MAX_PACKET_SIZE 1024 * 1024
 
 /**
  * @brief Human-readable IPv4 address. 

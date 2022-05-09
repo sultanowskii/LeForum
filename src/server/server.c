@@ -350,6 +350,11 @@ void *handle_client(void *arg) {
 	while (!g_program_on_finish) {
 		cl_expected_data_size = 0;
 		recv(client_info->fd, &cl_expected_data_size, sizeof(cl_expected_data_size), NULL);
+		/* We simply break the connection with client if it requests enormous size */
+		if (cl_expected_data_size > MAX_PACKET_SIZE) {
+			puts("go duck :)");
+			break;
+		}
 		cl_data_size = srecv(client_info->fd, cl_data, cl_expected_data_size, NULL);
 
 		/* Timeout/connection closed */
@@ -360,7 +365,7 @@ void *handle_client(void *arg) {
 
 		cl_data[cl_data_size] = '\0';
 		query_result = query_process(cl_data, cl_data_size);
-		memset(cl_data, 0, MIN(cl_data_size + 1, MAX_PACKET_SIZE));
+		memset(cl_data, 0, cl_data_size + 1);
 
 		if (query_result.size == 0) {
 			/* Status without description */
@@ -378,9 +383,9 @@ void *handle_client(void *arg) {
 			else {
 CLIENT_HANDLER_ERR:
 				/* Unexpected, sends error without description */
-				*(size_t *)tmp = 3;
+				*(size_t *)tmp = strlen("ERR");
 				send(client_info->fd, tmp, sizeof(size_t), NULL);
-				send(client_info->fd, "ERR", 3, NULL);
+				send(client_info->fd, "ERR", strlen("ERR"), NULL);
 			}
 		}
 

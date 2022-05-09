@@ -816,6 +816,10 @@ void query_loop() {
 				request_size = query->raw_request_data_size;
 
 				send(g_server_fd, &request_size, sizeof(request_size), NULL);
+				if (request_size > MAX_PACKET_SIZE) {
+					newline();
+					puts("Server acts suspiciously. Disconnecting...");
+				}
 				ssend(g_server_fd, query->raw_request_data, request_size, NULL);
 
 				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
@@ -825,34 +829,51 @@ void query_loop() {
 				query->completed = TRUE;
 
 				free(raw_response);
+				raw_response = nullptr;
 			}
 			else {
 				*(size_t *)buf = strlen("LIVE");
 				if (send(g_server_fd, buf, sizeof(size_t), NULL) < 0) {
+					newline();
+					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
 				}
 				if (send(g_server_fd, "LIVE", *(size_t *)buf, NULL) < 0) {
+					newline();
+					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
 				}
 
 				if (recv(g_server_fd, &response_size, sizeof(response_size), NULL) < 0) {
+					newline();
+					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
+				}
+				if (response_size > MAX_PACKET_SIZE) {
+					newline();
+					puts("Server acts suspiciously. Disconnecting...");
+					goto LIVE_FAILURE;
+
 				}
 				raw_response = calloc(sizeof(char), response_size + 1);
 				if (recv(g_server_fd, raw_response, response_size, NULL) < 0) {
+					newline();
+					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
 				}
 
-				if (strncmp(raw_response, "OK", 2)) {
+				if (strncmp(raw_response, "OK", strlen("OK"))) {
+					newline();
+					puts("Server acts suspiciously. Disconnecting...");
 					goto LIVE_FAILURE;
 				}
 
 				free(raw_response);
+				raw_response = nullptr;
 				continue;
 LIVE_FAILURE:
-				newline();
-				printf("Lost connection with the server, your last action might not have been applied.\n");
 				__server_disconnect();
+				continue;
 			}		
 		}
 	}
