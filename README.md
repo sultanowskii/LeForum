@@ -22,6 +22,25 @@ make c-client
 
 Compiled binary/-ies will appear in the **le-forum/build** directory.
 
+## Server deployment
+Requirements:
+- docker
+- docker-compose
+
+For simple deploy run following commands:
+
+```bash
+cd le-forum/
+sudo docker-compose --build -d
+```
+
+This will run LeForum server inside docker container, on 0.0.0.0:7431.
+
+#### Configuration
+To select port, you should edit out port **docker-compose.yml**
+
+To configure server itself (except port), you should modify flags in **src/run_server.sh** (see [this](docs/user/server_usage.md) page for server configuration guide)
+
 ## Contribute
 If you are interested in this project and want to implement a new feature or to fix some bug - feel free to open pull request.
 
