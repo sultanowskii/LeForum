@@ -20,7 +20,7 @@ make c-server
 make c-client
 ```
 
-Compiled binary/-ies will appear in the **le-forum/** directory.
+Compiled binary/-ies will appear in the **le-forum/build** directory.
 
 ## Contribute
 If you are interested in this project and want to implement a new feature or to fix some bug - feel free to open pull request.

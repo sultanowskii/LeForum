@@ -6,14 +6,14 @@ LIBS_CLIENT = -pthread
 
 LIB_FILES_SERVER = $(wildcard lib/*.c server/*.c)
 LIB_FILES_CLIENT = $(wildcard lib/*.c client/*.c)
-LIB_FILES_TEST_FORUM_CORE = $(wildcard lib/forum.c lib/queue.c lib/shared_ptr.c lib/security.c)
+LIB_FILES_TEST_FORUM_CORE = $(wildcard lib/*.c server/forum_io.c)
 LIB_FILES_TEST_QUEUE = $(wildcard lib/*.c)
 
 c-server: server/server.c $(LIB_FILES_SERVER)
-	$(CC) $(CFLAGS) $^ $(LIBS_SERVER) -o LeForumServer
+	$(CC) $(CFLAGS) $^ $(LIBS_SERVER) -o ../build/LeForumServer
 
 c-client: client/client.c $(LIB_FILES_CLIENT)
-	$(CC) $(CFLAGS) $^ $(LIBS_CLIENT) -o LeForumClient
+	$(CC) $(CFLAGS) $^ $(LIBS_CLIENT) -o ../build/LeForumClient
 
 g-c-server: server/server.c $(LIB_FILES_SERVER)
 	$(CC) $(CFLAGS_G) $^ $(LIBS_SERVER) -Wall -o LeForumServer

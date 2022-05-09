@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  leforum-server:
+    build: .
+    restart: on-failure
+    ports:
+      - 7431:7431
+    pids_limit: 512
+    mem_limit: 256M
+    privileged: false
+    container_name: 'leforum-server'
+    volumes:
+      - ./src/leforum_server_data:/leforum/.leforum_server
