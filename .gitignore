@@ -7,6 +7,7 @@ QueueTest
 .data/
 .leforum_client/
 .leforum_server/
+leforum_server_data/
 .data/
 .gdb*
 core

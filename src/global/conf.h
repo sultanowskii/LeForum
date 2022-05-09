@@ -7,7 +7,7 @@
 #define MIN_TOPIC_SIZE   3
 #define MAX_TOPIC_SIZE   64
 
-#define DIR_CLIENT       ".leforum_client"
-#define DIR_SERVER       ".leforum_server"
+#define DIR_CLIENT       ".leforum_client/"
+#define DIR_SERVER       ".leforum_server/"
 
 #endif

@@ -22,7 +22,7 @@ FILE *get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t create
 
 	memset(path, 0, sizeof(path));
 
-	sprintf(path, DIR_SERVER "/%llu/", lethread_id);
+	sprintf(path, DIR_SERVER "%llu/", lethread_id);
 
 	/* Check if the directory exists */
 	if (stat(path, &st) == -1) {

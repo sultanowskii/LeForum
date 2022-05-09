@@ -236,14 +236,13 @@ FILE *get_leclient_file(const char *filename, const char *mode, bool_t create) {
 	size_t       size;
 	
 	size = strlen(g_home_dir);
-	filepath = calloc(sizeof(char), size + strlen(filename) + 8);
+	filepath = calloc(sizeof(char), size + sizeof(DIR_CLIENT) + strlen(filename) + 8);
 
-	strncpy(filepath, g_home_dir, size);
-	strcat(filepath, "/" DIR_CLIENT);
-	strcat(filepath, filename);
+	sprintf(filepath, "%s/" DIR_CLIENT "%s", g_home_dir, filename);
 
 	if (stat(filepath, &st) < 0 && !create) {
 		free(filepath);
+		filepath = nullptr;
 		return -LESTATUS_NSFD;
 	}
 
