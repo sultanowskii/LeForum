@@ -108,7 +108,7 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 
 		*(uint8_t *)response = lemessage->by_lethread_author;
 		response += sizeof(lemessage->by_lethread_author);
-	
+
 		*(uint64_t *)response = lemessage->id;
 		response += sizeof(lemessage->id);
 

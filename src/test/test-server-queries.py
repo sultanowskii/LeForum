@@ -93,14 +93,14 @@ def test_lethread_get(lethread_id):
 
 		msgcnt = u64(result[x:x+8])
 		x += 8
-	
+
 		messages = []
 
 		print(f"Message history:")
 		for i in range(msgcnt):
 			assert result[x:x+3] == b"MSG"
 			x += 3
-	
+
 			by_author = bool(u8(result[x:x+1]))
 			x += 1
 
@@ -118,7 +118,7 @@ def test_lethread_get(lethread_id):
 
 			print(f"    id={msgid} by_author={by_author} text: {msgtxt}")
 		return topic, topic_size, messages
-	
+
 
 	return topic, topic_size, []
 
@@ -184,7 +184,7 @@ def test_meta():
 	data = b"META"
 
 	result, result_size = query(data)
-	
+
 	x = 0
 
 	assert result[x:x+8] == b"MINTPCSZ"

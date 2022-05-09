@@ -12,7 +12,7 @@ size_t s_fgets(char *s, size_t n, FILE* fd) {
 		clearerr(stdin);
 		return -LESTATUS_CLIB;
 	}
-	
+
 	s[strcspn(s, "\n")] = 0;
 
 	return strlen(s);

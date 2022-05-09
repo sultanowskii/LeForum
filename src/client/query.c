@@ -38,12 +38,12 @@ LeData gen_query_CTHR(const char *topic, size_t size) {
 	char   *data_ptr;
 	size_t  data_size;
 	LeData  result;
-	
+
 	data_size = strlen("CTHR") + strlen("TPCSZ") + sizeof(size) + strlen("TPC") + size;
 
 	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
-	
+
 	data_ptr = result.data;
 
 	strncpy(data_ptr, "CTHR", strlen("CTHR"));
@@ -68,12 +68,12 @@ LeData gen_query_GTHR(uint64_t thread_id) {
 	char   *data_ptr;
 	size_t  data_size;
 	LeData  result;
-	
+
 	data_size = strlen("GTHR") + strlen("THRID") + sizeof(thread_id);
 
 	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
-	
+
 	data_ptr = result.data;
 
 	strncpy(data_ptr, "GTHR", strlen("GTHR"));
@@ -97,7 +97,7 @@ LeData gen_query_FTHR(const char *topic_part, size_t size) {
 
 	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
-	
+
 	data_ptr = result.data;
 
 	strncpy(data_ptr, "FTHR", strlen("FTHR"));
@@ -122,14 +122,14 @@ LeData gen_query_CMSG(uint64_t thread_id, const char *msg, size_t size, char *to
 	char   *data_ptr;
 	size_t  data_size;
 	LeData  result;
-	
+
 	data_size = strlen("CMSG") + strlen("THRID") + sizeof(thread_id) + strlen("TXTSZ") + sizeof(size) + strlen("TXT") + size;
 	if (token != nullptr)
 		data_size += strlen("TKN") + TOKEN_SIZE;
 
 	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
-	
+
 	data_ptr = result.data;
 
 	strncpy(data_ptr, "CMSG", strlen("CMSG"));
@@ -168,12 +168,12 @@ LeData gen_query_META() {
 	char      *data_ptr;
 	size_t     data_size;
 	LeData     result;
-	
+
 	data_size = strlen("META");
 
 	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
-	
+
 	data_ptr = result.data;
 
 	strncpy(data_ptr, "META", strlen("META"));
@@ -186,12 +186,12 @@ LeData gen_query_LIVE() {
 	char   *data_ptr;
 	size_t  data_size;
 	LeData  result;
-	
+
 	data_size = strlen("LIVE");
 
 	result.data = calloc(sizeof(char), data_size);
 	result.size = data_size;
-	
+
 	data_ptr = result.data;
 
 	strncpy(data_ptr, "LIVE", strlen("LIVE"));
@@ -224,7 +224,7 @@ CreatedThreadInfo *parse_response_CTHR(char *raw_data, size_t size) {
 	info->token = malloc(TOKEN_SIZE + 1);
 	strncpy(info->token, data_ptr, TOKEN_SIZE);
 	info->token[TOKEN_SIZE] = '\0';
-	
+
 	return info;
 }
 
@@ -308,7 +308,7 @@ LeThread *parse_response_GTHR(char *raw_data, size_t size) {
 		}
 		data_ptr += strlen("MSGEND");
 	}
-	
+
 	return thread;
 }
 
@@ -319,7 +319,7 @@ Queue *parse_response_FTHR(char *raw_data, size_t size) {
 	uint64_t  thread_id;
 	char     *topic;
 	size_t    topic_size;
-	
+
 	found = queue_create(lethread_delete);
 	data_ptr = raw_data;
 
@@ -386,7 +386,7 @@ LeMeta *parse_response_META(char *raw_data, size_t size) {
 	size_t  thread_count;
 	char   *version;
 	size_t  version_size;
-	
+
 
 	data_ptr = raw_data;
 
@@ -410,14 +410,14 @@ LeMeta *parse_response_META(char *raw_data, size_t size) {
 
 	min_message_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(min_message_size);
-	
+
 	if (strncmp(data_ptr, "MAXMSGSZ", strlen("MAXMSGSZ")) != 0)
 		return -LESTATUS_IDAT;
 	data_ptr += strlen("MAXMSGSZ");
 
 	max_message_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(max_message_size);
-	
+
 	if (strncmp(data_ptr, "THRN", strlen("THRN")) != 0)
 		return -LESTATUS_IDAT;
 	data_ptr += strlen("THRN");
@@ -425,14 +425,14 @@ LeMeta *parse_response_META(char *raw_data, size_t size) {
 	thread_count = *(size_t *)data_ptr;
 	data_ptr += sizeof(thread_count);
 
-	
+
 	if (strncmp(data_ptr, "VERSZ", strlen("VERSZ")) != 0)
 		return -LESTATUS_IDAT;
 	data_ptr += strlen("VERSZ");
 
 	version_size = *(size_t *)data_ptr;
 	data_ptr += sizeof(version_size);
-	
+
 	if (strncmp(data_ptr, "VER", strlen("VER")) != 0)
 		return -LESTATUS_IDAT;
 	data_ptr += strlen("VER");

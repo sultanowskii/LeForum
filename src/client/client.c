@@ -234,7 +234,7 @@ FILE *get_leclient_file(const char *filename, const char *mode, bool_t create) {
 	struct stat  st        = {0};
 	char        *filepath;
 	size_t       size;
-	
+
 	size = strlen(g_home_dir);
 	filepath = calloc(sizeof(char), size + sizeof(DIR_CLIENT) + strlen(filename) + 8);
 
@@ -415,7 +415,7 @@ void cmd_server_connect() {
 		newline();
 		return;
 	}
-	
+
 	puts("Connected.");
 	newline();
 }
@@ -428,7 +428,7 @@ void cmd_server_disconnect() {
 
 void cmd_server_info() {
 	if (!g_server_connected) {
-		puts("Can't get any information - you are not connected to any server.");		
+		puts("Can't get any information - you are not connected to any server.");
 		newline();
 		return;
 	}
@@ -604,7 +604,7 @@ void cmd_thread_find() {
 	}
 	else {
 		printf("Here are the threads that match '%s':\n", search_query);
-		
+
 		node = found_threads->first;
 
 		while (node != nullptr) {
@@ -617,7 +617,7 @@ void cmd_thread_find() {
 		}
 
 		printf("Choose the thread number (1-%zu). Type 'r' or any other number if you want to return:\n", found_threads->size);
-		
+
 		print_prefix_thread();
 
 		s_fgets(buf, sizeof(buf), stdin);
@@ -708,7 +708,7 @@ void cmd_thread_message_history() {
 
 	if (thread->messages->size > 0) {
 		node = thread->messages->first;
-		
+
 		while (node != nullptr) {
 			message = (LeMessage *)node->data;
 
@@ -747,7 +747,7 @@ void cmd_thread_send_message() {
 	message_text = malloc(g_server_meta.max_message_size + 1);
 
 	printf("Type your message (%zu-%zu characters, no newlines):\n", g_server_meta.min_message_size, g_server_meta.max_message_size);
-	
+
 	if ((size = s_fgets_range(message_text, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == -LESTATUS_IDAT) {
 		newline();
 		goto THREAD_SEND_MESSAGE_EXIT;
@@ -810,7 +810,7 @@ void query_loop() {
 	size_t       request_size;
 
 	while (g_working) {
-		if (g_server_connected) {	
+		if (g_server_connected) {
 			if (g_server_queries->size != 0) {
 				query = (ServerQuery *)queue_pop(g_server_queries);
 				request_size = query->raw_request_data_size;
@@ -874,7 +874,7 @@ void query_loop() {
 LIVE_FAILURE:
 				__server_disconnect();
 				continue;
-			}		
+			}
 		}
 	}
 }
@@ -887,7 +887,7 @@ status_t startup() {
 	signal(SIGINT, stop_program_handle);
 
 	signal(SIGPIPE, SIG_IGN);
-	
+
 	g_home_dir = getenv("HOME");
 
 	dirpath = calloc(sizeof(char), strlen(g_home_dir) + strlen(DIR_CLIENT) + 1);
@@ -915,7 +915,7 @@ status_t cleanup() {
 		queue_delete(g_server_queries);
 		g_server_queries = nullptr;
 	}
-		
+
 	return -LESTATUS_OK;
 }
 
