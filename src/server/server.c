@@ -348,12 +348,9 @@ void *handle_client(void *arg) {
 	client_info = (LeClientInfo *)arg;
 
 	while (!g_program_on_finish) {
+		cl_expected_data_size = 0;
 		recv(client_info->fd, &cl_expected_data_size, sizeof(cl_expected_data_size), NULL);
-		/* Explicitly prevent overflowing and */
-		if (cl_expected_data_size > MAX_PACKET_SIZE)
-			goto CLIENT_HANDLER_ERR;
-
-		cl_data_size = recv(client_info->fd, cl_data, cl_expected_data_size, NULL);
+		cl_data_size = srecv(client_info->fd, cl_data, cl_expected_data_size, NULL);
 
 		/* Timeout/connection closed */
 		if (cl_data_size <= 0) {
@@ -376,7 +373,7 @@ void *handle_client(void *arg) {
 			if (query_result.data != NULL) {
 				/* Sends the query result */
 				send(client_info->fd, &query_result.size, sizeof(size_t), NULL);
-				send(client_info->fd, query_result.data, query_result.size, NULL);
+				ssend(client_info->fd, query_result.data, query_result.size, NULL);
 			}
 			else {
 CLIENT_HANDLER_ERR:

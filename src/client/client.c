@@ -816,12 +816,11 @@ void query_loop() {
 				request_size = query->raw_request_data_size;
 
 				send(g_server_fd, &request_size, sizeof(request_size), NULL);
-				send(g_server_fd, query->raw_request_data, request_size, NULL);
-				
+				ssend(g_server_fd, query->raw_request_data, request_size, NULL);
+
 				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
 				raw_response = calloc(sizeof(char), response_size + 1);
-				bytes_read = recv(g_server_fd, raw_response, response_size, NULL);
-				
+				bytes_read = srecv(g_server_fd, raw_response, response_size, NULL);
 				query->parsed_data = query->parse_response(raw_response, bytes_read);
 				query->completed = TRUE;
 
@@ -829,15 +828,31 @@ void query_loop() {
 			}
 			else {
 				*(size_t *)buf = strlen("LIVE");
-				send(g_server_fd, buf, sizeof(size_t), NULL);
-				send(g_server_fd, "LIVE", buf, NULL);
-				
-				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
+				if (send(g_server_fd, buf, sizeof(size_t), NULL) < 0) {
+					goto LIVE_FAILURE;
+				}
+				if (send(g_server_fd, "LIVE", *(size_t *)buf, NULL) < 0) {
+					goto LIVE_FAILURE;
+				}
+
+				if (recv(g_server_fd, &response_size, sizeof(response_size), NULL) < 0) {
+					goto LIVE_FAILURE;
+				}
 				raw_response = calloc(sizeof(char), response_size + 1);
-				recv(g_server_fd, raw_response, response_size, NULL);
-				/* TODO: Sanity check */
-				
+				if (recv(g_server_fd, raw_response, response_size, NULL) < 0) {
+					goto LIVE_FAILURE;
+				}
+
+				if (strncmp(raw_response, "OK", 2)) {
+					goto LIVE_FAILURE;
+				}
+
 				free(raw_response);
+				continue;
+LIVE_FAILURE:
+				newline();
+				printf("Lost connection with the server, your last action might not have been applied.\n");
+				__server_disconnect();
 			}		
 		}
 	}

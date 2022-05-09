@@ -1,27 +1,23 @@
 from pwn import *
 from string import ascii_letters, digits
 from time import sleep
+from rich.progress import track
+from random import randint
 
 ALPH = ascii_letters + digits + " +,.!?-=+/*()"
 
 TOKEN_SIZE = 24
 
-DATA_DIR = ".data"
+DIR_SERVER = ".leforum_server"
 FILENAME_LETHREAD = "lethreadinfo"
 FILENAME_LEMESSAGES = "lemessages"
 FILENAME_LEAUTHOR = "leauthor"
 
 
 def query(payload):
-	io = remote("127.0.0.1", 7431)
+	io = remote("127.0.0.1", 12345)
 
-	# hello from server
-	io.recv(1024)
 	io.send(p64(len(payload)))
-
-	# prevent packets consolidation
-	sleep(0.5)
-
 	io.send(payload)
 
 	result = b""
@@ -56,8 +52,6 @@ def test_lethread_create(topic):
 	token = result[x:x+TOKEN_SIZE]
 	x += TOKEN_SIZE
 	assert len(token) == TOKEN_SIZE
-
-	print("OK")
 
 	return lethread_id
 
@@ -136,7 +130,7 @@ def test_lethread_basic(topic):
 	# giving server some time to save files
 	sleep(0.5)
 
-	with open(f"{DATA_DIR}/{str(lethread_id)}/{FILENAME_LETHREAD}", "rb") as f:
+	with open(f"{DIR_SERVER}/{str(lethread_id)}/{FILENAME_LETHREAD}", "rb") as f:
 		data = f.read()
 
 		assert lethread_id == u64(data[0:8])
@@ -252,29 +246,36 @@ def test_lethread_message(lethread_id, text):
 		return
 
 	assert result[0:2] == b"OK"
-	print("OK")
 
+
+def test_mega_msg():
+	lethread_id = test_lethread_create("LIMITS PUSHING")
+	for i in track(range(10000), description="Posting messages..."):
+		test_lethread_message(lethread_id, cyclic(randint(10, 500), alphabet=ALPH))
 
 def main():
 	with context.quiet:
-		if args.NOBASIC == "":
+		if args.AUTO != "":
 			print("[.] Starting LeThread basic tests (CTHR, GTHR)...")
 			for i in range(5):
 				test_lethread_basic(cyclic(24, alphabet=ALPH))
 			test_lethread_basic("veri cool topic!!!")
 			print("[*] LeThread basic tests (CTHR, GTHR) passed successfully!")
 
-		if args.NOFIND == "":
 			print("[.] Starting LeThread FTHR test...")
 			test_lethread_find("cool")
 			assert test_lethread_find("a") == False
 			test_lethread_find("aaa")
 			print("[*] LeThread FTHR test passed successfully!")
 
-		if args.NOMETA == "":
 			print("[.] Starting Meta Query test...")
 			test_meta()
 			print("[*] Meta Query passed successfully!")
+
+		if args.MMSG != "":
+			print("[.] Starting Mega Message test...")
+			test_mega_msg()
+			print("[*] Finished!")
 
 		if args.INTERACTIVE != "":
 			print("[.] Interactive mode. Ctrl+C to exit")
