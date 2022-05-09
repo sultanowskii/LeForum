@@ -26,6 +26,7 @@
 - [x] Removing disconnected clients from corresponding queue
 - [x] NULLing pointers on free(): Either by passing void** arguments to delete_X() functions or manually.
 - [x] Test for messages
+- [ ] Data size sanity check
 
 ### Global features
 #### Server
