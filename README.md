@@ -1,4 +1,4 @@
-# le-forum
+# LeForum
 LeForum is an anonymous forum (server&client) working via TCP.
 
 ## Features
@@ -10,8 +10,8 @@ LeForum is an anonymous forum (server&client) working via TCP.
 ## Installation
 First, download repository and enter **src/** directory:
 ```bash
-git clone https://github.com/sultanowskii/le-forum
-cd le-forum/src
+git clone https://github.com/sultanowskii/LeForum
+cd LeForum/src
 ```
 
 Then compile server/client using following commands:
@@ -20,7 +20,7 @@ make c-server
 make c-client
 ```
 
-Compiled binary/-ies will appear in the **le-forum/build** directory.
+Compiled binary/-ies will appear in the **LeForum/build** directory.
 
 ## Server deployment
 Requirements:
@@ -30,7 +30,7 @@ Requirements:
 For simple deploy run following commands:
 
 ```bash
-cd le-forum/
+cd LeForum/
 sudo docker-compose --build -d
 ```
 
