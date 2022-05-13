@@ -22,6 +22,12 @@ make c-client
 
 Compiled binary/-ies will appear in the **LeForum/build** directory.
 
+To make binaries available everywhere on your system, run
+
+```bash
+sudo make install
+```
+
 ## Server deployment
 Requirements:
 - docker

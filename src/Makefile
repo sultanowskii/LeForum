@@ -26,3 +26,7 @@ c-test-forum-core: test/test-forum-core.c $(LIB_FILES_TEST_FORUM_CORE)
 
 c-test-queue: test/test-queue.c $(LIB_FILES_TEST_QUEUE)
 	$(CC) $(CFLAGS) $^ $(LIBS_SERVER) -g -o test/QueueTest
+
+install:
+	install -m 755 ../build/LeForumServer /usr/bin/
+	install -m 755 ../build/LeForumClient /usr/bin/
