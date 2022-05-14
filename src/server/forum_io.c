@@ -1,5 +1,6 @@
 #include "server/forum_io.h"
 
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -22,7 +23,7 @@ FILE *get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t create
 
 	memset(path, 0, sizeof(path));
 
-	sprintf(path, DIR_SERVER "%llu/", lethread_id);
+	sprintf(path, DIR_SERVER "%" SCNu64 "/", lethread_id);
 
 	/* Check if the directory exists */
 	if (stat(path, &st) == -1) {

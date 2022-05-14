@@ -1,8 +1,8 @@
+#include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -14,7 +14,7 @@
 #include "server/forum_io.h"
 
 void lethread_info(struct LeThread *lethread) {
-	printf("LeThread: id=%llu author_id=%llu first_message_id=%llu next_message_id=%llu: %s\n", lethread->id, lethread->author->id, lethread->first_message_id, lethread->next_message_id, lethread->topic);
+	printf("LeThread: id=%" PRIu64 " author_id=%" PRIu64 " first_message_id=%" PRIu64 " next_message_id=%" PRIu64 ": %s\n", lethread->id, lethread->author->id, lethread->first_message_id, lethread->next_message_id, lethread->topic);
 }
 
 void lethread_message_history(struct LeThread *lethread) {
@@ -27,7 +27,7 @@ void lethread_message_history(struct LeThread *lethread) {
 	printf("==== History ====\n");
 	while (node != NULL) {
 		message = (struct LeMessage *)node->data;
-		printf("#%llu: %s\n", message->id, message->text);
+		printf("#%" PRIu64 ": %s\n", message->id, message->text);
 		node = node->next;
 	}
 	printf("=================\n");
@@ -60,7 +60,7 @@ status_t main() {
 		lethread_info(lethread);
 		printf("author_id text:\n > ");
 
-		scanf("%llu ", &author_id);
+		scanf("%" PRIu64 " ", &author_id);
 		getline(&text, &text_size, stdin);
 		text[strlen(text) - 1] = 0;
 
@@ -88,7 +88,7 @@ status_t main() {
 	lemessages_load(lethread);
 	leauthor_load(lethread);
 
-	printf("LeAuthor: id=%llu, token=%s !!!\n", lethread->author->id, lethread->author->token);
+	printf("LeAuthor: id=%" PRIu64 ", token=%s !!!\n", lethread->author->id, lethread->author->token);
 
 	lethread_info(lethread);
 	lethread_message_history(lethread);

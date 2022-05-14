@@ -1,6 +1,7 @@
 #include "client/client.h"
 
 #include <arpa/inet.h>
+#include <inttypes.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -335,13 +336,12 @@ status_t token_save(char *token) {
 	FILE *file;
 	char  srepr_thread_id[32];
 
-	if (!g_active_thread_exists) {
+	if (!g_active_thread_exists)
 		return -LESTATUS_IDAT;
-	}
 
 	memset(srepr_thread_id, 0, sizeof(srepr_thread_id));
 
-	sprintf(srepr_thread_id, "%llu", g_active_thread_id);
+	sprintf(srepr_thread_id, "%" PRIu64, g_active_thread_id);
 	file = get_leclient_file(srepr_thread_id, "w+", TRUE);
 
 	fprintf(file, "%s", token);
@@ -359,7 +359,7 @@ char *token_load() {
 
 	memset(srepr_thread_id, 0, sizeof(srepr_thread_id));
 
-	snprintf(srepr_thread_id, sizeof(srepr_thread_id), "%llu", g_active_thread_id);
+	snprintf(srepr_thread_id, sizeof(srepr_thread_id), "%" PRIu64, g_active_thread_id);
 	file = get_leclient_file(srepr_thread_id, "r", FALSE);
 
 	if (file == -LESTATUS_NSFD)
@@ -435,7 +435,7 @@ void cmd_server_info() {
 
 	printf("Server address: %s:%hd\n", g_server_haddr.addr, g_server_haddr.port);
 	printf("Server version: %s\n", g_server_meta.version);
-	printf("Threads on a server: %llu\n", g_server_meta.thread_count);
+	printf("Threads on a server: %" PRIu64 "\n", g_server_meta.thread_count);
 
 	newline();
 }
