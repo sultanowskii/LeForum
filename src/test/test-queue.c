@@ -1,3 +1,4 @@
+#include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -21,7 +22,7 @@ status_t main() {
 
 	for (size_t i = 0; i < 5; ++i) {
 		tmp = malloc(1024);
-		printf("Element #%llu:\n", i);
+		printf("Element #%" PRIu64 ":\n", i);
 		scanf("%s", tmp);
 		queue_push(queue, tmp, strlen(tmp) + 1);
 	}
@@ -32,12 +33,12 @@ status_t main() {
 	while (!queue_is_empty(queue)) {
 		is_empty = queue_is_empty(queue);
 		data = queue_pop(queue);
-		printf("queue_is_empty()=%d, pop(), cntr=%llu: %s\n", is_empty, cntr++, data);
+		printf("queue_is_empty()=%d, pop(), cntr=%" PRIu64 ": %s\n", is_empty, cntr++, data);
 		free(data);
 		data = nullptr;
 	}
 
-	printf("Finished! queue_is_emtpy()=%llu\n", queue_is_empty(queue));
+	printf("Finished! queue_is_emtpy()=%d\n", queue_is_empty(queue));
 
 	puts("Destroying queue...");
 
