@@ -83,7 +83,7 @@ status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
 
 	lethread_info_file = get_lefile(lethread_id, "rb", FILE_LETHREAD, FALSE);
 
-	if (lethread_info_file == -LESTATUS_NSFD || lethread_info_file == -LESTATUS_NPTR)
+	if (lethread_info_file == (FILE *)-LESTATUS_NSFD || lethread_info_file == (FILE *)-LESTATUS_NPTR)
 		return lethread_info_file;
 
 	lethread->messages = queue_create(lemessage_delete);
@@ -172,7 +172,7 @@ status_t lemessages_load(LeThread *lethread) {
 	NULLPTR_PREVENT(lethread->messages, -LESTATUS_NPTR)
 
 	lemessages_file = get_lefile(lethread->id, "rb", FILE_LEMESSAGES, FALSE);
-	if (lemessages_file == -LESTATUS_NSFD || lemessages_file == -LESTATUS_NPTR)
+	if (lemessages_file == (FILE *)-LESTATUS_NSFD || lemessages_file == (FILE *)-LESTATUS_NPTR)
 		return lemessages_file;
 
 	for (size_t i = 0; i < lethread_message_count(lethread); ++i) {
@@ -185,7 +185,7 @@ status_t lemessages_load(LeThread *lethread) {
 		lemessage->text = calloc(sizeof(char), text_size + 1);
 		fread(lemessage->text, 1, text_size, lemessages_file);
 
-		queue_push(lethread->messages, lemessage, sizeof(lemessage));
+		queue_push(lethread->messages, lemessage);
 
 		lemessage = nullptr;
 	}
@@ -202,7 +202,7 @@ status_t leauthor_load(LeThread *lethread) {
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
 	leauthor_file = get_lefile(lethread->id, "rb", FILE_LEAUTHOR, FALSE);
-	if (leauthor_file == -LESTATUS_NSFD)
+	if (leauthor_file == (FILE *)-LESTATUS_NSFD)
 		return -LESTATUS_NSFD;
 
 	leauthor = leauthor_create(lethread, FALSE);

@@ -17,7 +17,6 @@
 LeThread *lethread_create(char *topic, uint64_t lethread_id) {
 	LeThread *new_lethread;
 	size_t    topic_size;
-	FILE*     lethread_file;
 
 	NULLPTR_PREVENT(topic, -LESTATUS_NPTR)
 
@@ -89,7 +88,7 @@ LeMessage *lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_a
 	new_lemessage->text[length] = '\0';
 	new_lemessage->lethread = lethread;
 
-	queue_push(lethread->messages, new_lemessage, sizeof(new_lemessage));
+	queue_push(lethread->messages, new_lemessage);
 
 	new_lemessage = nullptr;
 

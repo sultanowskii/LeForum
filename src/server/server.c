@@ -58,6 +58,8 @@ void *lethread_query_manage() {
 			sharedptr_lethread = nullptr;
 		}
 	}
+
+	return (void *)nullptr;
 }
 
 void *lemessages_query_manage() {
@@ -71,16 +73,18 @@ void *lemessages_query_manage() {
 			sharedptr_lethread = nullptr;
 		}
 	}
+
+	return (void *)nullptr;
 }
 
 void *lemessage_query_manage() {
-	LeMessage *lemessage;
-
 	while (!g_program_on_finish) {
 		while (!queue_is_empty(g_lemessage_query_queue) && !g_program_on_finish) {
 			lemessage_save(queue_pop(g_lemessage_query_queue));
 		}
 	}
+
+	return (void *)nullptr;
 }
 
 void *leauthor_query_manage() {
@@ -94,6 +98,8 @@ void *leauthor_query_manage() {
 			sharedptr_lethread = nullptr;
 		}
 	}
+
+	return (void *)nullptr;
 }
 
 status_t leclientinfo_delete(LeClientInfo *clinfo) {
@@ -101,6 +107,8 @@ status_t leclientinfo_delete(LeClientInfo *clinfo) {
 
 	free(clinfo);
 	clinfo = nullptr;
+
+	return LESTATUS_OK;
 }
 
 SharedPtr *lethread_get_by_id(uint64_t lethread_id) {
@@ -127,7 +135,7 @@ SharedPtr *lethread_get_by_id(uint64_t lethread_id) {
 	return sharedptr_add(node->data);
 }
 
-Queue *lethread_find(char *topic_part, size_t topic_part_size) {
+Queue *lethread_find(char *topic_part) {
 	LeThread  *lethread;
 	QueueNode *node             = g_lethread_queue->first;
 	Queue     *lethreads_match;
@@ -139,7 +147,7 @@ Queue *lethread_find(char *topic_part, size_t topic_part_size) {
 	while (node != NULL) {
 		lethread = ((SharedPtr *)node->data)->data;
 		if (strstr(lethread->topic, topic_part) != NULL)
-			queue_push(lethreads_match, sharedptr_add(node->data), sizeof(SharedPtr));
+			queue_push(lethreads_match, sharedptr_add(node->data));
 		node = node->next;
 	}
 
@@ -149,28 +157,28 @@ Queue *lethread_find(char *topic_part, size_t topic_part_size) {
 inline status_t s_lethread_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
-	queue_push(g_lethread_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
+	queue_push(g_lethread_query_queue, sharedptr_add(sharedptr_lethread));
 	return -LESTATUS_OK;
 }
 
 inline status_t s_lemessages_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
-	queue_push(g_lemessages_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
+	queue_push(g_lemessages_query_queue, sharedptr_add(sharedptr_lethread));
 	return -LESTATUS_OK;
 }
 
 inline status_t s_lemessage_save(LeMessage *lemessage) {
 	NULLPTR_PREVENT(lemessage, -LESTATUS_NPTR)
 
-	queue_push(g_lemessage_query_queue, lemessage, sizeof(lemessage));
+	queue_push(g_lemessage_query_queue, lemessage);
 	return -LESTATUS_OK;
 }
 
 inline status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
-	queue_push(g_leauthor_query_queue, sharedptr_add(sharedptr_lethread), sizeof(SharedPtr));
+	queue_push(g_leauthor_query_queue, sharedptr_add(sharedptr_lethread));
 	return -LESTATUS_OK;
 }
 
@@ -179,13 +187,15 @@ SharedPtr *s_lethread_create(char *topic, uint64_t lethread_id) {
 
 	NULLPTR_PREVENT(topic, -LESTATUS_NPTR)
 
+	UNUSED(lethread_id);
+
 	/** 
 	 * Here we fill lethread_id independently on the argument, 
 	 * because we want to keep all the lethreads stay in the right order without collisions. 
 	 */
 	sharedptr_lethread  = sharedptr_create(lethread_create(topic, next_lethread_id()), lethread_delete);
 
-	queue_push(g_lethread_queue, sharedptr_lethread, sizeof(sharedptr_lethread));
+	queue_push(g_lethread_queue, sharedptr_lethread);
 
 	return sharedptr_add(sharedptr_lethread); 
 }
@@ -263,7 +273,7 @@ size_t startup() {
 		if (S_ISDIR(st.st_mode)) {
 			lethread = (LeThread *)malloc(sizeof(*lethread));
 
-			lethread_id = strtoull(dent->d_name, dent->d_name + strlen(dent->d_name), 10);
+			lethread_id = strtoull(dent->d_name, NULL, 10);
 
 			if (lethread_load(lethread, lethread_id) != -LESTATUS_OK) {
 				if (lethread != nullptr) {
@@ -275,7 +285,7 @@ size_t startup() {
 
 			leauthor_load(lethread);
 
-			queue_push(g_lethread_queue, sharedptr_create(lethread, lethread_delete), sizeof(SharedPtr));
+			queue_push(g_lethread_queue, sharedptr_create(lethread, lethread_delete));
 
 			dir_cnt++;
 		}
@@ -292,7 +302,6 @@ size_t startup() {
 
 void cleanup() {
 	static bool_t  cleaned   = FALSE;
-	FILE          *metafile;
 
 	g_program_on_finish = TRUE;
 
@@ -349,13 +358,13 @@ void *handle_client(void *arg) {
 
 	while (!g_program_on_finish) {
 		cl_expected_data_size = 0;
-		recv(client_info->fd, &cl_expected_data_size, sizeof(cl_expected_data_size), NULL);
+		recv(client_info->fd, &cl_expected_data_size, sizeof(cl_expected_data_size), 0);
 		/* We simply break the connection with client if it requests enormous size */
 		if (cl_expected_data_size > MAX_PACKET_SIZE) {
 			puts("go duck :)");
 			break;
 		}
-		cl_data_size = srecv(client_info->fd, cl_data, cl_expected_data_size, NULL);
+		cl_data_size = s_recv(client_info->fd, cl_data, cl_expected_data_size, 0);
 
 		/* Timeout/connection closed */
 		if (cl_data_size <= 0) {
@@ -371,21 +380,20 @@ void *handle_client(void *arg) {
 			/* Status without description */
 			lestatus_representation = get_lestatus_string_repr(query_result.status);
 			*(size_t *)tmp = strlen(lestatus_representation);
-			send(client_info->fd, &tmp, sizeof(size_t), NULL);
-			send(client_info->fd, lestatus_representation, *(size_t *)tmp, NULL);
+			send(client_info->fd, &tmp, sizeof(size_t), 0);
+			send(client_info->fd, lestatus_representation, *(size_t *)tmp, 0);
 		}
 		else {
 			if (query_result.data != NULL) {
 				/* Sends the query result */
-				send(client_info->fd, &query_result.size, sizeof(size_t), NULL);
-				ssend(client_info->fd, query_result.data, query_result.size, NULL);
+				send(client_info->fd, &query_result.size, sizeof(size_t), 0);
+				s_send(client_info->fd, query_result.data, query_result.size, 0);
 			}
 			else {
-CLIENT_HANDLER_ERR:
 				/* Unexpected, sends error without description */
 				*(size_t *)tmp = strlen("ERR");
-				send(client_info->fd, tmp, sizeof(size_t), NULL);
-				send(client_info->fd, "ERR", strlen("ERR"), NULL);
+				send(client_info->fd, tmp, sizeof(size_t), 0);
+				send(client_info->fd, "ERR", strlen("ERR"), 0);
 			}
 		}
 

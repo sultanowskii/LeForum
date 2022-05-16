@@ -11,11 +11,11 @@ char         doc[]                    = "LeForum Server - multithread forum serv
 char         args_doc[]               = "";
 
 struct argp_option options[] = { 
-	{"host", 'h', "ADDR", 0, "Host address to bind server on"},
-	{"port", 'p', "NUM", 0, "Port to bind server on"},
-	{"hello-message", 'm', "TEXT", 0, "Hello message on startup"},
-	{"timeout", 't', "NUM", 0, "Timeout for client communication"},
-	{"max-connections", 'c', "NUM", 0, "Max number of clients able to connect at one time. This argument is passed to listen(2), therefore, on some platforms, the actual limit may vary"},
+	{"host", 'h', "ADDR", 0, "Host address to bind server on", 0},
+	{"port", 'p', "NUM", 0, "Port to bind server on", 0},
+	{"hello-message", 'm', "TEXT", 0, "Hello message on startup", 0},
+	{"timeout", 't', "NUM", 0, "Timeout for client communication", 0},
+	{"max-connections", 'c', "NUM", 0, "Max number of clients able to connect at one time. This argument is passed to listen(2), therefore, on some platforms, the actual limit may vary", 0},
 	{ 0 }
 };
 

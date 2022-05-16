@@ -206,6 +206,8 @@ CreatedThreadInfo *parse_response_CTHR(char *raw_data, size_t size) {
 	uint64_t           thread_id;
 
 	/* TODO: check size */
+	UNUSED(size);
+
 	data_ptr = raw_data;
 
 	if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0)
@@ -241,6 +243,8 @@ LeThread *parse_response_GTHR(char *raw_data, size_t size) {
 	size_t    msg_size;
 
 	/* TODO: check size */
+	UNUSED(size);
+
 	data_ptr = raw_data;
 
 	if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0)
@@ -320,6 +324,8 @@ Queue *parse_response_FTHR(char *raw_data, size_t size) {
 	char     *topic;
 	size_t    topic_size;
 
+	/* TODO: check size */
+
 	found = queue_create(lethread_delete);
 	data_ptr = raw_data;
 
@@ -358,7 +364,7 @@ Queue *parse_response_FTHR(char *raw_data, size_t size) {
 
 		thread = lethread_create(topic, thread_id);
 
-		queue_push(found, thread, sizeof(thread));
+		queue_push(found, thread);
 	}
 
 	return found;
@@ -366,6 +372,9 @@ Queue *parse_response_FTHR(char *raw_data, size_t size) {
 
 status_t parse_response_CMSG(char *raw_data, size_t size) {
 	char *data_ptr;
+
+	/* TODO: check size */
+	UNUSED(size);
 
 	data_ptr = raw_data;
 
@@ -387,6 +396,8 @@ LeMeta *parse_response_META(char *raw_data, size_t size) {
 	char   *version;
 	size_t  version_size;
 
+	/* TODO: check size */
+	UNUSED(size);
 
 	data_ptr = raw_data;
 
@@ -456,6 +467,9 @@ LeMeta *parse_response_META(char *raw_data, size_t size) {
 
 status_t parse_response_LIVE(char *raw_data, size_t size) {
 	char *data_ptr;
+
+	/* TODO: check size */
+	UNUSED(size);
 
 	data_ptr = raw_data;
 

@@ -1,5 +1,5 @@
 CFLAGS = -I. -Wno-incompatible-pointer-types -Wno-incompatible-pointer-types -Wno-int-conversion
-CFLAGS_G = -I. -g
+CFLAGS_G = -I. -g -Wall -Wextra
 
 LIBS_SERVER = -pthread
 LIBS_CLIENT = -pthread

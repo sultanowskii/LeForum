@@ -52,7 +52,7 @@ status_t queue_delete(Queue *queue) {
 	return -LESTATUS_OK;
 };
 
-status_t queue_push(Queue *queue, void *data, size_t size) {
+status_t queue_push(Queue *queue, void *data) {
 	QueueNode *new_node;
 
 	NULLPTR_PREVENT(queue, -LESTATUS_NPTR)

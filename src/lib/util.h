@@ -10,13 +10,13 @@
  * @brief Returns maximum between two given arguments. 
  * 
  */
-#define MAX(x, y)            (((x) > (y)) ? (x) : (y))
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
 /**
  * @brief Returns minimum between two given arguments. 
  * 
  */
-#define MIN(x, y)            (((x) < (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 /**
  * @brief Returns increased by one x. 
@@ -31,6 +31,12 @@
  * 
  */
 #define cyclic_dec(x, min, max) x = ((x - 1) >= (min)) ? (x - 1) : (max)
+
+/**
+ * @brief Suppresses "unused parameter" warning. 
+ * 
+ */
+#define UNUSED(arg) ((void)arg)
 
 /**
  * @brief Naive data with size container. 

@@ -26,7 +26,7 @@ struct arguments   arguments;
 
 bool_t             g_server_connected       = FALSE;
 struct sockaddr_in g_server_addr            = {0};
-int                g_server_fd              = nullptr;
+int                g_server_fd              = -1;
 LeMeta             g_server_meta            = {0};
 Queue             *g_server_addr_history    = nullptr;
 HAddress           g_server_haddr           = {0};
@@ -131,11 +131,6 @@ status_t __server_connect(const char *addr, uint16_t port) {
 	if (g_server_connected)
 		return -LESTATUS_EXST;
 
-	if (port < 0 || port > 0xffff) {
-		puts("Invalid port. Aborted.");
-		return -LESTATUS_IDAT;
-	}
-
 	if ((g_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("Error occured during socket()");
 		return -LESTATUS_CLIB;
@@ -160,7 +155,7 @@ status_t __server_connect(const char *addr, uint16_t port) {
 
 	ledata = gen_query_META();
 	query = query_create(parse_response_META, ledata.data, ledata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 	while (query->completed == FALSE) {
 
 	}
@@ -219,6 +214,8 @@ int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
 
 status_t load_args(int argc, char **argv) {
 	argp_parse(&le_argp, argc, argv, 0, 0, &arguments);
+
+	return LESTATUS_OK;
 }
 
 /** 
@@ -227,7 +224,7 @@ status_t load_args(int argc, char **argv) {
  * otherwise it might cause null pointer dereference.
  */
 inline void server_query_add(ServerQuery *query) {
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 }
 
 FILE *get_leclient_file(const char *filename, const char *mode, bool_t create) {
@@ -270,7 +267,7 @@ status_t server_addr_save(const char *addr, uint16_t port) {
 	 * If the file exists, then we have to check
 	 * if it already contains gieven address
 	 */
-	if (file != -LESTATUS_NSFD) {
+	if (file != (FILE *)-LESTATUS_NSFD) {
 		while (getline(&line, &line_size, file) != -1) {
 			line[strcspn(line, "\n")] = '\0';
 			if (!strcmp(line, formatted_address)) {
@@ -307,7 +304,7 @@ status_t server_addr_history_load() {
 
 	file = get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE);
 
-	if (file == -LESTATUS_NSFD)
+	if (file == (FILE *)-LESTATUS_NSFD)
 		return -LESTATUS_NSFD;
 
 	if (g_server_addr_history != nullptr)
@@ -324,7 +321,7 @@ status_t server_addr_history_load() {
 		strncpy(tmp_server_haddr->addr, h_addr, 32);
 		tmp_server_haddr->port = h_port;
 
-		queue_push(g_server_addr_history, tmp_server_haddr, sizeof(tmp_server_haddr));
+		queue_push(g_server_addr_history, tmp_server_haddr);
 	}
 
 	fclose(file);
@@ -347,6 +344,8 @@ status_t token_save(char *token) {
 	fprintf(file, "%s", token);
 
 	fclose(file);
+
+	return LESTATUS_OK;
 }
 
 char *token_load() {
@@ -362,7 +361,7 @@ char *token_load() {
 	snprintf(srepr_thread_id, sizeof(srepr_thread_id), "%" PRIu64, g_active_thread_id);
 	file = get_leclient_file(srepr_thread_id, "r", FALSE);
 
-	if (file == -LESTATUS_NSFD)
+	if (file == (FILE *)-LESTATUS_NSFD)
 		return -LESTATUS_NSFD;
 
 	token = calloc(sizeof(char), TOKEN_SIZE + 1);
@@ -534,7 +533,7 @@ void cmd_thread_create() {
 
 	topic = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((topic_size = s_fgets_range(topic, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == -LESTATUS_IDAT) {
+	if ((topic_size = s_fgets_range(topic, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == (size_t)-LESTATUS_IDAT) {
 		newline();
 		goto THREAD_CREATE_EXIT;
 	}
@@ -542,7 +541,7 @@ void cmd_thread_create() {
 
 	qdata = gen_query_CTHR(topic, topic_size);
 	query = query_create(parse_response_CTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 	while (query->completed == FALSE) {
 
 	}
@@ -582,7 +581,7 @@ void cmd_thread_find() {
 
 	search_query = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((search_query_size = s_fgets_range(search_query, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == -LESTATUS_IDAT) {
+	if ((search_query_size = s_fgets_range(search_query, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == (size_t)-LESTATUS_IDAT) {
 		newline();
 		goto THREAD_FIND_EXIT;
 	}
@@ -591,7 +590,7 @@ void cmd_thread_find() {
 
 	qdata = gen_query_FTHR(search_query, search_query_size);
 	query = query_create(parse_response_FTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 	while (query->completed == FALSE) {
 
 	}
@@ -667,7 +666,7 @@ void cmd_thread_info() {
 
 	qdata = gen_query_GTHR(g_active_thread_id);
 	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 	while (query->completed == FALSE) {
 
 	}
@@ -698,7 +697,7 @@ void cmd_thread_message_history() {
 
 	qdata = gen_query_GTHR(g_active_thread_id);
 	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 	while (query->completed == FALSE) {
 
 	}
@@ -748,19 +747,19 @@ void cmd_thread_send_message() {
 
 	printf("Type your message (%zu-%zu characters, no newlines):\n", g_server_meta.min_message_size, g_server_meta.max_message_size);
 
-	if ((size = s_fgets_range(message_text, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == -LESTATUS_IDAT) {
+	if ((size = s_fgets_range(message_text, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == (size_t)-LESTATUS_IDAT) {
 		newline();
 		goto THREAD_SEND_MESSAGE_EXIT;
 	}
 	newline();
 
 	token = token_load();
-	if (token == -LESTATUS_IDAT || token == -LESTATUS_NSFD)
+	if (token == (char *)-LESTATUS_IDAT || token == (char *)-LESTATUS_NSFD)
 		token = nullptr;
 
 	qdata = gen_query_CMSG(g_active_thread_id, message_text, size, token);
 	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 
 	while (query->completed == FALSE) {
 
@@ -806,7 +805,6 @@ void query_loop() {
 	size_t       response_size;
 	char         buf[32];
 	size_t       bytes_read;
-	size_t       part_size;
 	size_t       request_size;
 
 	while (g_working) {
@@ -815,16 +813,16 @@ void query_loop() {
 				query = (ServerQuery *)queue_pop(g_server_queries);
 				request_size = query->raw_request_data_size;
 
-				send(g_server_fd, &request_size, sizeof(request_size), NULL);
+				send(g_server_fd, &request_size, sizeof(request_size), 0);
 				if (request_size > MAX_PACKET_SIZE) {
 					newline();
 					puts("Server acts suspiciously. Disconnecting...");
 				}
-				ssend(g_server_fd, query->raw_request_data, request_size, NULL);
+				s_send(g_server_fd, query->raw_request_data, request_size, 0);
 
-				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
+				recv(g_server_fd, &response_size, sizeof(response_size), 0);
 				raw_response = calloc(sizeof(char), response_size + 1);
-				bytes_read = srecv(g_server_fd, raw_response, response_size, NULL);
+				bytes_read = s_recv(g_server_fd, raw_response, response_size, 0);
 				query->parsed_data = query->parse_response(raw_response, bytes_read);
 				query->completed = TRUE;
 
@@ -833,18 +831,18 @@ void query_loop() {
 			}
 			else {
 				*(size_t *)buf = strlen("LIVE");
-				if (send(g_server_fd, buf, sizeof(size_t), NULL) < 0) {
+				if (send(g_server_fd, buf, sizeof(size_t), 0) < 0) {
 					newline();
 					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
 				}
-				if (send(g_server_fd, "LIVE", *(size_t *)buf, NULL) < 0) {
+				if (send(g_server_fd, "LIVE", *(size_t *)buf, 0) < 0) {
 					newline();
 					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
 				}
 
-				if (recv(g_server_fd, &response_size, sizeof(response_size), NULL) < 0) {
+				if (recv(g_server_fd, &response_size, sizeof(response_size), 0) < 0) {
 					newline();
 					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
@@ -856,7 +854,7 @@ void query_loop() {
 
 				}
 				raw_response = calloc(sizeof(char), response_size + 1);
-				if (recv(g_server_fd, raw_response, response_size, NULL) < 0) {
+				if (recv(g_server_fd, raw_response, response_size, 0) < 0) {
 					newline();
 					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
@@ -905,6 +903,8 @@ status_t startup() {
 	pthread_create(&g_query_loop_pthread, NULL, query_loop, NULL);
 	/* auto-cleanup on termination */
 	pthread_detach(g_query_loop_pthread);
+
+	return LESTATUS_OK;
 }
 
 status_t cleanup() {
@@ -920,6 +920,8 @@ status_t cleanup() {
 }
 
 void stop_program_handle(const int signum) {
+	UNUSED(signum);
+
 	g_working = FALSE;
 }
 
@@ -934,10 +936,11 @@ status_t main(int argc, char **argv) {
 		cmd_id = leclient_loop_process(print_menu_main, print_prefix_main);
 
 		switch (cmd_id) {
-			case MCID_SERVER:     cmd_server(); continue;
-			case MCID_THREAD:     cmd_thread(); continue;
-			case MCID_SETTINGS:   cmd_settings(); continue;
-			case MCID_EXIT:       cmd_exit(); continue;
+			case MCID_SERVER:   cmd_server(); continue;
+			case MCID_THREAD:   cmd_thread(); continue;
+			case MCID_SETTINGS: cmd_settings(); continue;
+			case MCID_EXIT:     cmd_exit(); continue;
+			default:            continue;
 		}
 	}
 
