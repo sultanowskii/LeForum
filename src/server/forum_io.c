@@ -71,7 +71,7 @@ status_t lethread_save(LeThread *lethread) {
 
 	fclose(lethread_info_file);
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
@@ -104,7 +104,7 @@ status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
 
 	fclose(lethread_info_file);
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t lemessages_save(LeThread *lethread) {
@@ -119,7 +119,7 @@ status_t lemessages_save(LeThread *lethread) {
 
 	UNUSED(status);
 
-	result = -LESTATUS_OK;
+	result = LESTATUS_OK;
 	node = lethread->messages->first;
 
 	get_lefile(lethread->id, "wb", FILE_LEMESSAGES, TRUE, &lemessages_file);
@@ -167,7 +167,7 @@ status_t lemessage_save(LeMessage *lemessage) {
 
 	fclose(lemessages_file);
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t lemessages_load(LeThread *lethread) {
@@ -200,7 +200,7 @@ status_t lemessages_load(LeThread *lethread) {
 
 	fclose(lemessages_file);
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t leauthor_load(LeThread *lethread) {
@@ -221,7 +221,7 @@ status_t leauthor_load(LeThread *lethread) {
 
 	fclose(leauthor_file);
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t leauthor_save(LeThread *lethread) {
@@ -244,5 +244,5 @@ status_t leauthor_save(LeThread *lethread) {
 
 	fclose(leauthor_file);
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }

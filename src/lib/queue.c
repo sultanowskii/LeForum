@@ -54,7 +54,7 @@ status_t queue_delete(Queue *queue) {
 	free(queue);
 	queue = nullptr;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 };
 
 status_t queue_push(Queue *queue, void *data) {
@@ -79,7 +79,7 @@ status_t queue_push(Queue *queue, void *data) {
 
 	queue->size++;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 void *queue_pop(Queue *queue) {

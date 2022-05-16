@@ -177,7 +177,7 @@ status_t __server_connect(const char *addr, uint16_t port) {
 	free(lemeta);
 	lemeta = nullptr;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t __server_disconnect() {
@@ -190,7 +190,7 @@ status_t __server_disconnect() {
 	g_active_thread_exists = FALSE;
 	g_active_thread_id = 0;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
@@ -289,7 +289,7 @@ status_t server_addr_save(const char *addr, uint16_t port) {
 
 	fclose(file);
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t server_addr_history_load() {
@@ -322,7 +322,7 @@ status_t server_addr_history_load() {
 
 	fclose(file);
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t token_save(char *token) {
@@ -405,7 +405,7 @@ void cmd_server_connect() {
 
 	h_port = atoi(port);
 
-	if (__server_connect(h_addr, h_port) != -LESTATUS_OK) {
+	if (__server_connect(h_addr, h_port) != LESTATUS_OK) {
 		newline();
 		return;
 	}
@@ -483,7 +483,7 @@ void cmd_server_history() {
 	server_haddr = (HAddress *)node->data;
 
 	__server_disconnect();
-	if (__server_connect(server_haddr->addr, server_haddr->port) != -LESTATUS_OK) {
+	if (__server_connect(server_haddr->addr, server_haddr->port) != LESTATUS_OK) {
 		newline();
 		return;
 	}
@@ -912,7 +912,7 @@ status_t cleanup() {
 		g_server_queries = nullptr;
 	}
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 void stop_program_handle(const int signum) {
@@ -942,5 +942,5 @@ status_t main(int argc, char **argv) {
 
 	cleanup();
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }

@@ -31,7 +31,7 @@ status_t query_delete(ServerQuery *query) {
 
 	free(query);
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 LeData gen_query_CTHR(const char *topic, size_t size) {
@@ -392,7 +392,7 @@ status_t parse_response_CMSG(char *raw_data, size_t size) {
 
 	data_ptr = nullptr;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t parse_response_META(char *raw_data, size_t size, LeMeta **meta) {
@@ -487,5 +487,5 @@ status_t parse_response_LIVE(char *raw_data, size_t size, void **result) {
 		return -LESTATUS_IDAT;
 	data_ptr += strlen("OK");
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }

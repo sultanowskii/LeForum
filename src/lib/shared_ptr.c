@@ -63,5 +63,5 @@ status_t sharedptr_delete(SharedPtr *sharedptr) {
 	free(sharedptr);
 	sharedptr = nullptr;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }

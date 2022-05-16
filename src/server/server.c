@@ -158,28 +158,28 @@ inline status_t s_lethread_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
 	queue_push(g_lethread_query_queue, sharedptr_add(sharedptr_lethread));
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 inline status_t s_lemessages_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
 	queue_push(g_lemessages_query_queue, sharedptr_add(sharedptr_lethread));
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 inline status_t s_lemessage_save(LeMessage *lemessage) {
 	NULLPTR_PREVENT(lemessage, -LESTATUS_NPTR)
 
 	queue_push(g_lemessage_query_queue, lemessage);
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 inline status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
 	NULLPTR_PREVENT(sharedptr_lethread, -LESTATUS_NPTR)
 
 	queue_push(g_leauthor_query_queue, sharedptr_add(sharedptr_lethread));
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 SharedPtr *s_lethread_create(char *topic, uint64_t lethread_id) {
@@ -276,7 +276,7 @@ size_t startup() {
 
 			lethread_id = strtoull(dent->d_name, NULL, 10);
 
-			if (lethread_load(lethread, lethread_id) != -LESTATUS_OK) {
+			if (lethread_load(lethread, lethread_id) != LESTATUS_OK) {
 				if (lethread != nullptr) {
 					free(lethread);
 					lethread = nullptr;
@@ -522,5 +522,5 @@ status_t main(int argc, char *argv[]) {
 		pthread_detach(client_handler_thread);
 	}
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
