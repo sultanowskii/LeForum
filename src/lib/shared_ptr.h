@@ -18,17 +18,18 @@ typedef struct SharedPtr SharedPtr;
  * 
  * @param data Pointer to the data 
  * @param destruct Destructor callback 
+ * @param sharedptr If not NULL, pointer to new sharedptr will be placed here on success 
  * @return Pointer to the SharedPtr object 
  */
-SharedPtr *sharedptr_create(void *data, status_t (*destruct)(void *));
+status_t sharedptr_create(void *data, status_t (*destruct)(void *), SharedPtr **sharedptr);
 
 /**
  * @brief Creates another instance of SharedPtr. 
  * 
  * @param sharedptr Pointer to the origin SharedPtr 
- * @return Pointer to the copy of SharedPtr 
+ * @return Pointer to the copy of SharedPtr. If sharedptr is NULL, NULL is returned 
  */
-SharedPtr *sharedptr_add(SharedPtr * sharedptr);
+SharedPtr *sharedptr_add(SharedPtr *sharedptr);
 
 /**
  * @brief Safely deletes the SharedPtr instance. 
@@ -36,6 +37,6 @@ SharedPtr *sharedptr_add(SharedPtr * sharedptr);
  * @param sharedptr Pointer to SharedPtr 
  * @return LESTATUS_OK on success 
  */
-status_t sharedptr_delete(SharedPtr * sharedptr);
+status_t sharedptr_delete(SharedPtr *sharedptr);
 
 #endif

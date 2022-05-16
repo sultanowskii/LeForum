@@ -142,7 +142,7 @@ Queue *lethread_find(char *topic_part) {
 
 	NULLPTR_PREVENT(topic_part, -LESTATUS_NPTR)
 
-	lethreads_match = queue_create(sharedptr_delete);
+	queue_create(sharedptr_delete, &lethreads_match);
 
 	while (node != NULL) {
 		lethread = ((SharedPtr *)node->data)->data;
@@ -184,8 +184,7 @@ inline status_t s_leauthor_save(SharedPtr *sharedptr_lethread) {
 
 SharedPtr *s_lethread_create(char *topic, uint64_t lethread_id) {
 	SharedPtr *sharedptr_lethread;
-
-	NULLPTR_PREVENT(topic, -LESTATUS_NPTR)
+	LeThread  *tmp;
 
 	UNUSED(lethread_id);
 
@@ -193,7 +192,8 @@ SharedPtr *s_lethread_create(char *topic, uint64_t lethread_id) {
 	 * Here we fill lethread_id independently on the argument, 
 	 * because we want to keep all the lethreads stay in the right order without collisions. 
 	 */
-	sharedptr_lethread  = sharedptr_create(lethread_create(topic, next_lethread_id()), lethread_delete);
+	lethread_create(topic, next_lethread_id(), &tmp);
+	sharedptr_create(tmp, lethread_delete, &sharedptr_lethread);
 
 	queue_push(g_lethread_queue, sharedptr_lethread);
 
@@ -237,6 +237,7 @@ size_t startup() {
 	struct dirent *dent;
 	size_t         dir_cnt      = 0;
 	struct stat    st           = {0};
+	SharedPtr     *sptr;
 
 	/* Check if the directory exists, creates if not */
 	if (stat(DIR_SERVER, &st) == -1)
@@ -248,11 +249,11 @@ size_t startup() {
 		return -LESTATUS_CLIB;
 	}
 
-	g_lethread_query_queue = queue_create(sharedptr_delete);
-	g_lemessages_query_queue = queue_create(sharedptr_delete);
-	g_lemessage_query_queue = queue_create(lemessage_delete);
-	g_leauthor_query_queue = queue_create(sharedptr_delete);
-	g_lethread_queue = queue_create(sharedptr_delete);
+	queue_create(sharedptr_delete, &g_lethread_query_queue);
+	queue_create(sharedptr_delete, &g_lemessages_query_queue);
+	queue_create(lemessage_delete, &g_lemessage_query_queue);
+	queue_create(sharedptr_delete, &g_leauthor_query_queue);
+	queue_create(sharedptr_delete, &g_lethread_queue);
 
 	atexit(cleanup);
 	signal(SIGTERM, cleanup);
@@ -285,7 +286,8 @@ size_t startup() {
 
 			leauthor_load(lethread);
 
-			queue_push(g_lethread_queue, sharedptr_create(lethread, lethread_delete));
+			sharedptr_create(lethread, lethread_delete, &sptr);
+			queue_push(g_lethread_queue, sptr);
 
 			dir_cnt++;
 		}

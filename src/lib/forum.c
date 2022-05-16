@@ -14,7 +14,7 @@
 #include "lib/status.h"
 #include "lib/util.h"
 
-LeThread *lethread_create(char *topic, uint64_t lethread_id) {
+status_t lethread_create(char *topic, uint64_t lethread_id, LeThread **lethread) {
 	LeThread *new_lethread;
 	size_t    topic_size;
 
@@ -26,13 +26,18 @@ LeThread *lethread_create(char *topic, uint64_t lethread_id) {
 	new_lethread->id = lethread_id;
 	new_lethread->first_message_id = rand_uint64_t() % 0xffffffff;
 	new_lethread->next_message_id = new_lethread->first_message_id;
-	new_lethread->messages = queue_create(lemessage_delete);
+	queue_create(lemessage_delete, &new_lethread->messages);
 	new_lethread->author = nullptr;
 
 	new_lethread->topic = calloc(sizeof(char), topic_size + 1);
 	strncpy(new_lethread->topic, topic, topic_size);
 
-	return new_lethread;
+	if (lethread != nullptr)
+		*lethread = new_lethread;
+
+	new_lethread = 0;
+
+	return LESTATUS_OK;
 }
 
 status_t lethread_delete(LeThread *lethread) {
@@ -56,7 +61,7 @@ status_t lethread_delete(LeThread *lethread) {
 	free(lethread);
 	lethread = nullptr;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 uint64_t lethread_message_count(LeThread *lethread) {
@@ -65,7 +70,7 @@ uint64_t lethread_message_count(LeThread *lethread) {
 	return lethread->next_message_id - lethread->first_message_id;
 }
 
-LeMessage *lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_author) {
+status_t lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_author, LeMessage **lemessage) {
 	LeMessage *new_lemessage;
 	size_t     length;
 
@@ -90,9 +95,12 @@ LeMessage *lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_a
 
 	queue_push(lethread->messages, new_lemessage);
 
+	if (lemessage != nullptr)
+		*lemessage = new_lemessage;
+
 	new_lemessage = nullptr;
 
-	return lethread->messages->last->data;
+	return LESTATUS_OK;
 }
 
 status_t lemessage_delete(LeMessage *message) {
@@ -106,24 +114,30 @@ status_t lemessage_delete(LeMessage *message) {
 	free(message);
 	message = nullptr;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
-LeAuthor *leauthor_create(LeThread *lethread, bool_t create_token) {
+status_t leauthor_create(LeThread *lethread, bool_t create_token, LeAuthor **leauthor) {
 	LeAuthor *new_leauthor;
 
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
 	new_leauthor = (LeAuthor *)malloc(sizeof(*new_leauthor));
 	new_leauthor->id = rand_uint64_t() % 0xffffffff;
-	new_leauthor->token = calloc(sizeof(char), TOKEN_SIZE + 1);
 
 	if (create_token)
-		rand_string(new_leauthor->token, TOKEN_SIZE);
+		new_leauthor->token = rand_string(TOKEN_SIZE);
+	else
+		new_leauthor->token = calloc(sizeof(char), TOKEN_SIZE + 1);
 
 	lethread->author = new_leauthor;
 
-	return new_leauthor;
+	if (leauthor != nullptr)
+		*leauthor = new_leauthor;
+
+	new_leauthor = nullptr;
+
+	return LESTATUS_OK;
 }
 
 status_t leauthor_delete(LeAuthor *author) {
@@ -137,7 +151,7 @@ status_t leauthor_delete(LeAuthor *author) {
 	free(author);
 	author = nullptr;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 bool_t is_token_valid(LeThread *lethread, const char *token) {

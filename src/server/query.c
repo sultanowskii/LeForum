@@ -174,7 +174,7 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	sharedptr_lethread = s_lethread_create(data_ptr, rand_uint64_t() % 0xffffffff);
 	new_lethread = (LeThread *)sharedptr_lethread->data;
 
-	leauthor_create(new_lethread, TRUE);
+	leauthor_create(new_lethread, TRUE, nullptr);
 
 	s_lethread_save(sharedptr_lethread);
 	s_leauthor_save(sharedptr_lethread);
@@ -384,7 +384,7 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 		is_author = is_token_valid(lethread, data_ptr);
 	}
 
-	lemessage = lemessage_create(lethread, text, is_author);
+	lemessage_create(lethread, text, is_author, &lemessage);
 	s_lemessage_save(lemessage);
 	s_lethread_save(sharedptr_lethread);
 

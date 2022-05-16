@@ -37,9 +37,10 @@ typedef struct QueueNode QueueNode;
  * 
  * @param destruct Callback that safely deletes one object stored in a queue. 
  * Is called for each object stored in a queue 
- * @return Pointer to created Queue 
+ * @param queue If not NULL, pointer to new queue will be placed here on success
+ * @return LESTATUS_OK on success 
  */
-Queue *queue_create(status_t (*destruct)(void *));
+status_t queue_create(status_t (*destruct)(void *), Queue **queue);
 
 /**
  * @brief Safely deletes the Queue and all the elements. 

@@ -86,7 +86,7 @@ status_t __server_disconnect();
  * 
  * @param id Command ID 
  * @return Command string representation. 
- * LESTATUS_NFND is returned if there is no such command with given id 
+ * NULL is returned if there is no such command with given id 
  */
 const char *MainCmdID_REPR(enum MainCmdIDs id);
 
@@ -95,7 +95,7 @@ const char *MainCmdID_REPR(enum MainCmdIDs id);
  * 
  * @param id Command ID
  * @return Command string representation. 
- * LESTATUS_NFND is returned if there is no such command with given id 
+ * NULL is returned if there is no such command with given id 
  */
 const char *ServerCmdID_REPR(enum ServerCmdIDs id);
 
@@ -104,7 +104,7 @@ const char *ServerCmdID_REPR(enum ServerCmdIDs id);
  * 
  * @param id Command ID
  * @return Command string representation. 
- * LESTATUS_NFND is returned if there is no such command with given id
+ * NULL is returned if there is no such command with given id
  */
 const char *ThreadCmdID_REPR(enum ThreadCmdIDs id);
 
@@ -113,7 +113,7 @@ const char *ThreadCmdID_REPR(enum ThreadCmdIDs id);
  * 
  * @param id Command ID
  * @return Command string representation. 
- * LESTATUS_NFND is returned if there is no such command with given id
+ * NULL is returned if there is no such command with given id
  */
 const char *SettingsCmdID_REPR(enum SettingsCmdIDs id);
 /* ---------------------------------------- */
@@ -126,9 +126,10 @@ const char *SettingsCmdID_REPR(enum SettingsCmdIDs id);
  * @param filename Filename 
  * @param mode Mode
  * @param create To create file if not found or not?
- * @return FD on success. LESTATUS_NSFD if file doesn't exist and create==FALSE 
+ * @param file If not NULL, file descriptor will be placed here on success 
+ * @return LESTATUS_OK on success. If file is not found and create==FALSE, LESTATUS_NSFD is returned  
  */
-FILE *get_leclient_file(const char *filename, const char *mode, bool_t create);
+status_t get_leclient_file(const char *filename, const char *mode, bool_t create, FILE **file);
 
 /**
  * @brief Saves server addr in the file. 
@@ -157,10 +158,11 @@ status_t token_save(char *token);
 /**
  * @brief Loads token (if exists) from the file. 
  * 
- * @return Token on success. 
- * LESTATUS_NSFD if not found. LESTATUS_IDAT no thread is active 
+ * @param token Token will be placed here on success 
+ * @return LESTATUS_OK on success. LESTATUS_NSFD if not found. 
+ * LESTATUS_IDAT no thread is active 
  */
-char *token_load();
+status_t token_load(char **token);
 /* ---------------------------------------- */
 
 

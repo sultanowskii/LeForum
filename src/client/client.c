@@ -46,7 +46,7 @@ inline const char *MainCmdID_REPR(enum MainCmdIDs id) {
 		case MCID_THREAD:              return "Thread";
 		case MCID_SETTINGS:            return "Settings";
 		case MCID_EXIT:                return "Exit";
-		default:                       return -LESTATUS_NFND;
+		default:                       return nullptr;
 	}
 };
 
@@ -56,7 +56,7 @@ inline const char *ServerCmdID_REPR(enum ServerCmdIDs id) {
 		case SCID_INFO:                return "Server information";
 		case SCID_HISTORY:             return "Server history";
 		case SCID_BACK:                return "Back";
-		default:                       return -LESTATUS_NFND;
+		default:                       return nullptr;
 	}
 };
 
@@ -68,14 +68,14 @@ inline const char *ThreadCmdID_REPR(enum ThreadCmdIDs id) {
 		case TCID_MESSAGES:            return "Message history";
 		case TCID_SEND_MESSAGE:        return "Post message";
 		case TCID_BACK:                return "Back";
-		default:                       return -LESTATUS_NFND;
+		default:                       return nullptr;
 	}
 };
 
 inline const char *SettingsCmdID_REPR(enum SettingsCmdIDs id) {
 	switch (id) {
 		case STGCID_BACK:              return "Back";
-		default:                       return -LESTATUS_NFND;
+		default:                       return nullptr;
 	}
 };
 
@@ -227,8 +227,7 @@ inline void server_query_add(ServerQuery *query) {
 	queue_push(g_server_queries, query);
 }
 
-FILE *get_leclient_file(const char *filename, const char *mode, bool_t create) {
-	FILE        *file;
+status_t get_leclient_file(const char *filename, const char *mode, bool_t create, FILE **file) {
 	struct stat  st        = {0};
 	char        *filepath;
 	size_t       size;
@@ -244,30 +243,31 @@ FILE *get_leclient_file(const char *filename, const char *mode, bool_t create) {
 		return -LESTATUS_NSFD;
 	}
 
-	file = fopen(filepath, mode);
+	*file = fopen(filepath, mode);
 
 	free(filepath);
 
-	return file;
+	return LESTATUS_OK;
 }
 
 status_t server_addr_save(const char *addr, uint16_t port) {
-	FILE   *file;
-	char   *line                   = nullptr;
-	size_t  line_size              = 0;
-	char    formatted_address[64];
-	bool_t  contains               = FALSE;
+	FILE     *file;
+	char     *line                   = nullptr;
+	size_t    line_size              = 0;
+	char      formatted_address[64];
+	bool_t    contains               = FALSE;
+	status_t  status;
 
 	memset(formatted_address, 0, sizeof(formatted_address));
 	sprintf(formatted_address, "%s %hd", addr, port);
 
-	file = get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE);
+	status = get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE, &file);
 
 	/** 
 	 * If the file exists, then we have to check
 	 * if it already contains gieven address
 	 */
-	if (file != (FILE *)-LESTATUS_NSFD) {
+	if (status != -LESTATUS_NSFD) {
 		while (getline(&line, &line_size, file) != -1) {
 			line[strcspn(line, "\n")] = '\0';
 			if (!strcmp(line, formatted_address)) {
@@ -281,9 +281,7 @@ status_t server_addr_save(const char *addr, uint16_t port) {
 	if (contains)
 		return -LESTATUS_EXST;
 
-	file = get_leclient_file(FILE_SERVER_HISTORY, "a+", TRUE);
-
-	if (file < 0)
+	if (get_leclient_file(FILE_SERVER_HISTORY, "a+", TRUE, &file) < 0)
 		return -LESTATUS_CLIB;
 
 	fputs(formatted_address, file);
@@ -302,16 +300,14 @@ status_t server_addr_history_load() {
 	char      tmp[64];
 	size_t    bytes_read;
 
-	file = get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE);
-
-	if (file == (FILE *)-LESTATUS_NSFD)
+	if (get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE, &file) == -LESTATUS_NSFD)
 		return -LESTATUS_NSFD;
 
 	if (g_server_addr_history != nullptr)
 		queue_delete(g_server_addr_history);
 
 	/* ServerAddress structure doesn't require any special clearing */
-	g_server_addr_history = queue_create(free);
+	queue_create(free, &g_server_addr_history);
 
 	while ((int64_t)(bytes_read = s_fgets(tmp, 64, file)) > 0) {
 		sscanf(tmp, "%s %hd", h_addr, &h_port);
@@ -339,7 +335,8 @@ status_t token_save(char *token) {
 	memset(srepr_thread_id, 0, sizeof(srepr_thread_id));
 
 	sprintf(srepr_thread_id, "%" PRIu64, g_active_thread_id);
-	file = get_leclient_file(srepr_thread_id, "w+", TRUE);
+	if (get_leclient_file(srepr_thread_id, "w+", TRUE, &file) == -LESTATUS_CLIB)
+		return -LESTATUS_CLIB;
 
 	fprintf(file, "%s", token);
 
@@ -348,10 +345,9 @@ status_t token_save(char *token) {
 	return LESTATUS_OK;
 }
 
-char *token_load() {
+status_t token_load(char **token) {
 	FILE *file;
 	char  srepr_thread_id[32];
-	char *token;
 
 	if (!g_active_thread_exists)
 		return -LESTATUS_IDAT;
@@ -359,18 +355,17 @@ char *token_load() {
 	memset(srepr_thread_id, 0, sizeof(srepr_thread_id));
 
 	snprintf(srepr_thread_id, sizeof(srepr_thread_id), "%" PRIu64, g_active_thread_id);
-	file = get_leclient_file(srepr_thread_id, "r", FALSE);
 
-	if (file == (FILE *)-LESTATUS_NSFD)
+	if (get_leclient_file(srepr_thread_id, "r", FALSE, &file) == -LESTATUS_NSFD)
 		return -LESTATUS_NSFD;
 
-	token = calloc(sizeof(char), TOKEN_SIZE + 1);
+	*token = calloc(sizeof(char), TOKEN_SIZE + 1);
 
-	s_fgets(token, TOKEN_SIZE + 1, file);
+	s_fgets(*token, TOKEN_SIZE + 1, file);
 
 	fclose(file);
 
-	return token;
+	return LESTATUS_OK;
 }
 
 void cmd_server() {
@@ -737,6 +732,7 @@ void cmd_thread_send_message() {
 	char        *message_text;
 	size_t       size          = 0;
 	char        *token         = nullptr;
+	status_t     status;
 
 	if (!g_active_thread_exists) {
 		puts("To use this command, choose some thread first!");
@@ -753,8 +749,8 @@ void cmd_thread_send_message() {
 	}
 	newline();
 
-	token = token_load();
-	if (token == (char *)-LESTATUS_IDAT || token == (char *)-LESTATUS_NSFD)
+	status = token_load(&token);
+	if (status == -LESTATUS_IDAT || status == -LESTATUS_NSFD)
 		token = nullptr;
 
 	qdata = gen_query_CMSG(g_active_thread_id, message_text, size, token);
@@ -823,7 +819,7 @@ void query_loop() {
 				recv(g_server_fd, &response_size, sizeof(response_size), 0);
 				raw_response = calloc(sizeof(char), response_size + 1);
 				bytes_read = s_recv(g_server_fd, raw_response, response_size, 0);
-				query->parsed_data = query->parse_response(raw_response, bytes_read);
+				query->parse_response(raw_response, bytes_read, &query->parsed_data);
 				query->completed = TRUE;
 
 				free(raw_response);
@@ -898,7 +894,7 @@ status_t startup() {
 
 	free(dirpath);
 
-	g_server_queries = queue_create(free);
+	queue_create(free, &g_server_queries);
 
 	pthread_create(&g_query_loop_pthread, NULL, query_loop, NULL);
 	/* auto-cleanup on termination */
