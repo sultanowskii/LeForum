@@ -70,4 +70,23 @@ size_t s_fgets(char *s, size_t n, FILE* fd);
  */
 size_t s_fgets_range(char *s, size_t _min, size_t _max, FILE* fd);
 
+/**
+ * @brief strcat() implementation that does the job less stupidly 
+ *
+ * @param dest String to be appedned 
+ * @param src String that will be concatintated to the end of dest 
+ * @return Pointer to the end of resulting dest 
+ */
+char *le_strcat(char *dest, const char *src);
+
+/**
+ * @brief strncat() implementation that does the job less stupidly 
+ *
+ * @param dest String to be appended 
+ * @param src String that will be concatintated to the end of dest 
+ * @param n Max bytes to copy 
+ * @return Pointer to the end of resulting dest 
+ */
+char *le_strncat(char *dest, const char *src, size_t n);
+
 #endif

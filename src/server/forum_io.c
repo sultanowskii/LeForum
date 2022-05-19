@@ -31,7 +31,7 @@ status_t get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t cre
 		mkdir(path, 0700);
 	}
 
-	strcat(path, filename);
+	le_strcat(path, filename);
 
 	/* Check if the file exists */
 	if (stat(path, &st) == -1 && !create)

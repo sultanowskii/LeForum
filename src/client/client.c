@@ -886,7 +886,7 @@ status_t startup() {
 
 	dirpath = calloc(sizeof(char), strlen(g_home_dir) + strlen(DIR_CLIENT) + 1);
 	strncpy(dirpath, g_home_dir, strlen(g_home_dir));
-	strcat(dirpath, "/" DIR_CLIENT);
+	le_strcat(dirpath, "/" DIR_CLIENT);
 
 	/* Check if the directory exists, creates if not */
 	if (stat(dirpath, &st) == -1)

@@ -30,3 +30,20 @@ size_t s_fgets_range(char *s, size_t _min, size_t _max, FILE* fd) {
 
 	return size;
 }
+
+char *le_strcat(char *dest, const char *src) {
+	while (*dest) dest++;
+	while ((*dest++ = *src++) != '\0');
+	return --dest;
+}
+
+char *le_strncat(char *dest, const char *src, size_t n) {
+	size_t i;
+
+	while (*dest) dest++;
+	for (i = 0; i < n && src[i] != '\0'; i++) {
+		*dest++ = src[i];
+	}
+	*dest = '\0';
+	return dest;
+}

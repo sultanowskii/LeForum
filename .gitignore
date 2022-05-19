@@ -4,6 +4,7 @@ LeForumServer
 LeForumClient
 LeForumCoreTest
 QueueTest
+strcatTest
 .data/
 .leforum_client/
 .leforum_server/
