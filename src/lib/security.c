@@ -10,13 +10,15 @@
 #define ALLOWED_SYMBOLS     (0x7e - 0x20)
 #define MIN_SYMBOL           0x21
 
-inline status_t rand_string(char *str, size_t size) {
+inline char *rand_string(size_t size) {
 	FILE          *f;
 	unsigned char  tmp;
+	char          *str;
 
-	NULLPTR_PREVENT(str, -LESTATUS_NPTR)
+	str = malloc(size);
 
 	f = fopen("/dev/urandom", "r");
+
 	for (size_t i = 0; i < size; ++i) {
 		tmp = 0;
 		while (tmp < MIN_SYMBOL) {
@@ -27,7 +29,7 @@ inline status_t rand_string(char *str, size_t size) {
 
 	fclose(f);
 
-	return -LESTATUS_OK;
+	return str;
 }
 
 inline uint64_t rand_uint64_t() {

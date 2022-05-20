@@ -55,13 +55,15 @@ typedef struct LeMeta LeMeta;
 /**
  * @brief Creates new LeThread 
  * if there is no information files with the same id. 
- * If there is, then returns LESTATUS_EXST. 
+ * If there is, then returns LESTATUS_EXST.
  * 
  * @param topic Topic (aka name) of LeThread 
  * @param lethread_id ID of LeThread 
- * @return Pointer to the created LeThread 
+ * @param lethread If not NULL, pointer to new lethread will be placed here on success 
+ * @return LESTATUS_OK on success. LESTATUS_EXST if metafile with given ID
+ * already exists 
  */
-LeThread *lethread_create(char *topic, uint64_t lethread_id);
+status_t lethread_create(char *topic, uint64_t lethread_id, LeThread **lethread);
 
 /**
  * @brief Safely deletes the LeThread. 
@@ -78,9 +80,10 @@ status_t lethread_delete(LeThread *lethread);
  * @param lethread Pointer to LeThread where new LeMessage will be posted 
  * @param text Text of the LeMessage 
  * @param by_lethread_author Is it posted by LeThread author? 
- * @return Pointer to the created LeMessage 
+ * @param lemessage If not NULL, pointer to new lemessage will be placed here on success 
+ * @return LESTATUS_OK on success 
  */
-LeMessage *lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_author);
+status_t lemessage_create(LeThread *lethread, char *text, bool_t by_lethread_author, LeMessage **lemessage);
 
 /**
  * @brief Safely deletes LeMessage. 
@@ -96,9 +99,10 @@ status_t lemessage_delete(LeMessage *message);
  * 
  * @param lethread Pointer to LeThread where new LeAuthor will be initialised
  * @param create_token Should token be generated for the LeAuthor? 
- * @return Pointer to the created LeAuthor 
+ * @param leauthor If not NULL, pointer to the leauthor will be placed here on success 
+ * @return LESTATUS_OK on success 
  */
-LeAuthor *leauthor_create(LeThread *lethread, bool_t create_token);
+status_t leauthor_create(LeThread *lethread, bool_t create_token, LeAuthor **leauthor);
 
 /**
  * @brief Safely deletes LeAuthor. 

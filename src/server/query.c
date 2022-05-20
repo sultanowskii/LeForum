@@ -10,6 +10,7 @@
 #include "lib/security.h"
 #include "lib/shared_ptr.h"
 #include "lib/status.h"
+#include "lib/util.h"
 
 LeCommand CMDS[CMD_COUNT] = {
 	{"GTHR", cmd_lethread_get},
@@ -34,7 +35,7 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 	char            *response;
 	char            *response_start;
 	size_t           response_size;
-	LeCommandResult  result              = {0, -LESTATUS_OK, NULL};
+	LeCommandResult  result              = {0, LESTATUS_OK, 0};
 
 	if (size < strlen("THRID") + sizeof(lethread_id)) {
 		result.status = -LESTATUS_ISYN;
@@ -51,7 +52,7 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 
 	sharedptr_lethread = lethread_get_by_id(lethread_id);
 
-	if (sharedptr_lethread == -LESTATUS_NFND) {
+	if (sharedptr_lethread == (SharedPtr *)-LESTATUS_NFND) {
 		result.status = -LESTATUS_NFND;
 		return result;
 	}
@@ -130,7 +131,7 @@ LeCommandResult cmd_lethread_get(char *raw_data, size_t size) {
 
 	result.data = response_start;
 	result.size = response - response_start;
-	result.status = -LESTATUS_OK;
+	result.status = LESTATUS_OK;
 
 	return result;
 }
@@ -143,7 +144,7 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	char            *response_start;
 	char            *response;
 	size_t           response_size       = strlen("OKTHRID") + sizeof(new_lethread->id) + strlen("TKN") + TOKEN_SIZE;
-	LeCommandResult  result              = {0, -LESTATUS_OK, NULL};
+	LeCommandResult  result              = {0, LESTATUS_OK, 0};
 
 	if (size < strlen("TPCSZ") + sizeof(topic_size) + strlen("TPC")) {
 		result.status = -LESTATUS_ISYN;
@@ -173,7 +174,7 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 	sharedptr_lethread = s_lethread_create(data_ptr, rand_uint64_t() % 0xffffffff);
 	new_lethread = (LeThread *)sharedptr_lethread->data;
 
-	leauthor_create(new_lethread, TRUE);
+	leauthor_create(new_lethread, TRUE, nullptr);
 
 	s_lethread_save(sharedptr_lethread);
 	s_leauthor_save(sharedptr_lethread);
@@ -198,7 +199,7 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 
 	result.data = response_start;
 	result.size = response_size;
-	result.status = -LESTATUS_OK;
+	result.status = LESTATUS_OK;
 
 	return result;
 }
@@ -206,8 +207,7 @@ LeCommandResult cmd_lethread_create(char *raw_data, size_t size) {
 LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	char            *data_ptr            = raw_data;
 	Queue           *lethreads;
-	LeThread        *lethread            = NULL;
-	uint64_t         lethread_id;
+	LeThread        *lethread            = nullptr;
 	SharedPtr       *sharedptr_lethread;
 	size_t           topic_size;
 	QueueNode       *node;
@@ -217,7 +217,9 @@ LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	char            *response;
 	char            *response_start;
 	size_t           response_size;
-	LeCommandResult  result              = {0, -LESTATUS_OK, NULL};
+	LeCommandResult  result              = {0, LESTATUS_OK, 0};
+
+	UNUSED(size);
 
 	if (strncmp(data_ptr, "TPCPSZ", strlen("TPCPSZ")) != 0) {
 		result.status = -LESTATUS_ISYN;
@@ -244,7 +246,7 @@ LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	topic_part[topic_part_size] = '\0';
 	data_ptr += topic_part_size;
 
-	lethreads = lethread_find(topic_part, topic_part_size);
+	lethreads = lethread_find(topic_part);
 
 	node = lethreads->first;
 
@@ -302,7 +304,7 @@ FTHR_SUCCESS:
 
 	result.data = response_start;
 	result.size = response - response_start;
-	result.status = -LESTATUS_OK;
+	result.status = LESTATUS_OK;
 
 	return result;
 }
@@ -316,7 +318,7 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 	char            *text;
 	size_t           text_size;
 	bool_t           is_author;
-	LeCommandResult  result              = {0, -LESTATUS_OK, NULL};
+	LeCommandResult  result              = {0, LESTATUS_OK, 0};
 
 	if (size < strlen("THRID") + sizeof(lethread_id) + strlen("TXTSZ") + sizeof(text_size) + strlen("TXT")) {
 		result.status = -LESTATUS_ISYN;
@@ -334,7 +336,7 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	sharedptr_lethread = lethread_get_by_id(lethread_id);
 
-	if (sharedptr_lethread == -LESTATUS_NFND) {
+	if (sharedptr_lethread == (SharedPtr *)-LESTATUS_NFND) {
 		result.status = -LESTATUS_NFND;
 		return result;
 	}
@@ -382,7 +384,7 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 		is_author = is_token_valid(lethread, data_ptr);
 	}
 
-	lemessage = lemessage_create(lethread, text, is_author);
+	lemessage_create(lethread, text, is_author, &lemessage);
 	s_lemessage_save(lemessage);
 	s_lethread_save(sharedptr_lethread);
 
@@ -394,17 +396,20 @@ LeCommandResult cmd_lemessage_create(char *raw_data, size_t size) {
 
 	result.data = NULL;
 	result.size = 0;
-	result.status = -LESTATUS_OK;
+	result.status = LESTATUS_OK;
 
 	return result;
 }
 
 LeCommandResult cmd_meta(char *raw_data, size_t size) {
-	LeCommandResult  result          = {0, -LESTATUS_OK, NULL};
+	LeCommandResult  result          = {0, LESTATUS_OK, 0};
 	char            *response;
 	char            *response_start;
 	const char      *tmp;
 	size_t           tmp_size;
+
+	UNUSED(raw_data);
+	UNUSED(size);
 
 	response = malloc(128);
 	response_start = response;
@@ -456,20 +461,23 @@ LeCommandResult cmd_meta(char *raw_data, size_t size) {
 
 	result.data = response_start;
 	result.size = response - response_start;
-	result.status = -LESTATUS_OK;
+	result.status = LESTATUS_OK;
 
 	return result;
 }
 
 LeCommandResult cmd_alive(char *raw_data, size_t size) {
-	LeCommandResult result = {0, -LESTATUS_OK, NULL};
+	LeCommandResult result = {0, LESTATUS_OK, 0};
+
+	UNUSED(raw_data);
+	UNUSED(size);
 
 	return result;
 }
 
 LeCommandResult query_process(char *raw_data, size_t size) {
 	LeCommand       cmd            = {NULL, NULL};
-	LeCommandResult result         = {0, -LESTATUS_OK, NULL};
+	LeCommandResult result         = {0, LESTATUS_OK, 0};
 	size_t          cmd_name_size;
 
 	if (raw_data == nullptr) {

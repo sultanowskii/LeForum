@@ -26,7 +26,7 @@ struct arguments   arguments;
 
 bool_t             g_server_connected       = FALSE;
 struct sockaddr_in g_server_addr            = {0};
-int                g_server_fd              = nullptr;
+int                g_server_fd              = -1;
 LeMeta             g_server_meta            = {0};
 Queue             *g_server_addr_history    = nullptr;
 HAddress           g_server_haddr           = {0};
@@ -46,7 +46,7 @@ inline const char *MainCmdID_REPR(enum MainCmdIDs id) {
 		case MCID_THREAD:              return "Thread";
 		case MCID_SETTINGS:            return "Settings";
 		case MCID_EXIT:                return "Exit";
-		default:                       return -LESTATUS_NFND;
+		default:                       return nullptr;
 	}
 };
 
@@ -56,7 +56,7 @@ inline const char *ServerCmdID_REPR(enum ServerCmdIDs id) {
 		case SCID_INFO:                return "Server information";
 		case SCID_HISTORY:             return "Server history";
 		case SCID_BACK:                return "Back";
-		default:                       return -LESTATUS_NFND;
+		default:                       return nullptr;
 	}
 };
 
@@ -68,14 +68,14 @@ inline const char *ThreadCmdID_REPR(enum ThreadCmdIDs id) {
 		case TCID_MESSAGES:            return "Message history";
 		case TCID_SEND_MESSAGE:        return "Post message";
 		case TCID_BACK:                return "Back";
-		default:                       return -LESTATUS_NFND;
+		default:                       return nullptr;
 	}
 };
 
 inline const char *SettingsCmdID_REPR(enum SettingsCmdIDs id) {
 	switch (id) {
 		case STGCID_BACK:              return "Back";
-		default:                       return -LESTATUS_NFND;
+		default:                       return nullptr;
 	}
 };
 
@@ -131,11 +131,6 @@ status_t __server_connect(const char *addr, uint16_t port) {
 	if (g_server_connected)
 		return -LESTATUS_EXST;
 
-	if (port < 0 || port > 0xffff) {
-		puts("Invalid port. Aborted.");
-		return -LESTATUS_IDAT;
-	}
-
 	if ((g_server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("Error occured during socket()");
 		return -LESTATUS_CLIB;
@@ -160,7 +155,7 @@ status_t __server_connect(const char *addr, uint16_t port) {
 
 	ledata = gen_query_META();
 	query = query_create(parse_response_META, ledata.data, ledata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 	while (query->completed == FALSE) {
 
 	}
@@ -182,7 +177,7 @@ status_t __server_connect(const char *addr, uint16_t port) {
 	free(lemeta);
 	lemeta = nullptr;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t __server_disconnect() {
@@ -195,7 +190,7 @@ status_t __server_disconnect() {
 	g_active_thread_exists = FALSE;
 	g_active_thread_id = 0;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
@@ -219,6 +214,8 @@ int leclient_loop_process(void (*print_menu)(), void (*print_prefix)()) {
 
 status_t load_args(int argc, char **argv) {
 	argp_parse(&le_argp, argc, argv, 0, 0, &arguments);
+
+	return LESTATUS_OK;
 }
 
 /** 
@@ -227,11 +224,10 @@ status_t load_args(int argc, char **argv) {
  * otherwise it might cause null pointer dereference.
  */
 inline void server_query_add(ServerQuery *query) {
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 }
 
-FILE *get_leclient_file(const char *filename, const char *mode, bool_t create) {
-	FILE        *file;
+status_t get_leclient_file(const char *filename, const char *mode, bool_t create, FILE **file) {
 	struct stat  st        = {0};
 	char        *filepath;
 	size_t       size;
@@ -247,30 +243,31 @@ FILE *get_leclient_file(const char *filename, const char *mode, bool_t create) {
 		return -LESTATUS_NSFD;
 	}
 
-	file = fopen(filepath, mode);
+	*file = fopen(filepath, mode);
 
 	free(filepath);
 
-	return file;
+	return LESTATUS_OK;
 }
 
 status_t server_addr_save(const char *addr, uint16_t port) {
-	FILE   *file;
-	char   *line                   = nullptr;
-	size_t  line_size              = 0;
-	char    formatted_address[64];
-	bool_t  contains               = FALSE;
+	FILE     *file;
+	char     *line                   = nullptr;
+	size_t    line_size              = 0;
+	char      formatted_address[64];
+	bool_t    contains               = FALSE;
+	status_t  status;
 
 	memset(formatted_address, 0, sizeof(formatted_address));
 	sprintf(formatted_address, "%s %hd", addr, port);
 
-	file = get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE);
+	status = get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE, &file);
 
 	/** 
 	 * If the file exists, then we have to check
 	 * if it already contains gieven address
 	 */
-	if (file != -LESTATUS_NSFD) {
+	if (status != -LESTATUS_NSFD) {
 		while (getline(&line, &line_size, file) != -1) {
 			line[strcspn(line, "\n")] = '\0';
 			if (!strcmp(line, formatted_address)) {
@@ -284,9 +281,7 @@ status_t server_addr_save(const char *addr, uint16_t port) {
 	if (contains)
 		return -LESTATUS_EXST;
 
-	file = get_leclient_file(FILE_SERVER_HISTORY, "a+", TRUE);
-
-	if (file < 0)
+	if (get_leclient_file(FILE_SERVER_HISTORY, "a+", TRUE, &file) < 0)
 		return -LESTATUS_CLIB;
 
 	fputs(formatted_address, file);
@@ -294,7 +289,7 @@ status_t server_addr_save(const char *addr, uint16_t port) {
 
 	fclose(file);
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t server_addr_history_load() {
@@ -305,16 +300,14 @@ status_t server_addr_history_load() {
 	char      tmp[64];
 	size_t    bytes_read;
 
-	file = get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE);
-
-	if (file == -LESTATUS_NSFD)
+	if (get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE, &file) == -LESTATUS_NSFD)
 		return -LESTATUS_NSFD;
 
 	if (g_server_addr_history != nullptr)
 		queue_delete(g_server_addr_history);
 
 	/* ServerAddress structure doesn't require any special clearing */
-	g_server_addr_history = queue_create(free);
+	queue_create(free, &g_server_addr_history);
 
 	while ((int64_t)(bytes_read = s_fgets(tmp, 64, file)) > 0) {
 		sscanf(tmp, "%s %hd", h_addr, &h_port);
@@ -324,12 +317,12 @@ status_t server_addr_history_load() {
 		strncpy(tmp_server_haddr->addr, h_addr, 32);
 		tmp_server_haddr->port = h_port;
 
-		queue_push(g_server_addr_history, tmp_server_haddr, sizeof(tmp_server_haddr));
+		queue_push(g_server_addr_history, tmp_server_haddr);
 	}
 
 	fclose(file);
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 status_t token_save(char *token) {
@@ -342,17 +335,19 @@ status_t token_save(char *token) {
 	memset(srepr_thread_id, 0, sizeof(srepr_thread_id));
 
 	sprintf(srepr_thread_id, "%" PRIu64, g_active_thread_id);
-	file = get_leclient_file(srepr_thread_id, "w+", TRUE);
+	if (get_leclient_file(srepr_thread_id, "w+", TRUE, &file) == -LESTATUS_CLIB)
+		return -LESTATUS_CLIB;
 
 	fprintf(file, "%s", token);
 
 	fclose(file);
+
+	return LESTATUS_OK;
 }
 
-char *token_load() {
+status_t token_load(char **token) {
 	FILE *file;
 	char  srepr_thread_id[32];
-	char *token;
 
 	if (!g_active_thread_exists)
 		return -LESTATUS_IDAT;
@@ -360,18 +355,17 @@ char *token_load() {
 	memset(srepr_thread_id, 0, sizeof(srepr_thread_id));
 
 	snprintf(srepr_thread_id, sizeof(srepr_thread_id), "%" PRIu64, g_active_thread_id);
-	file = get_leclient_file(srepr_thread_id, "r", FALSE);
 
-	if (file == -LESTATUS_NSFD)
+	if (get_leclient_file(srepr_thread_id, "r", FALSE, &file) == -LESTATUS_NSFD)
 		return -LESTATUS_NSFD;
 
-	token = calloc(sizeof(char), TOKEN_SIZE + 1);
+	*token = calloc(sizeof(char), TOKEN_SIZE + 1);
 
-	s_fgets(token, TOKEN_SIZE + 1, file);
+	s_fgets(*token, TOKEN_SIZE + 1, file);
 
 	fclose(file);
 
-	return token;
+	return LESTATUS_OK;
 }
 
 void cmd_server() {
@@ -411,7 +405,7 @@ void cmd_server_connect() {
 
 	h_port = atoi(port);
 
-	if (__server_connect(h_addr, h_port) != -LESTATUS_OK) {
+	if (__server_connect(h_addr, h_port) != LESTATUS_OK) {
 		newline();
 		return;
 	}
@@ -489,7 +483,7 @@ void cmd_server_history() {
 	server_haddr = (HAddress *)node->data;
 
 	__server_disconnect();
-	if (__server_connect(server_haddr->addr, server_haddr->port) != -LESTATUS_OK) {
+	if (__server_connect(server_haddr->addr, server_haddr->port) != LESTATUS_OK) {
 		newline();
 		return;
 	}
@@ -534,7 +528,7 @@ void cmd_thread_create() {
 
 	topic = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((topic_size = s_fgets_range(topic, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == -LESTATUS_IDAT) {
+	if ((topic_size = s_fgets_range(topic, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == (size_t)-LESTATUS_IDAT) {
 		newline();
 		goto THREAD_CREATE_EXIT;
 	}
@@ -542,7 +536,7 @@ void cmd_thread_create() {
 
 	qdata = gen_query_CTHR(topic, topic_size);
 	query = query_create(parse_response_CTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 	while (query->completed == FALSE) {
 
 	}
@@ -582,7 +576,7 @@ void cmd_thread_find() {
 
 	search_query = malloc(g_server_meta.max_topic_size + 1);
 
-	if ((search_query_size = s_fgets_range(search_query, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == -LESTATUS_IDAT) {
+	if ((search_query_size = s_fgets_range(search_query, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == (size_t)-LESTATUS_IDAT) {
 		newline();
 		goto THREAD_FIND_EXIT;
 	}
@@ -591,7 +585,7 @@ void cmd_thread_find() {
 
 	qdata = gen_query_FTHR(search_query, search_query_size);
 	query = query_create(parse_response_FTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 	while (query->completed == FALSE) {
 
 	}
@@ -667,7 +661,7 @@ void cmd_thread_info() {
 
 	qdata = gen_query_GTHR(g_active_thread_id);
 	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 	while (query->completed == FALSE) {
 
 	}
@@ -698,7 +692,7 @@ void cmd_thread_message_history() {
 
 	qdata = gen_query_GTHR(g_active_thread_id);
 	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 	while (query->completed == FALSE) {
 
 	}
@@ -738,6 +732,7 @@ void cmd_thread_send_message() {
 	char        *message_text;
 	size_t       size          = 0;
 	char        *token         = nullptr;
+	status_t     status;
 
 	if (!g_active_thread_exists) {
 		puts("To use this command, choose some thread first!");
@@ -748,19 +743,19 @@ void cmd_thread_send_message() {
 
 	printf("Type your message (%zu-%zu characters, no newlines):\n", g_server_meta.min_message_size, g_server_meta.max_message_size);
 
-	if ((size = s_fgets_range(message_text, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == -LESTATUS_IDAT) {
+	if ((size = s_fgets_range(message_text, g_server_meta.min_topic_size, g_server_meta.max_topic_size, stdin)) == (size_t)-LESTATUS_IDAT) {
 		newline();
 		goto THREAD_SEND_MESSAGE_EXIT;
 	}
 	newline();
 
-	token = token_load();
-	if (token == -LESTATUS_IDAT || token == -LESTATUS_NSFD)
+	status = token_load(&token);
+	if (status == -LESTATUS_IDAT || status == -LESTATUS_NSFD)
 		token = nullptr;
 
 	qdata = gen_query_CMSG(g_active_thread_id, message_text, size, token);
 	query = query_create(parse_response_GTHR, qdata.data, qdata.size);
-	queue_push(g_server_queries, query, sizeof(query));
+	queue_push(g_server_queries, query);
 
 	while (query->completed == FALSE) {
 
@@ -806,7 +801,6 @@ void query_loop() {
 	size_t       response_size;
 	char         buf[32];
 	size_t       bytes_read;
-	size_t       part_size;
 	size_t       request_size;
 
 	while (g_working) {
@@ -815,17 +809,17 @@ void query_loop() {
 				query = (ServerQuery *)queue_pop(g_server_queries);
 				request_size = query->raw_request_data_size;
 
-				send(g_server_fd, &request_size, sizeof(request_size), NULL);
+				send(g_server_fd, &request_size, sizeof(request_size), 0);
 				if (request_size > MAX_PACKET_SIZE) {
 					newline();
 					puts("Server acts suspiciously. Disconnecting...");
 				}
-				ssend(g_server_fd, query->raw_request_data, request_size, NULL);
+				s_send(g_server_fd, query->raw_request_data, request_size, 0);
 
-				recv(g_server_fd, &response_size, sizeof(response_size), NULL);
+				recv(g_server_fd, &response_size, sizeof(response_size), 0);
 				raw_response = calloc(sizeof(char), response_size + 1);
-				bytes_read = srecv(g_server_fd, raw_response, response_size, NULL);
-				query->parsed_data = query->parse_response(raw_response, bytes_read);
+				bytes_read = s_recv(g_server_fd, raw_response, response_size, 0);
+				query->parse_response(raw_response, bytes_read, &query->parsed_data);
 				query->completed = TRUE;
 
 				free(raw_response);
@@ -833,18 +827,18 @@ void query_loop() {
 			}
 			else {
 				*(size_t *)buf = strlen("LIVE");
-				if (send(g_server_fd, buf, sizeof(size_t), NULL) < 0) {
+				if (send(g_server_fd, buf, sizeof(size_t), 0) < 0) {
 					newline();
 					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
 				}
-				if (send(g_server_fd, "LIVE", *(size_t *)buf, NULL) < 0) {
+				if (send(g_server_fd, "LIVE", *(size_t *)buf, 0) < 0) {
 					newline();
 					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
 				}
 
-				if (recv(g_server_fd, &response_size, sizeof(response_size), NULL) < 0) {
+				if (recv(g_server_fd, &response_size, sizeof(response_size), 0) < 0) {
 					newline();
 					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
@@ -856,7 +850,7 @@ void query_loop() {
 
 				}
 				raw_response = calloc(sizeof(char), response_size + 1);
-				if (recv(g_server_fd, raw_response, response_size, NULL) < 0) {
+				if (recv(g_server_fd, raw_response, response_size, 0) < 0) {
 					newline();
 					puts("Lost connection with the server, your last action might not have been applied.");
 					goto LIVE_FAILURE;
@@ -892,7 +886,7 @@ status_t startup() {
 
 	dirpath = calloc(sizeof(char), strlen(g_home_dir) + strlen(DIR_CLIENT) + 1);
 	strncpy(dirpath, g_home_dir, strlen(g_home_dir));
-	strcat(dirpath, "/" DIR_CLIENT);
+	le_strcat(dirpath, "/" DIR_CLIENT);
 
 	/* Check if the directory exists, creates if not */
 	if (stat(dirpath, &st) == -1)
@@ -900,11 +894,13 @@ status_t startup() {
 
 	free(dirpath);
 
-	g_server_queries = queue_create(free);
+	queue_create(free, &g_server_queries);
 
 	pthread_create(&g_query_loop_pthread, NULL, query_loop, NULL);
 	/* auto-cleanup on termination */
 	pthread_detach(g_query_loop_pthread);
+
+	return LESTATUS_OK;
 }
 
 status_t cleanup() {
@@ -916,10 +912,12 @@ status_t cleanup() {
 		g_server_queries = nullptr;
 	}
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 void stop_program_handle(const int signum) {
+	UNUSED(signum);
+
 	g_working = FALSE;
 }
 
@@ -934,14 +932,15 @@ status_t main(int argc, char **argv) {
 		cmd_id = leclient_loop_process(print_menu_main, print_prefix_main);
 
 		switch (cmd_id) {
-			case MCID_SERVER:     cmd_server(); continue;
-			case MCID_THREAD:     cmd_thread(); continue;
-			case MCID_SETTINGS:   cmd_settings(); continue;
-			case MCID_EXIT:       cmd_exit(); continue;
+			case MCID_SERVER:   cmd_server(); continue;
+			case MCID_THREAD:   cmd_thread(); continue;
+			case MCID_SETTINGS: cmd_settings(); continue;
+			case MCID_EXIT:     cmd_exit(); continue;
+			default:            continue;
 		}
 	}
 
 	cleanup();
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }

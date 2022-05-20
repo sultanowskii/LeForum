@@ -10,13 +10,13 @@
  * @brief Returns maximum between two given arguments. 
  * 
  */
-#define MAX(x, y)            (((x) > (y)) ? (x) : (y))
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
 /**
  * @brief Returns minimum between two given arguments. 
  * 
  */
-#define MIN(x, y)            (((x) < (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
 /**
  * @brief Returns increased by one x. 
@@ -31,6 +31,12 @@
  * 
  */
 #define cyclic_dec(x, min, max) x = ((x - 1) >= (min)) ? (x - 1) : (max)
+
+/**
+ * @brief Suppresses "unused parameter" warning. 
+ * 
+ */
+#define UNUSED(arg) ((void)arg)
 
 /**
  * @brief Naive data with size container. 
@@ -63,5 +69,24 @@ size_t s_fgets(char *s, size_t n, FILE* fd);
  * @return Size of read data on success. LESTATUS_IDAT if s_fgets() failed 
  */
 size_t s_fgets_range(char *s, size_t _min, size_t _max, FILE* fd);
+
+/**
+ * @brief strcat() implementation that does the job less stupidly 
+ *
+ * @param dest String to be appedned 
+ * @param src String that will be concatintated to the end of dest 
+ * @return Pointer to the end of resulting dest 
+ */
+char *le_strcat(char *dest, const char *src);
+
+/**
+ * @brief strncat() implementation that does the job less stupidly 
+ *
+ * @param dest String to be appended 
+ * @param src String that will be concatintated to the end of dest 
+ * @param n Max bytes to copy 
+ * @return Pointer to the end of resulting dest 
+ */
+char *le_strncat(char *dest, const char *src, size_t n);
 
 #endif

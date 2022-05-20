@@ -6,6 +6,11 @@
 #include "lib/constants.h"
 #include "lib/status.h"
 
+/**
+ * @brief Queue that stores first/last nodes. 
+ * This queue implementation can only store objects of one type. 
+ * 
+ */
 struct Queue {
 	size_t             size;
 	struct QueueNode  *first;
@@ -14,6 +19,13 @@ struct Queue {
 };
 typedef struct Queue Queue;
 
+/**
+ * @brief Queue node. Please note it stores pointer itself,
+ * not its value nor copy. 
+ * 
+ * The object is removed by calling destruct(). 
+ * 
+ */
 struct QueueNode {
 	void             *data;
 	struct QueueNode *next;
@@ -25,9 +37,10 @@ typedef struct QueueNode QueueNode;
  * 
  * @param destruct Callback that safely deletes one object stored in a queue. 
  * Is called for each object stored in a queue 
- * @return Pointer to created Queue 
+ * @param queue If not NULL, pointer to new queue will be placed here on success
+ * @return LESTATUS_OK on success 
  */
-Queue *queue_create(status_t (*destruct)(void *));
+status_t queue_create(status_t (*destruct)(void *), Queue **queue);
 
 /**
  * @brief Safely deletes the Queue and all the elements. 
@@ -43,10 +56,9 @@ status_t queue_delete(Queue *queue);
  * 
  * @param queue Pointer to Queue where a new element will be placed 
  * @param data Pointer to data to place 
- * @param size Size of the data 
  * @return LESTATUS_OK on success 
  */
-status_t queue_push(Queue *queue, void *data, size_t size);
+status_t queue_push(Queue *queue, void *data);
 
 /**
  * @brief Retrieves the first element and deletes it from the Queue. 

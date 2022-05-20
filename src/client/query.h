@@ -17,7 +17,7 @@ struct ServerQuery {
 	bool_t     completed;
 	void      *raw_request_data;
 	size_t     raw_request_data_size;
-	void   * (*parse_response)(char *raw_data, size_t size);
+	void   * (*parse_response)(char *raw_data, size_t size, void **result);
 	void      *parsed_data;
 };
 typedef struct ServerQuery ServerQuery;
@@ -36,7 +36,7 @@ typedef struct CreatedThreadInfo CreatedThreadInfo;
  * @param size Request data size 
  * @return Pointer to ServerQuery object 
  */ 
-ServerQuery *query_create(void * (*parser)(char *raw_data), char *request_data, size_t size);
+ServerQuery *query_create(void * (*parser)(char *, size_t, void **), char *request_data, size_t size);
 
 /**
  * @brief Deletes ServerQuery object. 
@@ -103,34 +103,37 @@ LeData gen_query_LIVE();
  * 
  * @param raw_data Pointer to the raw reponse
  * @param size Size of the data
- * @return Pointer to the LeThread object with ID, name and token fields filled 
+ * @param info Pointer to created thread info will be placed here on success 
+ * @return LESTATUS_OK on success. LESTATUS_IDAT on parsing error 
  */
-CreatedThreadInfo *parse_response_CTHR(char *raw_data, size_t size);
+status_t parse_response_CTHR(char *raw_data, size_t size, CreatedThreadInfo **info);
 
 /**
  * @brief Parses GTHR response. 
  * 
  * @param raw_data Pointer to the raw reponse
  * @param size Size of the data
- * @return Pointer to the LeThread object retrieved from the server 
+ * @param lethread Pointer to retrieved lethread will be placed here on success 
+ * @return LESTATUS_OK on success. LESTATUS_IDAT on parsing error 
  */
-LeThread *parse_response_GTHR(char *raw_data, size_t size);
+status_t parse_response_GTHR(char *raw_data, size_t size, LeThread **lethread);
 
 /**
  * @brief Parses FTHR response. 
  * 
  * @param raw_data Pointer to the raw reponse
  * @param size Size of the data
- * @return Pointer to the queue that contains all the match threads  
+ * @param found Pointer to queue with all matches will be placed here on success  
+ * @return LESTATUS_OK on success. LESTATUS_IDAT on parsing error 
  */
-Queue *parse_response_FTHR(char *raw_data, size_t size);
+status_t parse_response_FTHR(char *raw_data, size_t size, Queue **found);
 
 /**
  * @brief Parses CMSG response. 
  * 
  * @param raw_data Pointer to the raw reponse
  * @param size Size of the data
- * @return LESTATUS_OK on success   
+ * @return LESTATUS_OK on success. LESTATUS_IDAT on parsing error 
  */
 status_t parse_response_CMSG(char *raw_data, size_t size);
 
@@ -139,17 +142,19 @@ status_t parse_response_CMSG(char *raw_data, size_t size);
  * 
  * @param raw_data Pointer to the raw reponse
  * @param size Size of the data
- * @return LESTATUS_OK on success   
+ * @param meta Pointer to meta will be placed here on success
+ * @return LESTATUS_OK on success. LESTATUS_IDAT on parsing error 
  */
-LeMeta *parse_response_META(char *raw_data, size_t size);
+status_t parse_response_META(char *raw_data, size_t size, LeMeta **meta);
 
 /**
  * @brief Parses LIVE response. 
  * 
- * @param raw_data Pointer to the raw reponse
- * @param size Size of the data
- * @return LESTATUS_OK on success   
+ * @param raw_data Pointer to the raw reponse 
+ * @param size Size of the data 
+ * @param result Is ignored 
+ * @return LESTATUS_OK on success. LESTATUS_IDAT on parsing error 
  */
-status_t parse_response_LIVE(char *raw_data, size_t size);
+status_t parse_response_LIVE(char *raw_data, size_t size, void **result);
 
 #endif

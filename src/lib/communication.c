@@ -9,20 +9,18 @@
 #include "lib/security.h"
 #include "lib/status.h"
 
-ssize_t ssend(int sockfd, void *buf, size_t size, int flags) {
-	ssize_t sent = 0;
-	ssize_t tmp = 0;
+ssize_t s_send(int sockfd, void *buf, size_t size, int flags) {
+	size_t sent = 0;
+	size_t tmp = 0;
 
 	while (sent < size) {
 		tmp = send(sockfd, buf + sent, size - sent, flags);
 
-		if (tmp == 0) {
+		if (tmp == 0)
 			goto SSEND_EXIT;
-		}
 
-		if (tmp < 0) {
+		if ((ssize_t)tmp < 0)
 			goto SSEND_EXIT;
-		}
 
 		sent += tmp;
 	}
@@ -31,21 +29,18 @@ SSEND_EXIT:
 	return sent;
 }
 
-ssize_t srecv(int sockfd, void *buf, size_t size, int flags) {
-	ssize_t received = 0;
-	ssize_t tmp = 0;
+ssize_t s_recv(int sockfd, void *buf, size_t size, int flags) {
+	size_t received = 0;
+	size_t tmp = 0;
 
 	while (received < size) {
 		tmp = recv(sockfd, buf + received, size - received, flags);
 
-
-		if (tmp == 0) {
+		if (tmp == 0)
 			goto SRECV_EXIT;
-		}
 
-		if (tmp < 0) {
+		if ((ssize_t)tmp < 0)
 			goto SRECV_EXIT;
-		}
 		received += tmp;
 	}
 

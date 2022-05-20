@@ -27,7 +27,7 @@ typedef struct HAddress HAddress;
  * @param flags Flags being passed to send() function. Refer to man send 
  * @return Size of sent data 
  */
-ssize_t ssend(int sockfd, void *buf, size_t size, int flags); 
+ssize_t s_send(int sockfd, void *buf, size_t size, int flags); 
 
 /**
  * @brief Safe wrapper over recv(). 
@@ -40,7 +40,7 @@ ssize_t ssend(int sockfd, void *buf, size_t size, int flags);
  * @param flags Flags being passed to recv() function. Refer to man recv 
  * @return Size of received data 
  */
-ssize_t srecv(int sockfd, void *buf, size_t size, int flags);
+ssize_t s_recv(int sockfd, void *buf, size_t size, int flags);
 
 /**
  * @brief Does the same thing as printf() except it

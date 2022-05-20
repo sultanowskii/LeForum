@@ -9,14 +9,12 @@
 #define NULLPTR_PREVENT(ptr, LESTATUS) if (ptr == nullptr) {return LESTATUS;}
 
 /**
- * @brief Generates random string of given size 
- * and writes to the place where str points. 
+ * @brief Returns random string of given size 
  * 
- * @param str Pointer, which will point to the resulting string 
  * @param size String size 
- * @return LESTATUS_OK on succes 
+ * @return Pointer to random string 
  */
-status_t rand_string(char *str, size_t size);
+char *rand_string(size_t size);
 
 /**
  * @brief Returns random unsigned 8-byte number. 

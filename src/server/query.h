@@ -46,11 +46,10 @@ SharedPtr *lethread_get_by_id(uint64_t lethread_id);
  * 
  * @param topic_part Part of the LeThread topic, 
  * based on which the LeThreads will be filtered 
- * @param topic_part_size Size of the topic part 
  * @return Queue containing all the LeThreads that 
  * correspond to the conditions 
  */
-Queue *lethread_find(char *topic_part, size_t topic_part_size);
+Queue *lethread_find(char *topic_part);
 
 /**
  * @brief Multithread-safe lethread_save() function. 

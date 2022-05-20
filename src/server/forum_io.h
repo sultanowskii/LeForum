@@ -13,9 +13,10 @@
  * @param mode File open mode 
  * @param filename Name of the file (please refer to the #defines at the top of this file) 
  * @param create Should the file be created, if it doesn't exist? 
- * @return File descriptor on success. If file is not found and create==FALSE, LESTATUS_NSFD is returned 
+ * @param file If not NULL, file descriptor will be placed here on success 
+ * @return LESTATUS_OK on success. If file is not found and create==FALSE, LESTATUS_NSFD is returned 
  */
-FILE *get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t create);
+status_t get_lefile(uint64_t lethread_id, char *mode, char *filename, bool_t create, FILE **file);
 
 /**
  * @brief Saves LeThread to the corresponding file. 

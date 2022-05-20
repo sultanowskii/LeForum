@@ -9,7 +9,7 @@
 size_t s_fgets(char *s, size_t n, FILE* fd) {
 	if (fgets(s, n, fd) == NULL) {
 		/* Here we're preventing infinite loops if CTRL+D (aka EOF) is pressed */
-		clearerr(stdin);
+		clearerr(fd);
 		return -LESTATUS_CLIB;
 	}
 
@@ -23,10 +23,27 @@ size_t s_fgets_range(char *s, size_t _min, size_t _max, FILE* fd) {
 	size_t size = 0;
 
 	while (size < _min) {
-		if ((tmp = s_fgets(s + size, _max + 1 - size, stdin)) == -LESTATUS_CLIB)
+		if ((status_t)(tmp = s_fgets(s + size, _max + 1 - size, fd)) == -LESTATUS_CLIB)
 			return -LESTATUS_IDAT;
 		size += tmp;
 	}
 
 	return size;
+}
+
+char *le_strcat(char *dest, const char *src) {
+	while (*dest) dest++;
+	while ((*dest++ = *src++) != '\0');
+	return --dest;
+}
+
+char *le_strncat(char *dest, const char *src, size_t n) {
+	size_t i;
+
+	while (*dest) dest++;
+	for (i = 0; i < n && src[i] != '\0'; i++) {
+		*dest++ = src[i];
+	}
+	*dest = '\0';
+	return dest;
 }

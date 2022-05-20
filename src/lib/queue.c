@@ -7,7 +7,7 @@
 #include "lib/security.h"
 #include "lib/status.h"
 
-Queue *queue_create(status_t (*destruct)(void *)) {
+status_t queue_create(status_t (*destruct)(void *), Queue **queue) {
 	Queue *new_queue;
 
 	NULLPTR_PREVENT(destruct, -LESTATUS_NPTR)
@@ -19,7 +19,12 @@ Queue *queue_create(status_t (*destruct)(void *)) {
 	new_queue->last = nullptr;
 	new_queue->destruct = destruct;
 
-	return new_queue;
+	if (queue != nullptr)
+		*queue = new_queue;
+	
+	new_queue = nullptr;
+
+	return LESTATUS_OK;
 };
 
 status_t queue_delete(Queue *queue) {
@@ -49,10 +54,10 @@ status_t queue_delete(Queue *queue) {
 	free(queue);
 	queue = nullptr;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 };
 
-status_t queue_push(Queue *queue, void *data, size_t size) {
+status_t queue_push(Queue *queue, void *data) {
 	QueueNode *new_node;
 
 	NULLPTR_PREVENT(queue, -LESTATUS_NPTR)
@@ -74,7 +79,7 @@ status_t queue_push(Queue *queue, void *data, size_t size) {
 
 	queue->size++;
 
-	return -LESTATUS_OK;
+	return LESTATUS_OK;
 }
 
 void *queue_pop(Queue *queue) {

@@ -15,7 +15,7 @@ FILENAME_LEAUTHOR = "leauthor"
 
 
 def query(payload):
-	io = remote("127.0.0.1", 12345)
+	io = remote("127.0.0.1", 7431)
 
 	io.send(p64(len(payload)))
 	io.send(payload)
