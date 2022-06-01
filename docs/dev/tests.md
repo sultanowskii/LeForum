@@ -12,11 +12,12 @@ Note that this file has some [requirements](/src/test/requirements.txt)
 python3 test/test-server-queries.py
 ```
 
+Please note that you have to run both server (`make g-c-server && ./LeForumServer`) and test (as shown one line above in the **src/** directory).
+
 **Possible arguments**:
-`NOBASIC` - Doesn't run GTHR and CTHR tests
-`NOFIND` - Doesn't run FTHR tests
-`NOMETA` - Doesn't run META test
-`INTERACTIVE` - Simulates working client - you can send queries by yourself. 
+`AUTO` - Automatic tests for server (queries)
+`MMSG` - Posts a lot of big messages. Doesn't make much sense, but ehh I think it's still useful.
+`INTERACTIVE` - Simulates working client - you can send queries by yourself 
 
 **INTERACTIVE mode command syntax**:
 ```

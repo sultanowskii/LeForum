@@ -329,7 +329,7 @@ status_t parse_response_FTHR(char *raw_data, size_t size, Queue **found) {
 
 	/* TODO: check size */
 
-	queue_create(lethread_delete, &_found);
+	queue_create(&_found);
 	data_ptr = raw_data;
 
 	if (strncmp(data_ptr, "NFND", strlen("NFND")) == 0)
@@ -337,7 +337,7 @@ status_t parse_response_FTHR(char *raw_data, size_t size, Queue **found) {
 
 	while ((size_t)(data_ptr - raw_data) < size) {
 		if (strncmp(data_ptr, "THRID", strlen("THRID")) != 0) {
-			queue_delete(_found);
+			queue_delete(_found, lethread_delete);
 			return -LESTATUS_IDAT;
 		}
 		data_ptr += strlen("THRID");
@@ -346,7 +346,7 @@ status_t parse_response_FTHR(char *raw_data, size_t size, Queue **found) {
 		data_ptr += sizeof(thread_id);
 
 		if (strncmp(data_ptr, "TPCSZ", strlen("TPCSZ")) != 0) {
-			queue_delete(_found);
+			queue_delete(_found, lethread_delete);
 			return -LESTATUS_IDAT;
 		}
 		data_ptr += strlen("TPCSZ");
@@ -355,7 +355,7 @@ status_t parse_response_FTHR(char *raw_data, size_t size, Queue **found) {
 		data_ptr += sizeof(topic_size);
 
 		if (strncmp(data_ptr, "TPC", strlen("TPC")) != 0) {
-			queue_delete(_found);
+			queue_delete(_found, lethread_delete);
 			return -LESTATUS_IDAT;
 		}
 		data_ptr += strlen("TPC");

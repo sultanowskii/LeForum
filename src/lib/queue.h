@@ -15,7 +15,6 @@ struct Queue {
 	size_t             size;
 	struct QueueNode  *first;
 	struct QueueNode  *last;
-	status_t         (*destruct)(void *);
 };
 typedef struct Queue Queue;
 
@@ -35,21 +34,22 @@ typedef struct QueueNode QueueNode;
 /**
  * @brief Creates a new Queue object. 
  * 
- * @param destruct Callback that safely deletes one object stored in a queue. 
  * Is called for each object stored in a queue 
  * @param queue If not NULL, pointer to new queue will be placed here on success
  * @return LESTATUS_OK on success 
  */
-status_t queue_create(status_t (*destruct)(void *), Queue **queue);
+status_t queue_create(Queue **queue);
 
 /**
  * @brief Safely deletes the Queue and all the elements. 
  * Use this _only_ if you created queue by using `queue_create()`. 
  * 
  * @param queue Pointer to Queue to delete 
+ * @param destruct Function that destroys data located on heap.
+ * If `nullptr`, does nothing 
  * @return LESTATUS_OK on success 
  */
-status_t queue_delete(Queue *queue);
+status_t queue_delete(Queue *queue, void (*destruct)(void *));
 
 /**
  * @brief Adds a new element to the end of the Queue. 

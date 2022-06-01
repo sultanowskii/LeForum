@@ -142,7 +142,7 @@ Queue *lethread_find(char *topic_part) {
 
 	NULLPTR_PREVENT(topic_part, -LESTATUS_NPTR)
 
-	queue_create(sharedptr_delete, &lethreads_match);
+	queue_create(&lethreads_match);
 
 	while (node != NULL) {
 		lethread = ((SharedPtr *)node->data)->data;
@@ -249,11 +249,11 @@ size_t startup() {
 		return -LESTATUS_CLIB;
 	}
 
-	queue_create(sharedptr_delete, &g_lethread_query_queue);
-	queue_create(sharedptr_delete, &g_lemessages_query_queue);
-	queue_create(lemessage_delete, &g_lemessage_query_queue);
-	queue_create(sharedptr_delete, &g_leauthor_query_queue);
-	queue_create(sharedptr_delete, &g_lethread_queue);
+	queue_create(&g_lethread_query_queue);
+	queue_create(&g_lemessages_query_queue);
+	queue_create(&g_lemessage_query_queue);
+	queue_create(&g_leauthor_query_queue);
+	queue_create(&g_lethread_queue);
 
 	atexit(cleanup);
 	signal(SIGTERM, cleanup);
@@ -312,15 +312,15 @@ void cleanup() {
 
 		lemeta_save();
 
-		queue_delete(g_lethread_query_queue);
+		queue_delete(g_lethread_query_queue, sharedptr_delete);
 		g_lethread_query_queue = nullptr;
-		queue_delete(g_lemessages_query_queue);
+		queue_delete(g_lemessages_query_queue, sharedptr_delete);
 		g_lemessages_query_queue = nullptr;
-		queue_delete(g_lemessage_query_queue);
+		queue_delete(g_lemessage_query_queue, lemessage_delete);
 		g_lemessage_query_queue = nullptr;
-		queue_delete(g_leauthor_query_queue);
+		queue_delete(g_leauthor_query_queue, sharedptr_delete);
 		g_leauthor_query_queue = nullptr;
-		queue_delete(g_lethread_queue);
+		queue_delete(g_lethread_queue, sharedptr_delete);
 		g_lethread_queue = nullptr;
 
 		pthread_mutex_destroy(&g_next_lethread_id_mutex);

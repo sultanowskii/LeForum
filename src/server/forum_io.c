@@ -87,7 +87,7 @@ status_t lethread_load(LeThread *lethread, uint64_t lethread_id) {
 	if (status == -LESTATUS_NSFD || status == -LESTATUS_NPTR)
 		return status;
 
-	queue_create(lemessage_delete, &lethread->messages);
+	queue_create(&lethread->messages);
 	lethread->author = nullptr;
 
 	fread(&lethread->id, sizeof(lethread->id), 1, lethread_info_file);

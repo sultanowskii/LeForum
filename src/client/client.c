@@ -303,11 +303,13 @@ status_t server_addr_history_load() {
 	if (get_leclient_file(FILE_SERVER_HISTORY, "r", FALSE, &file) == -LESTATUS_NSFD)
 		return -LESTATUS_NSFD;
 
-	if (g_server_addr_history != nullptr)
-		queue_delete(g_server_addr_history);
+	if (g_server_addr_history != nullptr) {
+		queue_delete(g_server_addr_history, free);
+		g_server_addr_history = nullptr;
+	}
 
 	/* ServerAddress structure doesn't require any special clearing */
-	queue_create(free, &g_server_addr_history);
+	queue_create(&g_server_addr_history);
 
 	while ((int64_t)(bytes_read = s_fgets(tmp, 64, file)) > 0) {
 		sscanf(tmp, "%s %hd", h_addr, &h_port);
@@ -641,7 +643,7 @@ void cmd_thread_find() {
 	newline();
 
 THREAD_FIND_EXIT:
-	queue_delete(found_threads);
+	queue_delete(found_threads, lethread_delete);
 	found_threads = nullptr;
 	free(search_query);
 	search_query = nullptr;
@@ -894,7 +896,7 @@ status_t startup() {
 
 	free(dirpath);
 
-	queue_create(free, &g_server_queries);
+	queue_create(&g_server_queries);
 
 	pthread_create(&g_query_loop_pthread, NULL, query_loop, NULL);
 	/* auto-cleanup on termination */
@@ -908,7 +910,7 @@ status_t cleanup() {
 		__server_disconnect();
 
 	if (g_server_queries != nullptr) {
-		queue_delete(g_server_queries);
+		queue_delete(g_server_queries, free);
 		g_server_queries = nullptr;
 	}
 

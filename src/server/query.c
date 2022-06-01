@@ -296,7 +296,7 @@ LeCommandResult cmd_lethread_find(char *raw_data, size_t size) {
 	}
 
 FTHR_SUCCESS:
-	queue_delete(lethreads);
+	queue_delete(lethreads, sharedptr_delete);
 	lethreads = nullptr;
 
 	free(topic_part);

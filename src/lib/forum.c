@@ -26,7 +26,7 @@ status_t lethread_create(char *topic, uint64_t lethread_id, LeThread **lethread)
 	new_lethread->id = lethread_id;
 	new_lethread->first_message_id = rand_uint64_t() % 0xffffffff;
 	new_lethread->next_message_id = new_lethread->first_message_id;
-	queue_create(lemessage_delete, &new_lethread->messages);
+	queue_create(&new_lethread->messages);
 	new_lethread->author = nullptr;
 
 	new_lethread->topic = calloc(sizeof(char), topic_size + 1);
@@ -44,7 +44,7 @@ status_t lethread_delete(LeThread *lethread) {
 	NULLPTR_PREVENT(lethread, -LESTATUS_NPTR)
 
 	if (lethread->messages != nullptr) {
-		queue_delete(lethread->messages);
+		queue_delete(lethread->messages, lemessage_delete);
 		lethread->messages = nullptr;
 	}
 

@@ -7,17 +7,14 @@
 #include "lib/security.h"
 #include "lib/status.h"
 
-status_t queue_create(status_t (*destruct)(void *), Queue **queue) {
+status_t queue_create(Queue **queue) {
 	Queue *new_queue;
-
-	NULLPTR_PREVENT(destruct, -LESTATUS_NPTR)
 
 	new_queue = (Queue *)malloc(sizeof(*new_queue));
 
 	new_queue->size = 0;
 	new_queue->first = nullptr;
 	new_queue->last = nullptr;
-	new_queue->destruct = destruct;
 
 	if (queue != nullptr)
 		*queue = new_queue;
@@ -27,7 +24,7 @@ status_t queue_create(status_t (*destruct)(void *), Queue **queue) {
 	return LESTATUS_OK;
 };
 
-status_t queue_delete(Queue *queue) {
+status_t queue_delete(Queue *queue, void (*destruct)(void *)) {
 	QueueNode *node;
 	QueueNode *next;
 
@@ -39,7 +36,9 @@ status_t queue_delete(Queue *queue) {
 		next = node->next;
 
 		if (node->data != nullptr) {
-			queue->destruct(node->data);
+			if (destruct != nullptr) {
+				destruct(node->data);
+			}
 			node->data = nullptr;
 		}
 
