@@ -16,7 +16,7 @@ enum LeStatus {
 	LESTATUS_NPTR, /* Null pointer */
 };
 
-const char *SREPR_LESTATUS[LESTATUS_NPTR - LESTATUS_OK + 1];
+extern const char *SREPR_LESTATUS[LESTATUS_NPTR - LESTATUS_OK + 1];
 
 /**
  * @brief Get the lestatus string representation 
