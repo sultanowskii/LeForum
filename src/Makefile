@@ -1,36 +1,62 @@
 CFLAGS = -I. -Wno-incompatible-pointer-types -Wno-incompatible-pointer-types -Wno-int-conversion
-CFLAGS_G = -I. -g -Wall -Wextra
+
+ifdef DEBUG
+CFLAGS = -I. -g -Wall -Wextra
+endif
 
 LIBS_SERVER = -pthread
 LIBS_CLIENT = -pthread
 
-LIB_FILES_SERVER = $(wildcard lib/*.c server/*.c)
-LIB_FILES_CLIENT = $(wildcard lib/*.c client/*.c)
-LIB_FILES_TEST_FORUM_CORE = $(wildcard lib/*.c server/forum_io.c)
-LIB_FILES_TEST_QUEUE = $(wildcard lib/*.c)
-LIB_FILES_TEST_LE_STRCAT = $(wildcard lib/*.c)
+LIB_FILES_SERVER_SRCS = $(wildcard lib/*.c server/*.c)
+LIB_FILES_SERVER_OBJS = $(patsubst %.c, %.o, $(LIB_FILES_SERVER_SRCS))
+OBJS += $(LIB_FILES_SERVER_OBJS)
 
-c-server: server/server.c $(LIB_FILES_SERVER)
+LIB_FILES_CLIENT_SRCS = $(wildcard lib/*.c client/*.c)
+LIB_FILES_CLIENT_OBJS = $(patsubst %.c, %.o, $(LIB_FILES_CLIENT_SRCS))
+OBJS += $(LIB_FILES_CLIENT_OBJS)
+
+LIB_FILES_TEST_FORUM_CORE_SRCS = $(wildcard lib/*.c server/forum_io.c)
+LIB_FILES_TEST_FORUM_CORE_OBJS = $(patsubst %.c, %.o, $(LIB_FILES_TEST_FORUM_CORE_SRCS))
+OBJS += $(LIB_FILES_TEST_FORUM_CORE_OBJS)
+
+LIB_FILES_TEST_QUEUE_SRCS = $(wildcard lib/*.c)
+LIB_FILES_TEST_QUEUE_OBJS = $(patsubst %.c, %.o, $(LIB_FILES_TEST_QUEUE_SRCS))
+OBJS += $(LIB_FILES_TEST_QUEUE_OBJS)
+
+LIB_FILES_TEST_LE_STRCAT_SRCS = $(wildcard lib/*.c)
+LIB_FILES_TEST_LE_STRCAT_OBJS = $(patsubst %.c, %.o, $(LIB_FILES_TEST_LE_STRCAT_SRCS))
+OBJS += $(LIB_FILES_TEST_LE_STRCAT_OBJS)
+
+all: c-server
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+.PHONY: c-server
+c-server: server/server.o $(LIB_FILES_SERVER_OBJS)
 	$(CC) $(CFLAGS) $^ $(LIBS_SERVER) -o ../build/LeForumServer
 
-c-client: client/client.c $(LIB_FILES_CLIENT)
+.PHONY: c-client
+c-client: client/client.o $(LIB_FILES_CLIENT_OBJS)
 	$(CC) $(CFLAGS) $^ $(LIBS_CLIENT) -o ../build/LeForumClient
 
-g-c-server: server/server.c $(LIB_FILES_SERVER)
-	$(CC) $(CFLAGS_G) $^ $(LIBS_SERVER) -Wall -o LeForumServer
-
-g-c-client: client/client.c $(LIB_FILES_CLIENT)
-	$(CC) $(CFLAGS_G) $^ $(LIBS_CLIENT) -Wall -o LeForumClient
-
-c-test-forum-core: test/test-forum-core.c $(LIB_FILES_TEST_FORUM_CORE)
+.PHONY: c-test-forum-core
+c-test-forum-core: test/test-forum-core.o $(LIB_FILES_TEST_FORUM_CORE_OBJS)
 	$(CC) $(CFLAGS_G) $^ -o test/LeForumCoreTest
 
-c-test-queue: test/test-queue.c $(LIB_FILES_TEST_QUEUE)
+.PHONY: c-test-queue
+c-test-queue: test/test-queue.o $(LIB_FILES_TEST_FORUM_CORE_OBJS)
 	$(CC) $(CFLAGS_G) $^ -o test/QueueTest
 
-c-test-le-strcat: test/test-le-strcat.c $(LIB_FILES_TEST_LE_STRCAT)
+.PHONY: c-test-le-strcat
+c-test-le-strcat: test/test-le-strcat.o $(LIB_FILES_TEST_LE_STRCAT_OBJS)
 	$(CC) $(CFLAGS_G) $^ -o test/strcatTest
 
-install:
+.PHONY: clean
+clean:
+	rm -rf $(OBJS)
+
+.PHONY: install
+install: c-server c-client
 	install -m 755 ../build/LeForumServer /usr/bin/
 	install -m 755 ../build/LeForumClient /usr/bin/
